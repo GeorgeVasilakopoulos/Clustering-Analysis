@@ -2,33 +2,42 @@
 
 
 //Create Vector with zeros
-Vector::Vector(uint32_t size_)
-: size(size_), data(new uint8_t[size_]) {
-	for(uint8_t i = 0; i < size; i++)
+template <typename T>
+Vector<T>::Vector(uint32_t size_)
+: size(size_), data(new T[size_]) {
+	for(uint32_t i = 0; i < size; i++)
 		data[i] = 0;
 }
 
-
-Vector::Vector(std::ifstream input, uint32_t size_)
+template <>
+Vector<uint8_t>::Vector(std::ifstream input, uint32_t size_)
 : size(size_), data(new uint8_t[size_]) {
-	for(uint8_t i = 0; i < size; i++)
+	for(uint32_t i = 0; i < size; i++)
 		data[i] = input.get();
 }
 
-Vector::~Vector() { 
-	delete[] data; 
-}
+template <typename T>
+template <typename U>
+Vector<T>::Vector(const Vector<U>& v){
+	std::cout<<"Casting!"<<std::endl;
+	size = v.len();
+	data = new T[size];
 
-Vector::Vector(const Vector& v){
-	size = v.size;
-	data = new uint8_t[size];
 
-	for(uint8_t i = 0; i < size; i++)
+	for(uint32_t i = 0; i < size; i++)
 		data[i] = v[i];
 }
 
+template <typename T>
+Vector<T>::~Vector() { 
+	std::cout<<"Destroying"<<std::endl;
+	delete[] data; 
+}
 
-uint8_t& Vector::operator[](uint32_t i) const {
+
+
+template <typename T>
+T& Vector<T>::operator[](uint32_t i) const {
 	
 	// Check if index out of bounds
 
@@ -36,7 +45,54 @@ uint8_t& Vector::operator[](uint32_t i) const {
 }
 
 
-uint32_t Vector::operator*(const Vector& v) const {
+template <typename T>
+Vector<T>& Vector<T>::operator=(const Vector<T>& v){
+	
+	// Assert vectors' dimension match
+	// Throw error otherwise
+
+	std::cout<<"Assigning!"<<std::endl;
+	for(uint32_t i = 0; i < size; i++){
+		data[i] = v[i];
+	}
+
+	return *this;
+}
+
+
+template <typename T>
+Vector<T> Vector<T>::operator+(const Vector<T>& v) const{
+	
+	// Assert vectors' dimension match
+	// Throw error otherwise
+
+	Vector out(*this);
+	for(uint32_t i = 0; i < size; i++){
+		out[i] += v[i];
+	}
+	return out;
+}
+
+template <typename T>
+Vector<T> Vector<T>::operator-(const Vector<T>& v) const{
+	
+	// Assert vectors' dimension match
+	// Throw error otherwise
+
+	Vector out(*this);
+	for(uint32_t i = 0; i < size; i++){
+		out[i] -= v[i];
+	}
+	return out;
+}
+
+template <typename T>
+uint32_t Vector<T>::len() const{
+	return size;
+}
+
+template <typename T>
+uint32_t Vector<T>::operator*(const Vector<T>& v) const {
 	// Assert vectors' dimension match
 	// Throw error otherwise
 
@@ -46,13 +102,27 @@ uint32_t Vector::operator*(const Vector& v) const {
 	
 	return sum;
 }
-Vector operator*(const uint32_t& scalar, const Vector& v){
+
+template <typename T, typename U>
+Vector<T> operator*(const U& scalar, const Vector<T>& v){
 	return v * scalar;
 }
 
-Vector Vector::operator*(const uint32_t& scalar) const {
 
-	Vector out(*this);
+
+template <typename T>
+template <typename U>
+Vector<T> Vector<T>::operator*(const U& scalar) const {
+
+	std::cout<<"before"<<std::endl;
+
+	// const Vector& bla = *this;
+	Vector out = Vector(*this);
+
+	std::cout<<"after"<<std::endl;
+	
+	printf("%p\n%p\n",out.data, this->data);
+
 	for(uint32_t i = 0; i < size; i++)
 		out[i] *= scalar;
 
@@ -60,8 +130,9 @@ Vector Vector::operator*(const uint32_t& scalar) const {
 }
 
 
-
-Vector Vector::operator/(const uint32_t& scalar) const {
+template <typename T>
+template <typename U>
+Vector<T> Vector<T>::operator/(const U& scalar) const {
 	// Check for division by 0
 
 	Vector out(*this);
@@ -74,33 +145,9 @@ Vector Vector::operator/(const uint32_t& scalar) const {
 
 
 
-Vector Vector::operator+(const Vector& v) const{
-	
-	// Assert vectors' dimension match
-	// Throw error otherwise
-
-	Vector out(*this);
-	for(uint32_t i = 0; i < size; i++){
-		out[i] += v[i];
-	}
-	return out;
-}
-
-
-Vector Vector::operator-(const Vector& v) const{
-	
-	// Assert vectors' dimension match
-	// Throw error otherwise
-
-	Vector out(*this);
-	for(uint32_t i = 0; i < size; i++){
-		out[i] -= v[i];
-	}
-	return out;
-}
-
 //Unary - operator
-Vector Vector::operator-()const{
+template <typename T>
+Vector<T> Vector<T>::operator-()const{
 
 	Vector out(*this);
 	for(uint32_t i = 0; i < size; i++){
