@@ -1,5 +1,9 @@
-
 #pragma once
+
+
+#include <iostream>
+#include <fstream>
+
 
 class Vector{
 
@@ -20,6 +24,6 @@ public:
 	Vector operator/(const uint32_t&) const;
 	uint8_t& operator[](uint32_t)const;		
 
-}
+};
 
 

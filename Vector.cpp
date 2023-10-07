@@ -1,3 +1,6 @@
+#include "Vector.hpp"
+
+
 Vector::Vector(std::ifstream input, uint32_t size_): 
 	size(size_),data(new uint8_t[size_])
 {
@@ -22,12 +25,12 @@ Vector::Vector(const Vector& v){
 }
 
 
-uint8_t& operator[](uint32_t i){
+uint8_t& Vector::operator[](uint32_t i)const{
 	return data[i];
 }
 
 
-uint32_t operator*(const Vector& v){
+uint32_t Vector::operator*(const Vector& v)const{
 	
 
 	//Check vector sizes
@@ -45,7 +48,7 @@ uint32_t operator*(const Vector& v){
 
 
 
-Vector operator*(const uint32_t& scalar){
+Vector Vector::operator*(const uint32_t& scalar)const{
 
 	Vector out(*this);
 	for(uint32_t i = 0; i < size; i++){
@@ -57,7 +60,7 @@ Vector operator*(const uint32_t& scalar){
 
 
 
-Vector operator/(const uint32_t& scalar){
+Vector Vector::operator/(const uint32_t& scalar)const{
 	
 
 	//Check if scalar is 0
