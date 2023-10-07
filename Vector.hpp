@@ -1,12 +1,9 @@
 #pragma once
 
-
 #include <iostream>
 #include <fstream>
 
-
 class Vector{
-
 
 private:
 	uint8_t* data;
@@ -15,15 +12,15 @@ public:
 
 	Vector(std::ifstream input, uint32_t size);
 	~Vector();
-
 	Vector(const Vector&);
+
 	Vector operator+(const Vector&) const;
 	Vector operator-(const Vector&) const;
 	uint32_t operator*(const Vector&) const;
 	Vector operator*(const uint32_t&) const;
 	Vector operator/(const uint32_t&) const;
 	uint8_t& operator[](uint32_t)const;		
-
+	
 };
 
 
