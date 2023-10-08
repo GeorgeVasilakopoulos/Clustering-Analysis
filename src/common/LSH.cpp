@@ -18,20 +18,19 @@ class LSH{
 
 
 		LSH(DataSet& dataset_, uint32_t window, uint32_t hash_count, uint32_t table_size_)
-		: dataset(dataset_), amplified_hash(dataset_.vectorSize(), window, hash_count), table_size(table_size_){
+		: dataset(dataset_), amplified_hash(dataset_.vectorSize(), window, hash_count), table_size(table_size_) {
 			for(auto point : dataset)
 				hash_table[amplified_hash.apply(point->data()) % table_size].push_back(point);
-			
 		}
 
 
 
-		vector<tuple<uint32_t,double>> 
-		kNearestNeighbors(DataPoint &p, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&), uint32_t k){
+		vector< tuple<uint32_t, double> > 
+		kNearestNeighbors(DataPoint& p, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&), uint32_t k){
 			
 			//Define a custom comparator. Necessary for PQ
-			auto comparator = [](const tuple<uint32_t,double> t1, const tuple<uint32_t,double> t2){
-				return get<1>(t1) < get<1>(t2);	//Maybe >
+			auto comparator = [](const tuple<uint32_t, double> t1, const tuple<uint32_t, double> t2){
+				return get<1>(t1) < get<1>(t2);	// Maybe >
 			};
 
 			//PQ declaration
