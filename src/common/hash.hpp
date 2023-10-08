@@ -36,7 +36,7 @@ class AmplifiedHash {
 
         template <typename T>
         uint32_t apply(Vector<T>& p) { 
-            uint32_t M = (1 << 32) - 5;
+            uint32_t M = UINT32_MAX - 4; // 2^32 - 1 == UINT32_MAX
 
             uint32_t sum = 0;
 
