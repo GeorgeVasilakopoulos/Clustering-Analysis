@@ -15,6 +15,7 @@ class Vector{
 	public:
 		Vector(uint32_t size);
 		Vector(uint32_t size, Distribution distr, T a, T b);
+		Vector(const Vector<T>& v);
 		Vector(std::ifstream& input, uint32_t size);
 		~Vector();
 
@@ -27,7 +28,10 @@ class Vector{
 		Vector operator+(const Vector& vector) const;
 		template <typename U>
 		T operator*(const Vector<U>& vector) const;
+
 		template <typename U>
+		T dprod(const Vector<U>& v) const; 
+
 
 		Vector& operator+=(const T& scalar);
 		Vector& operator*=(const T& scalar);

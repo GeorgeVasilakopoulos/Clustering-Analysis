@@ -29,6 +29,18 @@ Vector<T>::Vector(uint32_t size_, Distribution distr, T a, T b)
 	}
 }
 
+
+template <typename T>
+Vector<T>::Vector(const Vector<T>& v)
+: size(v.len()), data(new T[v.len()]){
+	
+	// std::cout<<"calling copy constructor\n";
+	for(uint32_t i = 0; i < v.len(); i++){
+		data[i] = v[i];
+	}
+}
+
+
 template<typename T>
 Vector<T>::Vector(std::ifstream& input, uint32_t size_)
 : size(size_), data(new uint8_t[size_]) {
@@ -159,7 +171,7 @@ Vector<T>& Vector<T>::operator*=(const T& scalar) {
 template <typename T>
 Vector<T>& Vector<T>::operator/=(const T& scalar) {
 	if (scalar == 0) 
-        throw std::runtime_error("Exception in Scalar Division operation: Cannot devide by 0!\n");
+        throw std::runtime_error("Exception in Scalar Division operation: Cannot divide by 0!\n");
 
 	for (uint32_t i = 0; i < size; i++)
 		data[i] /= scalar;

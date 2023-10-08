@@ -3,6 +3,7 @@
 // #include "Vector.hpp"
 #include "DataSet.hpp"
 #include "hash.hpp"
+#include <unordered_map>
 
 int main(){
 
@@ -45,7 +46,7 @@ int main(){
 
 	// printf("%d\n", count / 28 / 28);
 
-	uint32_t size = 100000;
+	// uint32_t size = 100000;
 	// Vector<double> rv(size, NORMAL, 0, 1.);
 	// rv /= 2;
 	// // Vector<double> rv(size, NORMAL, 0, 1. / 2);
@@ -106,12 +107,15 @@ int main(){
 	// printf("min: %g\n", min);
 	// printf("max: %g\n", max);
 
-	Vector<uint8_t> v1(3);
-	v1[0] = 1; v1[1] = 2; v1[2] = 3;
+	Vector<float> rv1(20,UNIFORM,0,1);
+	// Vector<float> rv2(20,UNIFORM,0,1);
+	// Vector<float> rv3(20,UNIFORM,0,1);
+	// Vector<float> rv4(20,UNIFORM,0,1);
 
-	Hash h(3, 1);
-
-	printf("hashed: %d\n", h.apply(v1));
+	AmplifiedHash myhash(20,2,5);
+	std::unordered_map<int, std::vector<Vector<float>>> hashTable;
+	hashTable[myhash.apply(rv1)].push_back(rv1);
+	std::cout<<(*(hashTable[myhash.apply(rv1)].begin()))[0]<<std::endl;
 
 
 	return 0;
