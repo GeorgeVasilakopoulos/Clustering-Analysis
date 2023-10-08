@@ -1,5 +1,5 @@
-#ifndef BOB
-#define BOB
+#ifndef VECTOR_C
+#define VECTOR_C
 #include <random>
 #include "Vector.hpp"
 
@@ -18,8 +18,7 @@ template <typename T>
 Vector<T>::Vector(uint32_t size_, Distribution distr, T a, T b)
 : size(size_), data(new T[size_]) {
 
-	switch (distr)
-	{
+	switch (distr) {
 	case NORMAL:
 		this->normal(a, b);
 		break;
@@ -81,12 +80,12 @@ void Vector<T>::uniform(T lower, T upper) {
 	std::random_device rd{};
 	std::mt19937 gen{rd()};
 	
-	std::uniform_int_distribution<uint32_t>  di(1, 10);
-	// std::uniform_real_distribution<float> dr(lower, upper);
+	std::uniform_int_distribution<uint32_t>  di(lower, upper);
+	std::uniform_real_distribution<float> dr(lower, upper);
 
 	for(uint32_t i = 0; i < size; i++)
-		// data[i] = std::is_integral<T>::value ? di(gen) : dr(gen);
-		data[i] = di(gen);
+		data[i] = std::is_integral<T>::value ? di(gen) : dr(gen);
+		// data[i] = di(gen);
 }
 
 
@@ -115,10 +114,25 @@ Vector<T> Vector<T>::operator+(const Vector<T>& v) const{
 
 template <typename T>
 template <typename U>
-T Vector<T>::operator*(const Vector<U>& v) const{
-	if (this->size != v.len()) 
+T Vector<T>::operator*(const Vector<U>& v) const {
+
+	if (size != v.len()) 
         throw std::runtime_error("Exception in Dot Product operation: Dimensions of vectors must match!\n");
 
+	T sum = 0;
+	for(uint32_t i = 0; i < size; i++)
+		sum += data[i] * v[i];
+
+	return sum;
+}
+
+template <typename T>
+template <typename U>
+T Vector<T>::dprod(const Vector<U>& v) const {
+	if (size != v.len()) 
+        throw std::runtime_error("Exception in Dot Product operation: Dimensions of vectors must match!\n");
+
+	return 0;
 	T sum = 0;
 	for(uint32_t i = 0; i < size; i++)
 		sum += data[i] * v[i];
@@ -152,6 +166,5 @@ Vector<T>& Vector<T>::operator/=(const T& scalar) {
 
 	return *this;
 }
-
 
 #endif
