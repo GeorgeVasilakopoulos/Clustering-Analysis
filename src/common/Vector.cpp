@@ -17,13 +17,16 @@ Vector<T>::Vector(uint32_t size_)
 template <typename T>
 Vector<T>::Vector(uint32_t size_, Distribution distr, T a, T b)
 : size(size_), data(new T[size_]) {
-	switch (distr) {
+
+	switch (distr)
+	{
 	case NORMAL:
 		this->normal(a, b);
 		break;
-	case NORMAL:
+	case UNIFORM:
 	default:
 		this->uniform(a, b);
+		break;
 	}
 }
 
@@ -66,7 +69,7 @@ void Vector<T>::normal(T mean, T std) {
 
 	std::random_device rd{};
 	std::mt19937 gen{rd()};
-	std::normal_distribution<T> d(mean, std);
+	std::normal_distribution<float> d(mean, std);
 
 	for(uint32_t i = 0; i < size; i++)
 		data[i] = d(gen);
@@ -78,11 +81,12 @@ void Vector<T>::uniform(T lower, T upper) {
 	std::random_device rd{};
 	std::mt19937 gen{rd()};
 	
-	std::uniform_int_distribution<uint32_t>  di(lower, upper);
-	std::uniform_real_distribution<float> dr(lower, upper);
+	std::uniform_int_distribution<uint32_t>  di(1, 10);
+	// std::uniform_real_distribution<float> dr(lower, upper);
 
 	for(uint32_t i = 0; i < size; i++)
-		data[i] = std::is_integral<T>::value ? di(gen) : dr(gen);
+		// data[i] = std::is_integral<T>::value ? di(gen) : dr(gen);
+		data[i] = di(gen);
 }
 
 
