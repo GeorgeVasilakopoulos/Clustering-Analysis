@@ -28,7 +28,6 @@ class Vector{
 		template <typename U>
 		T operator*(const Vector<U>& vector) const;
 		template <typename U>
-		T dprod(const Vector<U>& v) const;
 
 		Vector& operator+=(const T& scalar);
 		Vector& operator*=(const T& scalar);
