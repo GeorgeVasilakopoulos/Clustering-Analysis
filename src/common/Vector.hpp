@@ -27,7 +27,6 @@ class Vector{
 		Vector operator+(const Vector& vector) const;
 		template <typename U>
 		T operator*(const Vector<U>& vector) const;
-		template <typename U>
 
 		Vector& operator+=(const T& scalar);
 		Vector& operator*=(const T& scalar);
