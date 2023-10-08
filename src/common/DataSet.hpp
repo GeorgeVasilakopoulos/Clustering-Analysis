@@ -15,15 +15,18 @@ class DataPoint {
         ~DataPoint();
         uint32_t label() const;
         Vector<uint8_t>& data() const;
+        uint32_t getID()const;
 };
 
 
 class DataSet {
     private:
         std::vector<DataPoint*> points;
+        uint32_t vector_size;
 
     public:
         DataSet(std::string path);
+        uint32_t vectorSize()const;
         ~DataSet();
 
         std::vector<DataPoint*>::iterator begin();

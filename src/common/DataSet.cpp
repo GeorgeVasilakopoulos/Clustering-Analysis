@@ -10,6 +10,8 @@ DataPoint::~DataPoint() { delete vector; }
 
 uint32_t DataPoint::label() const { return id; }
 Vector<uint8_t>& DataPoint::data() const { return *vector; }
+uint32_t DataPoint::getID()const{return id;}
+
 
 
 //////////////
@@ -29,15 +31,30 @@ DataSet::DataSet(std::string path) {
     count = be32toh(count);
     h     = be32toh(h);
     w     = be32toh(w);
+    vector_size = h*w;
 
-    for (uint32_t i = 0, size = h * w; i < count; i++) 
-        points.push_back(new DataPoint(input, size, i + 1));
+
+    for (uint32_t i = 0; i < count; i++) 
+        points.push_back(new DataPoint(input, vector_size, i + 1));
 }
 
 DataSet::~DataSet() {
     for (auto point : points)
         delete point;
 }
+
+
+uint32_t DataSet::vectorSize()const{
+    return vector_size;
+}
+
+
+
+
+
+
+
+
 
 
 std::vector<DataPoint*>::iterator DataSet::begin() { return points.begin(); }
