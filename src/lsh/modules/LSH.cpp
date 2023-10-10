@@ -29,7 +29,7 @@ class LSH{
 		kNearestNeighbors(DataPoint& p, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&), uint32_t k){
 			
 			//Define a custom comparator. Necessary for PQ
-			auto comparator = [](const tuple<uint32_t, double> t1, const tuple<uint32_t, double> t2){
+			auto comparator = [](const tuple<uint32_t, double> t1, const tuple<uint32_t, double> t2) {
 				return get<1>(t1) < get<1>(t2);	// Maybe >
 			};
 
