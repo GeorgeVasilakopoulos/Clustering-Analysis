@@ -20,7 +20,8 @@ class Vector{
 		~Vector();
 
 		uint32_t len() const;
-		void print(std::string msg = "") const;
+		void normal(T mean, T std);
+		void uniform(T lower, T upper);
 
 		T& operator[](uint32_t index)const;
 		Vector& operator-() const;
@@ -32,9 +33,6 @@ class Vector{
 		Vector& operator+=(const T& scalar);
 		Vector& operator*=(const T& scalar);
 		Vector& operator/=(const T& scalar);
-
-		void normal(T mean, T std);
-		void uniform(T lower, T upper);
 };
 
-#include "Vector.cpp"
+#include "../modules/Vector.cpp"

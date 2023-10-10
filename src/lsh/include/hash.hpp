@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../common/Vector.hpp"
+#include "Vector.hpp"
 
 class Hash {
     private:

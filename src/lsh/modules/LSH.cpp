@@ -38,16 +38,16 @@ class LSH{
 
 			uint32_t bucket_id = amplified_hash.apply(p.data());
 			for(auto point : hash_table[bucket_id]) {
-				double distance = dist(p.data(),point->data());
+				double distance = dist(p.data(), point->data());
 
 				if(knn.size() < k) {
-					knn.push(make_tuple(point->getID(),distance));
+					knn.push(make_tuple(point->getID(), distance));
 					continue;
 				}
 
 				auto tuple = knn.top();
 				if(distance < get<1>(tuple)) {
-					knn.push(make_tuple(point->getID(),distance));
+					knn.push(make_tuple(point->getID(), distance));
 					knn.pop();
 				}
 			}
@@ -61,6 +61,6 @@ class LSH{
 			return out;
 		}
 
-		~LSH(){}
+		~LSH() { }
 
 };
