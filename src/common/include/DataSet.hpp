@@ -26,12 +26,10 @@ class DataSet {
 
     public:
         DataSet(std::string path);
-        uint32_t vectorSize()const;
         ~DataSet();
+        uint32_t size() const;
 
         std::vector<DataPoint*>::iterator begin();
-        std::vector<DataPoint*>::const_iterator begin() const;
         std::vector<DataPoint*>::iterator end();
-        std::vector<DataPoint*>::const_iterator end() const;
 
 };

@@ -31,7 +31,7 @@ DataSet::DataSet(std::string path) {
     count = be32toh(count);
     h     = be32toh(h);
     w     = be32toh(w);
-    vector_size = h*w;
+    vector_size = h * w;
 
 
     for (uint32_t i = 0; i < count; i++) 
@@ -43,19 +43,7 @@ DataSet::~DataSet() {
         delete point;
 }
 
-
-uint32_t DataSet::vectorSize()const{
-    return vector_size;
-}
-
-
-
-
-
-
-
-
-
+uint32_t DataSet::size() const{ return vector_size; }
 
 std::vector<DataPoint*>::iterator DataSet::begin() { return points.begin(); }
 std::vector<DataPoint*>::iterator DataSet::end() { return points.end(); }
