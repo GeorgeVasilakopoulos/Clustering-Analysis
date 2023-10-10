@@ -18,6 +18,4 @@ class LSH{
 
 		std::vector< std::tuple<uint32_t, double> > 
 		kNearestNeighbors(DataPoint& p, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&), uint32_t k);
-
-
 };

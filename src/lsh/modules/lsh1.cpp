@@ -15,7 +15,6 @@ LSH::LSH(DataSet& dataset_, uint32_t window, uint32_t hash_count, uint32_t table
 
 		htables.push_back(ht);
 	}
-
 }
 
 LSH::~LSH() { 
