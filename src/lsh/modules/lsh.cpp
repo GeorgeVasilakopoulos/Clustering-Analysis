@@ -4,14 +4,19 @@
 
 using namespace std;
 
-LSH::LSH(DataSet& dataset_, uint32_t window, uint32_t hash_count, uint32_t table_size)
+LSH::LSH(DataSet& dataset_, uint32_t window, uint32_t hash_count, uint32_t L,uint32_t table_size)
 : dataset(dataset_) {
 
-	for (uint32_t i = 0; i < table_size; i++) {
-		auto ht = new HashTable<LshAmplifiedHash>();
+	auto hash_constructor = 
+		[dataset_,window,hash_count](){
+			return new LshAmplifiedHash(dataset_.size(),window,hash_count);
+		};
+
+	for (uint32_t i = 0; i < L; i++) {
+		auto ht = new HashTable(table_size,hash_constructor);
 
 		for (auto point : dataset) 
-			ht->insert(point);
+			ht->insert(*point);
 
 		htables.push_back(ht);
 	}
@@ -36,8 +41,10 @@ LSH::kNearestNeighbors(DataPoint& query, double (*dist)(Vector<uint8_t>&, Vector
 
 	
 	for (auto ht : htables) {
-		for(auto point : ht->bucket(&query)) {
+		for(auto pair : ht->bucketOf(query)) {
 			
+			auto point = get<1>(pair);
+
 			// possibly needs rewrite
 			double distance = dist(query.data(), point->data());
 
