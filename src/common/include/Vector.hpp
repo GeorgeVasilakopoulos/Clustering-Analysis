@@ -23,7 +23,7 @@ class Vector{
 		void normal(T mean, T std);
 		void uniform(T lower, T upper);
 
-		T& operator[](uint32_t index)const;
+		T& operator[](uint32_t index) const;
 		Vector& operator-() const;
 
 		Vector operator+(const Vector& vector) const;

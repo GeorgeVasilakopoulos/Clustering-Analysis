@@ -6,16 +6,24 @@
 #include "DataSet.hpp"
 #include "lsh_hash.hpp"
 
+// uint32_t is the hash value, used on the qUeRiNg TrIcK
+typedef std::vector<std::tuple<uint32_t, DataPoint*>> Bucket;
+
+template <typename T>
 class HashTable {
     private:
-        LshAmplifiedHash* hash;
-        uint32_t table_size;
-        // uint32_t is the hash value, used on the qUeRiNg TrIcK 
-        std::vector<std::tuple<uint32_t, DataPoint*>>* buckets;
+        T* hash;
+        uint32_t table_size; 
+        Bucket* buckets;
+
     public:
-    HashTable(uint32_t table_size_, LshAmplifiedHash* hash_);
-    LshAmplifiedHash* getHashFunction()const;
+    HashTable(uint32_t table_size_, T* hash_);
     ~HashTable();
+
+    T* get_hash() const;
     bool insert(DataPoint& point);
-    std::vector<std::tuple<uint32_t, DataPoint*>>& bucketOf(DataPoint& point);
+    Bucket& bucket(DataPoint& point);
+
 };
+
+#include "../modules/HashTable.cpp"

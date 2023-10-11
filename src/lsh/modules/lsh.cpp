@@ -9,9 +9,8 @@ using namespace std;
 LSH::LSH(DataSet& dataset_, uint32_t window, uint32_t hash_count, uint32_t L, uint32_t table_size)
 : dataset(dataset_) {
 
-
 	for (uint32_t i = 0; i < L; i++) {
-		auto ht = new HashTable(table_size,new LshAmplifiedHash(dataset_.size(),window,hash_count));
+		auto ht = new HashTable<LshAmplifiedHash>(table_size, new LshAmplifiedHash(dataset_.size(), window, hash_count));
 
 		for (auto point : dataset) 
 			ht->insert(*point);
@@ -21,10 +20,8 @@ LSH::LSH(DataSet& dataset_, uint32_t window, uint32_t hash_count, uint32_t L, ui
 }
 
 LSH::~LSH() { 
-	for (auto ht : htables){
-		delete ht->getHashFunction();
+	for (auto ht : htables)
 		delete ht;
-	}
 }
 
 
@@ -41,36 +38,23 @@ LSH::kANN(DataPoint& query, uint32_t k, double (*dist)(Vector<uint8_t>&, Vector<
 	unordered_set<uint32_t> k_point_set;
 	
 	for (auto ht : htables) {
-		for(auto pair : ht->bucketOf(query)) {
+		for(auto pair : ht->bucket(query)) {
 			
 			auto point = get<1>(pair);
 
-			//If query point is point itself or if point is already contained in the pq
+			// If query point is point itself or if point is already contained in the pq
 			if(query.label() == point->label() || k_point_set.find(point->label()) != k_point_set.end())
 				continue; 
 
-			// possibly needs rewrite
 			double distance = dist(query.data(), point->data());
 
-			if(knn.size() < k) {
-				knn.push(make_tuple(point->label(), distance));
-				k_point_set.insert(point->label());
-				continue;
-			}
-
-			auto tuple = knn.top();
-			if(distance < get<1>(tuple)) {
-				uint32_t front_point = get<0>(knn.top());
-				k_point_set.erase(front_point);
-				knn.pop();
-				knn.push(make_tuple(point->label(), distance));
-				k_point_set.insert(point->label());
-			}
+			knn.push(make_tuple(point->label(), distance));
+			k_point_set.insert(point->label());
 		}
 	}
 
 	vector< tuple<uint32_t, double> > out;
-	while(!knn.empty()) {
+	while(!knn.empty() && (int)k-- > 0) {
 		out.push_back(knn.top());
 		knn.pop();
 	}
@@ -88,7 +72,7 @@ LSH::RangeSearch(DataPoint& query, double range, double (*dist)(Vector<uint8_t>&
 
 
 	for (auto ht : htables) {
-		for(auto pair : ht->bucketOf(query)) {
+		for(auto pair : ht->bucket(query)) {
 			
 			auto point = get<1>(pair);
 

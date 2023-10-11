@@ -15,7 +15,7 @@ class DataPoint {
         ~DataPoint();
         uint32_t label() const;
         Vector<uint8_t>& data() const;
-        uint32_t getID()const;
+        uint32_t getID() const;
 };
 
 
@@ -28,6 +28,7 @@ class DataSet {
         DataSet(std::string path);
         ~DataSet();
         uint32_t size() const;
+		DataPoint* operator[](uint32_t index) const;
 
         std::vector<DataPoint*>::iterator begin();
         std::vector<DataPoint*>::iterator end();

@@ -45,5 +45,7 @@ DataSet::~DataSet() {
 
 uint32_t DataSet::size() const{ return vector_size; }
 
+DataPoint* DataSet::operator[](uint32_t i) const { return points[i]; }
+
 std::vector<DataPoint*>::iterator DataSet::begin() { return points.begin(); }
 std::vector<DataPoint*>::iterator DataSet::end() { return points.end(); }

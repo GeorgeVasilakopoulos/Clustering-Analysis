@@ -1,35 +1,34 @@
+#ifndef HASHTABLE_C
+#define HASHTABLE_C
 
-#include <functional>
 #include <vector>
 #include "HashTable.hpp"
 
+template <typename T>
+HashTable<T>::HashTable(uint32_t table_size_, T* hash_)
+: hash(hash_), table_size(table_size_), buckets(new Bucket[table_size]) { }
 
-HashTable::HashTable(uint32_t table_size_, LshAmplifiedHash* hash_)
-:table_size(table_size_)
-{
-	buckets = new std::vector<std::tuple<uint32_t,DataPoint*>>[table_size];
-	hash = hash_; //mind = blown
+template <typename T>
+HashTable<T>::~HashTable() { delete hash; delete[] buckets; }
+
+template <typename T>
+bool HashTable<T>::insert(DataPoint& point) {
+	uint32_t hvalue = hash->apply(point.data());
+
+	// if already exists return false
+
+	buckets[hvalue % table_size].push_back(std::make_tuple(hvalue, &point)); //qUeRying TrIcK
+
+	return true; //?
 }
 
+template <typename T>
+T* HashTable<T>::get_hash() const { return hash; }
 
-bool HashTable::insert(DataPoint& point){
-	uint32_t ID = hash->apply(point.data());
-	buckets[ID % table_size].push_back(std::make_tuple(ID,&point)); //qUeRying TrIcK
-
-	return 0; //?
+template <typename T>
+Bucket& HashTable<T>::bucket(DataPoint& point) {
+	uint32_t hvalue = hash->apply(point.data());
+	return buckets[hvalue % table_size];
 }
 
-LshAmplifiedHash* HashTable::getHashFunction()const{
-	return hash;
-}
-
-std::vector<std::tuple<uint32_t, DataPoint*>>&
-HashTable::bucketOf(DataPoint& point){
-	uint32_t ID = hash->apply(point.data());
-	return buckets[ID % table_size];
-}
-
-
-HashTable::~HashTable(){
-	delete[] buckets;
-}
+#endif
