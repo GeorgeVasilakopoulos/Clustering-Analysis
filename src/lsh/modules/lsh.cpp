@@ -1,19 +1,17 @@
 #include <queue>
 #include <tuple>
+#include <functional>
+#include <unordered_set>
 #include "lsh.hpp"
 
 using namespace std;
 
-LSH::LSH(DataSet& dataset_, uint32_t window, uint32_t hash_count, uint32_t L,uint32_t table_size)
+LSH::LSH(DataSet& dataset_, uint32_t window, uint32_t hash_count, uint32_t L, uint32_t table_size)
 : dataset(dataset_) {
 
-	auto hash_constructor = 
-		[dataset_,window,hash_count](){
-			return new LshAmplifiedHash(dataset_.size(),window,hash_count);
-		};
 
 	for (uint32_t i = 0; i < L; i++) {
-		auto ht = new HashTable(table_size,hash_constructor);
+		auto ht = new HashTable(table_size,new LshAmplifiedHash(dataset_.size(),window,hash_count));
 
 		for (auto point : dataset) 
 			ht->insert(*point);
@@ -23,40 +21,50 @@ LSH::LSH(DataSet& dataset_, uint32_t window, uint32_t hash_count, uint32_t L,uin
 }
 
 LSH::~LSH() { 
-	for (auto ht : htables)
+	for (auto ht : htables){
+		delete ht->getHashFunction();
 		delete ht;
+	}
 }
 
 
 vector< tuple<uint32_t, double> > 
-LSH::kNearestNeighbors(DataPoint& query, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&), uint32_t k){
+LSH::kANN(DataPoint& query, uint32_t k, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&)){
 			
 	//Define a custom comparator. Necessary for PQ
 	auto comparator = [](const std::tuple<uint32_t, double> t1, const std::tuple<uint32_t, double> t2) {
-		return get<1>(t1) < get<1>(t2);	// Maybe >
+		return get<1>(t1) > get<1>(t2);	// Maybe >
 	};
 
 	//PQ declaration
 	priority_queue<tuple<uint32_t, double>, vector<tuple<uint32_t, double>>, decltype(comparator)> knn(comparator);
-
+	unordered_set<uint32_t> k_point_set;
 	
 	for (auto ht : htables) {
 		for(auto pair : ht->bucketOf(query)) {
 			
 			auto point = get<1>(pair);
 
+			//If query point is point itself or if point is already contained in the pq
+			if(query.label() == point->label() || k_point_set.find(point->label()) != k_point_set.end())
+				continue; 
+
 			// possibly needs rewrite
 			double distance = dist(query.data(), point->data());
 
 			if(knn.size() < k) {
-				knn.push(make_tuple(point->getID(), distance));
+				knn.push(make_tuple(point->label(), distance));
+				k_point_set.insert(point->label());
 				continue;
 			}
 
 			auto tuple = knn.top();
 			if(distance < get<1>(tuple)) {
-				knn.push(make_tuple(point->getID(), distance));
+				uint32_t front_point = get<0>(knn.top());
+				k_point_set.erase(front_point);
 				knn.pop();
+				knn.push(make_tuple(point->label(), distance));
+				k_point_set.insert(point->label());
 			}
 		}
 	}
@@ -69,3 +77,56 @@ LSH::kNearestNeighbors(DataPoint& query, double (*dist)(Vector<uint8_t>&, Vector
 
 	return out;
 }
+
+
+vector< tuple<uint32_t, double> > 
+LSH::RangeSearch(DataPoint& query, double range, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&)){
+			
+	//PQ declaration
+	unordered_set<uint32_t> k_point_set;
+	vector< tuple<uint32_t, double> > out;
+
+
+	for (auto ht : htables) {
+		for(auto pair : ht->bucketOf(query)) {
+			
+			auto point = get<1>(pair);
+
+			//If query point is point itself or if point is already contained in the pq
+			if(query.label() == point->label() || k_point_set.find(point->label()) != k_point_set.end())
+				continue; 
+
+			// possibly needs rewrite
+			double distance = dist(query.data(), point->data());
+
+			if(distance < range) {
+				out.push_back(make_tuple(point->label(),distance));
+				k_point_set.insert(point->label());
+				continue;
+			}
+		}
+	}
+	return out;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+tuple<uint32_t, double>
+LSH::ANN(DataPoint& query, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&)){
+	return this->kANN(query,1, dist).front();
+}
+
+
+
+
+
+

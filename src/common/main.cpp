@@ -6,32 +6,6 @@
 
 int main(){
 
-	Vector<uint8_t> v1(3);
-	v1[0] = 1; v1[1] = 2; v1[2] = 3;
-
-	Vector<double> v2(3);
-	v2[0] = 1.5; v2[1] = 2.5; v2[2] = 3.5;
-
-	Vector<double> v3(3);
-	v3[0] = 1.5; v3[1] = 2.5; v3[2] = 3.5;
-
-	Vector<double> v4(2);
-
-	v1 += 1;
-	v1 *= 3;
-
-	v3 /= .5;
-
-
-	printf("%d %d %d\n", v1[0], v1[1], v1[2]);
-	printf("Dot Prod: %f\n", v2 * v3);
-
-	try {
-		printf("Dot Prod: %f\n", v2 * v4);
-	}
-	catch (std::runtime_error& e) {
-		printf("%s", e.what());
-	}
 
 	// DataSet dataset("train_images");
 

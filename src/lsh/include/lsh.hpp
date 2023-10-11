@@ -16,6 +16,15 @@ class LSH{
 		LSH(DataSet& dataset_, uint32_t window, uint32_t hash_count, uint32_t L,uint32_t table_size);
 		~LSH();
 
+		std::vector< std::tuple<uint32_t, double> >
+		kANN(DataPoint& p, uint32_t k, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&));
+
+
 		std::vector< std::tuple<uint32_t, double> > 
-		kNearestNeighbors(DataPoint& p, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&), uint32_t k);
+		RangeSearch(DataPoint& query, double range, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&));
+	
+
+
+		std::tuple<uint32_t, double>
+		ANN(DataPoint& query, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&));
 };
