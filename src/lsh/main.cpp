@@ -26,23 +26,18 @@ double dist(Vector<uint8_t>& v1, Vector<uint8_t>& v2){
 std::vector<std::tuple<uint32_t, double>> 
 kNN(DataSet& dataset, DataPoint& query, uint32_t k, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&)) {
 
-	//Define a custom comparator. Necessary for PQ
 	auto comparator = [](const std::tuple<uint32_t, double> t1, const std::tuple<uint32_t, double> t2) {
-		return get<1>(t1) > get<1>(t2);	// Maybe >
+		return get<1>(t1) > get<1>(t2);
 	};
 
-	//PQ declaration
 	priority_queue<tuple<uint32_t, double>, vector<tuple<uint32_t, double>>, decltype(comparator)> knn(comparator);
 	unordered_set<uint32_t> k_point_set;
 	
 	for(auto point : dataset) {
-
-		// If query point is point itself
 		if(query.label() == point->label())
 			continue; 
 
 		double distance = dist(query.data(), point->data());
-
 		knn.push(std::make_tuple(point->label(), distance));
 	}
 
@@ -56,24 +51,50 @@ kNN(DataSet& dataset, DataPoint& query, uint32_t k, double (*dist)(Vector<uint8_
 	return out;	
 }
 
+vector< tuple<uint32_t, double> > 
+RangeSearch(DataSet& dataset, DataPoint& query, double range, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&)) {
+
+	vector< tuple<uint32_t, double> > out;
+
+	for(auto point : dataset) {
+
+		if(query.label() == point->label())
+			continue; 
+
+		double distance = dist(query.data(), point->data());
+
+		if(distance < range)
+			out.push_back(make_tuple(point->label(),distance));
+	}
+	
+	return out;
+}
+
 
 int main(){
 
-	DataSet mydataset("train.idx3-ubyte");
+	DataSet train("train_images");
+	DataSet test("test_images");
 
-	LSH haha(mydataset, 5, 4, 5, mydataset.vectorSize() / 8);
-	// LSH haha(mydataset, 5, 5, 10, 1000);
-	// LSH haha(mydataset, 20, 10, 10, 10);
+	LSH haha(train, 5, 4, 5, train.dim() / 8);
 
-	auto myvec = haha.kANN(*mydataset[0], 10, dist);
 	printf("Approximation:\n");
-	for(auto i : myvec)
+	for(auto i : haha.kANN(*test[0], 10, dist))
 		printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
 	
-	auto myvec1 = kNN(mydataset,*mydataset[0], 10, dist);
-	printf("\nExact:\n");
-	for(auto i : myvec1)
-		printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
+	// printf("\nExact:\n");
+	// for(auto i : kNN(train, *test[0], 10, dist))
+	// 	printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
+
+	// auto myvec = haha.RangeSearch(*mydataset[0], 1300, dist);
+	// printf("Range Approximation:\n");
+	// for(auto i : myvec)
+	// 	printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
+	
+	// auto myvec1 = RangeSearch(mydataset, *mydataset[0], 1300, dist);
+	// printf("\nRange Exact:\n");
+	// for(auto i : myvec1)
+	// 	printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
 
 
 	return 0;

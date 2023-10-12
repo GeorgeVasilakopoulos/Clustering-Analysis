@@ -10,7 +10,7 @@ LSH::LSH(DataSet& dataset_, uint32_t window, uint32_t hash_count, uint32_t L, ui
 : dataset(dataset_) {
 
 	for (uint32_t i = 0; i < L; i++) {
-		auto ht = new HashTable<LshAmplifiedHash>(table_size, new LshAmplifiedHash(dataset_.vectorSize(), window, hash_count));
+		auto ht = new HashTable<LshAmplifiedHash>(table_size, new LshAmplifiedHash(dataset_.dim(), window, hash_count));
 
 		for (auto point : dataset) 
 			ht->insert(*point);
@@ -28,12 +28,10 @@ LSH::~LSH() {
 vector< tuple<uint32_t, double> > 
 LSH::kANN(DataPoint& query, uint32_t k, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&)){
 			
-	//Define a custom comparator. Necessary for PQ
 	auto comparator = [](const std::tuple<uint32_t, double> t1, const std::tuple<uint32_t, double> t2) {
-		return get<1>(t1) > get<1>(t2);	// Maybe >
+		return get<1>(t1) > get<1>(t2);
 	};
 
-	//PQ declaration
 	priority_queue<tuple<uint32_t, double>, vector<tuple<uint32_t, double>>, decltype(comparator)> knn(comparator);
 	unordered_set<uint32_t> k_point_set;
 	
@@ -42,7 +40,6 @@ LSH::kANN(DataPoint& query, uint32_t k, double (*dist)(Vector<uint8_t>&, Vector<
 			
 			auto point = get<1>(pair);
 
-			// If query point is point itself or if point is already contained in the pq
 			if(query.label() == point->label() || k_point_set.find(point->label()) != k_point_set.end())
 				continue; 
 
@@ -64,9 +61,8 @@ LSH::kANN(DataPoint& query, uint32_t k, double (*dist)(Vector<uint8_t>&, Vector<
 
 
 vector< tuple<uint32_t, double> > 
-LSH::RangeSearch(DataPoint& query, double range, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&)){
-			
-	//PQ declaration
+LSH::RangeSearch(DataPoint& query, double range, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&)) {
+
 	unordered_set<uint32_t> k_point_set;
 	vector< tuple<uint32_t, double> > out;
 
@@ -76,20 +72,19 @@ LSH::RangeSearch(DataPoint& query, double range, double (*dist)(Vector<uint8_t>&
 			
 			auto point = get<1>(pair);
 
-			//If query point is point itself or if point is already contained in the pq
+			// If query point is point itself or if point is already contained in the pq
 			if(query.label() == point->label() || k_point_set.find(point->label()) != k_point_set.end())
 				continue; 
 
-			// possibly needs rewrite
 			double distance = dist(query.data(), point->data());
 
 			if(distance < range) {
 				out.push_back(make_tuple(point->label(),distance));
 				k_point_set.insert(point->label());
-				continue;
 			}
 		}
 	}
+
 	return out;
 }
 
@@ -106,7 +101,7 @@ LSH::RangeSearch(DataPoint& query, double range, double (*dist)(Vector<uint8_t>&
 
 tuple<uint32_t, double>
 LSH::ANN(DataPoint& query, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&)){
-	return this->kANN(query,1, dist).front();
+	return this->kANN(query, 1, dist).front();
 }
 
 

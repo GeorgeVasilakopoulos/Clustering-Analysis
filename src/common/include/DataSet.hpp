@@ -25,10 +25,11 @@ class DataSet {
         uint32_t vector_size;
 
     public:
-        DataSet(std::string path);
+        DataSet(std::string path, uint32_t files=0);
         ~DataSet();
-        uint32_t vectorSize() const;
-        uint32_t size()const;
+        
+        uint32_t dim() const;
+        uint32_t size() const;
 		DataPoint* operator[](uint32_t index) const;
 
         std::vector<DataPoint*>::iterator begin();

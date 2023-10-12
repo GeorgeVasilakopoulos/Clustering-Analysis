@@ -6,21 +6,21 @@ COMMON       := ./src/common
 COMMON_INCS  := $(COMMON)/include
 COMMON_PROG  := $(wildcard $(COMMON)/*.cpp)
 COMMON_SRCS  := $(wildcard $(COMMON)/modules/*.cpp)
-COMMON_OBJS  := $(subst .cpp,.o,$(COMMON_PROG)) $(subst .cpp,.o,$(COMMON_SRCS))
+COMMON_OBJS  := $(subst .cpp,.o,$(COMMON_PROG)) 
 
 
 LSH		  := ./src/lsh
 LSH_INCS  := $(LSH)/include
 LSH_PROG  := $(wildcard $(LSH)/*.cpp)
-LSH_SRCS  := $(wildcard $(LSH)/modules/*.cpp) $(COMMON_SRCS)
-LSH_OBJS  := $(subst .cpp,.o,$(LSH_PROG)) $(subst .cpp,.o,$(LSH_SRCS))
+LSH_SRCS  := $(wildcard $(LSH)/modules/*.cpp)
+LSH_OBJS  := $(subst .cpp,.o,$(LSH_PROG)) $(subst .cpp,.o,$(LSH_SRCS)) $(subst .cpp,.o,$(COMMON_SRCS))
 
 
 CUBE	   := ./src/cube
 CUBE_INCS  := $(CUBE)/include
 CUBE_PROG  := $(wildcard $(CUBE)/*.cpp)
-CUBE_SRCS  := $(wildcard $(CUBE)/modules/*.cpp) $(COMMON_SRCS)
-CUBE_OBJS  := $(subst .cpp,.o,$(CUBE_PROG)) $(subst .cpp,.o,$(CUBE_SRCS))
+CUBE_SRCS  := $(wildcard $(CUBE)/modules/*.cpp)
+CUBE_OBJS  := $(subst .cpp,.o,$(CUBE_PROG)) $(subst .cpp,.o,$(CUBE_SRCS)) $(subst .cpp,.o,$(COMMON_SRCS))
 
 
 CLUSTER	   	  := ./src/cluster
@@ -45,7 +45,7 @@ CXXFLAGS += -I$(COMMON_INCS)
 
 
 %.o: %.cpp
-	$(CC) $(CXXFLAGS) -c $< -o $@
+	$(CC) $(CXXFLAGS) -c $^ -o $@
 
 clean:
 	@rm -f $(LSH_OBJS) $(CUBE_OBJS) $(CLUSTER_OBJS) ./common ./lsh ./cube ./cluster

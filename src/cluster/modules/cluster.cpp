@@ -25,9 +25,9 @@ class ClusteringAlgorithm{
 
 		double accumulated = 0;
 		for(auto point : dataset){
-			double probability = 1./dataset.size();
+			double probability = 1. / dataset.size();
 			accumulated += probability;
-			distribution.push_back(make_tuple(accumulated,point->data()));
+			distribution.push_back(make_tuple(accumulated, point->data()));
 		}
 
 		random_device rd;

@@ -18,7 +18,7 @@ uint32_t DataPoint::getID()const{return id;}
 // Data Set //
 //////////////
 
-DataSet::DataSet(std::string path) {
+DataSet::DataSet(std::string path, uint32_t files) {
     // check for failure
     std::ifstream input(path.data(), std::ios::binary);
 
@@ -28,7 +28,7 @@ DataSet::DataSet(std::string path) {
     input.read((char*)&h, 4);
     input.read((char*)&w, 4);
     
-    count = be32toh(count);
+    count = files == 0 ? be32toh(count) : files;
     h     = be32toh(h);
     w     = be32toh(w);
     vector_size = h * w;
@@ -43,8 +43,8 @@ DataSet::~DataSet() {
         delete point;
 }
 
-uint32_t DataSet::vectorSize() const{ return vector_size; }
-uint32_t DataSet::size()const{ return points.size();}
+uint32_t DataSet::dim() const{ return vector_size; }
+uint32_t DataSet::size() const{ return points.size(); }
 
 DataPoint* DataSet::operator[](uint32_t i) const { return points[i]; }
 
