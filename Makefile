@@ -12,15 +12,15 @@ COMMON_OBJS  := $(subst .cpp,.o,$(COMMON_PROG))
 LSH		  := ./src/lsh
 LSH_INCS  := $(LSH)/include
 LSH_PROG  := $(wildcard $(LSH)/*.cpp)
-LSH_SRCS  := $(wildcard $(LSH)/modules/*.cpp)
-LSH_OBJS  := $(subst .cpp,.o,$(LSH_PROG)) $(subst .cpp,.o,$(LSH_SRCS)) $(subst .cpp,.o,$(COMMON_SRCS))
+LSH_SRCS  := $(wildcard $(LSH)/modules/*.cpp) $(COMMON_SRCS)
+LSH_OBJS  := $(subst .cpp,.o,$(LSH_PROG)) $(subst .cpp,.o,$(LSH_SRCS))
 
 
 CUBE	   := ./src/cube
 CUBE_INCS  := $(CUBE)/include
 CUBE_PROG  := $(wildcard $(CUBE)/*.cpp)
-CUBE_SRCS  := $(wildcard $(CUBE)/modules/*.cpp)
-CUBE_OBJS  := $(subst .cpp,.o,$(CUBE_PROG)) $(subst .cpp,.o,$(CUBE_SRCS)) $(subst .cpp,.o,$(COMMON_SRCS))
+CUBE_SRCS  := $(wildcard $(CUBE)/modules/*.cpp) $(COMMON_SRCS)
+CUBE_OBJS  := $(subst .cpp,.o,$(CUBE_PROG)) $(subst .cpp,.o,$(CUBE_SRCS))
 
 
 CLUSTER	   	  := ./src/cluster
@@ -57,10 +57,10 @@ valgrind: $(EXEC)
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s ./$(EXEC) $(ARGS)
 
 lsh: $(LSH_OBJS)
-	$(CC) $(LSH_OBJS) -o ./lsh
+	$(CC) $^ -o ./lsh
 
 cube: $(CUBE_OBJS)
-	$(CC) $(CUBE_OBJS) -o ./cube
+	$(CC) $^ -o ./cube
 
 cluster: $(CLUSTER_OBJS)
-	$(CC) $(CLUSTER_OBJS) -o ./cluster
+	$(CC) $^ -o ./cluster
