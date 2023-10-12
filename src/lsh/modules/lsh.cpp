@@ -10,7 +10,7 @@ LSH::LSH(DataSet& dataset_, uint32_t window, uint32_t hash_count, uint32_t L, ui
 : dataset(dataset_) {
 
 	for (uint32_t i = 0; i < L; i++) {
-		auto ht = new HashTable<LshAmplifiedHash>(table_size, new LshAmplifiedHash(dataset_.size(), window, hash_count));
+		auto ht = new HashTable<LshAmplifiedHash>(table_size, new LshAmplifiedHash(dataset_.vectorSize(), window, hash_count));
 
 		for (auto point : dataset) 
 			ht->insert(*point);

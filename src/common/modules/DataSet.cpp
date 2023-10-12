@@ -43,7 +43,8 @@ DataSet::~DataSet() {
         delete point;
 }
 
-uint32_t DataSet::size() const{ return vector_size; }
+uint32_t DataSet::vectorSize() const{ return vector_size; }
+uint32_t DataSet::size()const{ return points.size();}
 
 DataPoint* DataSet::operator[](uint32_t i) const { return points[i]; }
 

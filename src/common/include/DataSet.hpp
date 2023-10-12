@@ -27,7 +27,8 @@ class DataSet {
     public:
         DataSet(std::string path);
         ~DataSet();
-        uint32_t size() const;
+        uint32_t vectorSize() const;
+        uint32_t size()const;
 		DataPoint* operator[](uint32_t index) const;
 
         std::vector<DataPoint*>::iterator begin();

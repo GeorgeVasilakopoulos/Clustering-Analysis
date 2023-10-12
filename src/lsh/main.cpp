@@ -61,7 +61,7 @@ int main(){
 
 	DataSet mydataset("train.idx3-ubyte");
 
-	LSH haha(mydataset, 5, 4, 5, mydataset.size() / 8);
+	LSH haha(mydataset, 5, 4, 5, mydataset.vectorSize() / 8);
 	// LSH haha(mydataset, 5, 5, 10, 1000);
 	// LSH haha(mydataset, 20, 10, 10, 10);
 
