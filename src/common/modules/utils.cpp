@@ -1,5 +1,18 @@
-#include "DataSet.hpp"
+#include "utils.hpp"
+#include <endian.h>
 
+
+///////////////
+// Stopwatch //
+///////////////
+
+
+Stopwatch::Stopwatch() : time(std::chrono::high_resolution_clock::now()) { }
+void Stopwatch::start() { time = std::chrono::high_resolution_clock::now(); }
+double Stopwatch::stop() { 
+    auto end_time = std::chrono::high_resolution_clock::now(); 
+    return (end_time - time).count();
+}
 
 ////////////////
 // Data Point //
@@ -10,7 +23,6 @@ DataPoint::~DataPoint() { delete vector; }
 
 uint32_t DataPoint::label() const { return id; }
 Vector<uint8_t>& DataPoint::data() const { return *vector; }
-uint32_t DataPoint::getID()const{return id;}
 
 
 
