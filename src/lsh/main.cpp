@@ -6,7 +6,7 @@
 
 #include "DataSet.hpp"
 #include "HashTable.hpp"
-#include "Parser.hpp"
+#include "ArgParser.hpp"
 #include "lsh.hpp"
 
 using namespace std;
@@ -75,7 +75,7 @@ RangeSearch(DataSet& dataset, DataPoint& query, double range, double (*dist)(Vec
 
 int main(int argc, const char* argv[]) {
 try {
-	Parser parser = Parser();
+	ArgParser parser = ArgParser();
 
 	parser.add("d", STRING);
 	parser.add("q", STRING);

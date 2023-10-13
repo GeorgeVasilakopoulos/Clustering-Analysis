@@ -6,14 +6,14 @@
 
 typedef enum { STRING, UINT, FLOAT, BOOL } Type;
 
-class Parser {
+class ArgParser {
 
     private:
         std::unordered_map<std::string, void*> flags;
         std::unordered_map<std::string, Type> types;
 
     public:
-        ~Parser();
+        ~ArgParser();
 
         void add(std::string flag, Type type, std::string def="");
         bool parsed(std::string flag);
