@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <functional>
-#include "DataSet.hpp"
+#include "utils.hpp"
 
 // uint32_t is the hash value, used on the qUeRiNg TrIcK
 typedef std::vector<std::tuple<uint32_t, DataPoint*>> Bucket;

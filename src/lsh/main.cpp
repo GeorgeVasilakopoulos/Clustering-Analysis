@@ -103,6 +103,7 @@ try {
 		std::getline(std::cin, data_path);
 	}
 
+	// time this
 	DataSet train(data_path);
 
 	if (parser.parsed("q"))
@@ -125,13 +126,26 @@ try {
 	if (output_file.fail()) 
         throw std::runtime_error(out_path + " could not be opened!\n");
 
+	// time this
 	LSH lsh(train, 5, k, L, train.dim() / 8);
 
+	Stopwatch sw = Stopwatch();
 	for (auto point : test) {
+
+		sw.start();
 		auto res_approx = lsh.kANN(*point, N, dist);
-		auto res_true   = kNN(train, *point, N, dist);
+		double lfs_time = sw.stop();
+
+		sw.start();
+		auto res_true    = kNN(train, *point, N, dist);
+		double true_time = sw.stop();
+
 		
 		output_file << "Query " << point->label() << "\n";
+
+		for (uint32_t i = 0; i < N; i++) {
+			
+		}
 
 	}
 
