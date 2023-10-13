@@ -3,7 +3,7 @@
 
 #include "Vector.hpp"
 #include <random>
-
+#include <cstdio>
 //////////////////
 // Consturctors //
 //////////////////
@@ -32,10 +32,11 @@ Vector<T>::Vector(uint32_t size_, Distribution distr, T a, T b)
 
 
 template <typename T>
-Vector<T>::Vector(const Vector<T>& v)
+template <typename U>
+Vector<T>::Vector(const Vector<U>& v)
 : size(v.len()), data(new T[v.len()]){
 	for(uint32_t i = 0; i < v.len(); i++)
-		data[i] = v[i];
+		data[i] = (T) v[i];
 }
 
 
@@ -58,6 +59,14 @@ Vector<T>::~Vector() { delete[] data; }
 ///////////////
 // Utilities //
 ///////////////
+
+template <typename T>
+void Vector<T>::print()const{
+	for(uint32_t i = 0; i < size; i++){
+		printf("%d ",data[i]);
+	}
+}
+
 
 template <typename T>
 uint32_t Vector<T>::len() const { return size; }
@@ -150,5 +159,17 @@ Vector<T>& Vector<T>::operator/=(const T& scalar) {
 
 	return *this;
 }
+
+
+// Vector<double> Vector<uint8_t>::Vector(Vector<uint8_t>& v)
+// :size(v.len()), data(new double[v.len()]){
+// 	for(uint32_t i = 0; i < v.len(); i++)
+// 		data[i] = (double)v[i];
+// }
+
+
+
+
+
 
 #endif
