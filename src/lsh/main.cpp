@@ -120,43 +120,51 @@ try {
 		std::getline(std::cin, out_path);
 	}
 
-	DataSet test(query_path, 1);
-
 	std::ofstream output_file(out_path, std::ios::out);
 	if (output_file.fail()) 
         throw std::runtime_error(out_path + " could not be opened!\n");
 
-	// time this
-	LSH lsh(train, 5, k, L, train.dim() / 8);
+	uint32_t window = 5; // 100
+	uint32_t table_size =  train.dim() / 8; // 100
+	LSH lsh(train, window, k, L, table_size);
 
 	Stopwatch sw = Stopwatch();
-	for (auto point : test) {
 
-		sw.start();
-		auto aknn = lsh.kANN(*point, N, dist);
-		double lfs_time = sw.stop();
-		auto range = lsh.RangeSearch(*point, R, dist);
+	while (true) {
+		for (auto point : DataSet(query_path, 1)) {
 
-		sw.start();
-		auto knn = kNN(train, *point, N, dist);
-		double true_time = sw.stop();
+			sw.start();
+			auto aknn = lsh.kANN(*point, N, dist);
+			double lfs_time = sw.stop();
+			auto range = lsh.RangeSearch(*point, R, dist);
 
-		
-		output_file << "Query " << point->label() << "\n";
+			sw.start();
+			auto knn = kNN(train, *point, N, dist);
+			double true_time = sw.stop();
 
-		for (uint32_t i = 0; i < N; i++) {
-			output_file << "Nearest neighbor-" << i << ": " << std::get<0>(aknn[i]) << "\n";
-			output_file << "distanceLSH: "  << std::get<1>(aknn[i]) << "\n";
-			output_file << "distanceTrue: " << std::get<1>(knn[i])   << "\n";
+			
+			output_file << "Query " << point->label() << "\n";
+
+			for (uint32_t i = 0, size = aknn.size(); i < size; i++) {
+				output_file << "Nearest neighbor-" << i << ": " << std::get<0>(aknn[i]) << "\n";
+				output_file << "distanceLSH: "  << std::get<1>(aknn[i]) << "\n";
+				output_file << "distanceTrue: " << std::get<1>(knn[i])   << "\n";
+			}
+
+			output_file << "tLSH: "  << lfs_time  << "\n";
+			output_file << "tTrue: " << true_time << "\n\n";
+			output_file << R << "-near neighbors:\n";
+
+			for (auto vec : range)
+				output_file << std::get<0>(vec) << "\n";
+			output_file << "\n";
 		}
+	
+		std::cout << "Enter path to new query file (Nothing in order to stop): ";
+		std::getline(std::cin, query_path);
 
-		output_file << "tLSH: "  << lfs_time  << "\n";
-		output_file << "tTrue: " << true_time << "\n";
-		output_file << R << "-near neighbors:\n";
-
-		for (auto vec : range)
-			output_file << std::get<0>(vec) << "\n\n";
-		
+		if (query_path.empty()) 
+			break;	
 	}
 
 
