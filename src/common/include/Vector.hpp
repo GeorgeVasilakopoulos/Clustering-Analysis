@@ -32,12 +32,19 @@ class Vector{
 		template <typename U>
 		T operator*(const Vector<U>& vector) const;
 
+		template <typename U>
+		Vector& operator=(const Vector<U>& vector);
+
 		void print()const;
 
-
-		Vector& operator+=(const T& scalar);
-		Vector& operator*=(const T& scalar);
-		Vector& operator/=(const T& scalar);
+		template <typename U>
+		Vector& operator+=(const U& scalar);
+		
+		template <typename U>
+		Vector& operator*=(const U& scalar);
+		
+		template <typename U>
+		Vector& operator/=(const U& scalar);
 };
 
 #include "../modules/Vector.cpp"

@@ -35,6 +35,7 @@ template <typename T>
 template <typename U>
 Vector<T>::Vector(const Vector<U>& v)
 : size(v.len()), data(new T[v.len()]){
+	// printf("copy\n");
 	for(uint32_t i = 0; i < v.len(); i++)
 		data[i] = (T) v[i];
 }
@@ -119,6 +120,21 @@ Vector<T> Vector<T>::operator+(const Vector<T>& v) const{
 	return out;
 }
 
+
+
+template <typename T>
+template <typename U>
+Vector<T>& Vector<T>::operator=(const Vector<U>& v){
+	if(size != v.len()){
+		delete[] data;
+		data = new T[v.len()];
+	}
+	for(uint32_t i = 0; i < v.len(); i++)
+		data[i] = (T) v[i];
+	return *this;
+}
+
+
 template <typename T>
 template <typename U>
 T Vector<T>::operator*(const Vector<U>& v) const {
@@ -134,39 +150,34 @@ T Vector<T>::operator*(const Vector<U>& v) const {
 }
 
 template <typename T>
-Vector<T>& Vector<T>::operator+=(const T& scalar) {
+template <typename U>
+Vector<T>& Vector<T>::operator+=(const U& scalar) {
 	for (uint32_t i = 0; i < size; i++)
-		data[i] += scalar;
+		data[i] += (T&) scalar;
 
 	return *this;
 }
 
 template <typename T>
-Vector<T>& Vector<T>::operator*=(const T& scalar) {
+template <typename U>
+Vector<T>& Vector<T>::operator*=(const U& scalar) {
 	for (uint32_t i = 0; i < size; i++)
-		data[i] *= scalar;
+		data[i] *= (T&) scalar;
 
 	return *this;
 }
 
 template <typename T>
-Vector<T>& Vector<T>::operator/=(const T& scalar) {
+template <typename U>
+Vector<T>& Vector<T>::operator/=(const U& scalar) {
 	if (scalar == 0) 
         throw std::runtime_error("Exception in Scalar Division operation: Cannot divide by 0!\n");
 
 	for (uint32_t i = 0; i < size; i++)
-		data[i] /= scalar;
+		data[i] /= (T&) scalar;
 
 	return *this;
 }
-
-
-// Vector<double> Vector<uint8_t>::Vector(Vector<uint8_t>& v)
-// :size(v.len()), data(new double[v.len()]){
-// 	for(uint32_t i = 0; i < v.len(); i++)
-// 		data[i] = (double)v[i];
-// }
-
 
 
 
