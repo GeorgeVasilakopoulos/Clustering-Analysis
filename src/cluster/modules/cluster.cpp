@@ -4,8 +4,12 @@
 #include <unordered_set>
 
 #include "Vector.hpp"
+
 #include "DataSet.hpp"
 #include "cluster.hpp"
+
+#include "utils.hpp"
+
 
 using namespace std;
 

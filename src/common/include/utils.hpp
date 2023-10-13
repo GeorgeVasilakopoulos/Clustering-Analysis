@@ -1,9 +1,17 @@
 #pragma once
 
-#include <endian.h>
 #include <vector>
+#include <chrono>
 #include "Vector.hpp"
 
+class Stopwatch {
+    private:
+        std::chrono::time_point<std::chrono::high_resolution_clock> time;
+    public:
+        Stopwatch();
+        void start();
+        double stop();
+};
 
 class DataPoint {
     private:
@@ -15,7 +23,6 @@ class DataPoint {
         ~DataPoint();
         uint32_t label() const;
         Vector<uint8_t>& data() const;
-        uint32_t getID() const;
 };
 
 

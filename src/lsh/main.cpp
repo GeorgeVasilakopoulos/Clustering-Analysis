@@ -4,7 +4,7 @@
 #include <unordered_set>
 #include <cmath>
 
-#include "DataSet.hpp"
+#include "utils.hpp"
 #include "HashTable.hpp"
 #include "ArgParser.hpp"
 #include "lsh.hpp"
@@ -103,6 +103,7 @@ try {
 		std::getline(std::cin, data_path);
 	}
 
+	// time this
 	DataSet train(data_path);
 
 	if (parser.parsed("q"))
@@ -119,15 +120,52 @@ try {
 		std::getline(std::cin, out_path);
 	}
 
-	DataSet test(query_path);
+	DataSet test(query_path, 10);
 
 	std::ofstream output_file(out_path, std::ios::out);
 	if (output_file.fail()) 
         throw std::runtime_error(out_path + " could not be opened!\n");
 
+	// time this
 	LSH lsh(train, 5, k, L, train.dim() / 8);
 
+	Stopwatch sw = Stopwatch();
+	for (auto point : test) {
 
+		sw.start();
+		auto res_approx = lsh.kANN(*point, N, dist);
+		double lfs_time = sw.stop();
+
+		sw.start();
+		auto res_true    = kNN(train, *point, N, dist);
+		double true_time = sw.stop();
+
+		
+		output_file << "Query " << point->label() << "\n";
+
+		for (uint32_t i = 0; i < N; i++) {
+			
+		}
+
+	}
+
+	// printf("Approximation:\n");
+	// for(auto i : lsh.kANN(*test[0], N, dist))
+	// 	printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
+
+	// printf("\nExact:\n");
+	// for(auto i : kNN(train, *test[0], N, dist))
+	// 	printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
+
+	// auto myvec = lsh.RangeSearch(*mydataset[0], 1300, dist);
+	// printf("Range Approximation:\n");
+	// for(auto i : myvec)
+	// 	printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
+
+	// auto myvec1 = RangeSearch(mydataset, *mydataset[0], 1300, dist);
+	// printf("\nRange Exact:\n");
+	// for(auto i : myvec1)
+	// 	printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
 
 } 
 catch (exception& e) {
