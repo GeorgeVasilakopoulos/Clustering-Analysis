@@ -120,7 +120,7 @@ try {
 		std::getline(std::cin, out_path);
 	}
 
-	DataSet test(query_path, 10);
+	DataSet test(query_path, 1);
 
 	std::ofstream output_file(out_path, std::ios::out);
 	if (output_file.fail()) 
@@ -133,39 +133,32 @@ try {
 	for (auto point : test) {
 
 		sw.start();
-		auto res_approx = lsh.kANN(*point, N, dist);
+		auto aknn = lsh.kANN(*point, N, dist);
 		double lfs_time = sw.stop();
+		auto range = lsh.RangeSearch(*point, R, dist);
 
 		sw.start();
-		auto res_true    = kNN(train, *point, N, dist);
+		auto knn = kNN(train, *point, N, dist);
 		double true_time = sw.stop();
 
 		
 		output_file << "Query " << point->label() << "\n";
 
 		for (uint32_t i = 0; i < N; i++) {
-			
+			output_file << "Nearest neighbor-" << i << ": " << std::get<0>(aknn[i]) << "\n";
+			output_file << "distanceLSH: "  << std::get<1>(aknn[i]) << "\n";
+			output_file << "distanceTrue: " << std::get<1>(knn[i])   << "\n";
 		}
 
+		output_file << "tLSH: "  << lfs_time  << "\n";
+		output_file << "tTrue: " << true_time << "\n";
+		output_file << R << "-near neighbors:\n";
+
+		for (auto vec : range)
+			output_file << std::get<0>(vec) << "\n\n";
+		
 	}
 
-	// printf("Approximation:\n");
-	// for(auto i : lsh.kANN(*test[0], N, dist))
-	// 	printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
-
-	// printf("\nExact:\n");
-	// for(auto i : kNN(train, *test[0], N, dist))
-	// 	printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
-
-	// auto myvec = lsh.RangeSearch(*mydataset[0], 1300, dist);
-	// printf("Range Approximation:\n");
-	// for(auto i : myvec)
-	// 	printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
-
-	// auto myvec1 = RangeSearch(mydataset, *mydataset[0], 1300, dist);
-	// printf("\nRange Exact:\n");
-	// for(auto i : myvec1)
-	// 	printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
 
 } 
 catch (exception& e) {

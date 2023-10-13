@@ -11,7 +11,7 @@ Stopwatch::Stopwatch() : time(std::chrono::high_resolution_clock::now()) { }
 void Stopwatch::start() { time = std::chrono::high_resolution_clock::now(); }
 double Stopwatch::stop() { 
     auto end_time = std::chrono::high_resolution_clock::now(); 
-    return (end_time - time).count();
+    return std::chrono::duration_cast<std::chrono::duration<float>>(end_time - time).count();
 }
 
 ////////////////
