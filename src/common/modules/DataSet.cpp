@@ -19,8 +19,11 @@ uint32_t DataPoint::getID()const{return id;}
 //////////////
 
 DataSet::DataSet(std::string path, uint32_t files) {
-    // check for failure
+    
     std::ifstream input(path.data(), std::ios::binary);
+
+    if (input.fail())
+        throw std::runtime_error("Exception during DataSet creation: " + path + " could not be opened!\n");
 
     uint32_t count, h, w;
     input.read((char*)&count, 4); // Discard magic number

@@ -1,11 +1,13 @@
 #include <iostream>
+#include <fstream>
 #include <queue>
+#include <unordered_set>
+#include <cmath>
 
 #include "DataSet.hpp"
 #include "HashTable.hpp"
+#include "Parser.hpp"
 #include "lsh.hpp"
-#include <unordered_map>
-#include <unordered_set>
 
 using namespace std;
 
@@ -71,31 +73,66 @@ RangeSearch(DataSet& dataset, DataPoint& query, double range, double (*dist)(Vec
 }
 
 
-int main(){
+int main(int argc, const char* argv[]) {
+try {
+	Parser parser = Parser();
 
-	DataSet train("train_images");
-	DataSet test("test_images");
+	parser.add("d", STRING);
+	parser.add("q", STRING);
+	parser.add("o", STRING);
+	parser.add("k", UINT, "4");
+	parser.add("L", UINT, "5");
+	parser.add("N", UINT, "1");
+	parser.add("R", FLOAT, "10000.");
 
-	LSH haha(train, 5, 4, 5, train.dim() / 8);
+	parser.parse(argc, argv);
 
-	printf("Approximation:\n");
-	for(auto i : haha.kANN(*test[0], 10, dist))
-		printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
-	
-	// printf("\nExact:\n");
-	// for(auto i : kNN(train, *test[0], 10, dist))
-	// 	printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
+	std::string data_path;
+	std::string query_path;
+	std::string out_path;
 
-	// auto myvec = haha.RangeSearch(*mydataset[0], 1300, dist);
-	// printf("Range Approximation:\n");
-	// for(auto i : myvec)
-	// 	printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
-	
-	// auto myvec1 = RangeSearch(mydataset, *mydataset[0], 1300, dist);
-	// printf("\nRange Exact:\n");
-	// for(auto i : myvec1)
-	// 	printf("%5u %f\n", std::get<0>(i), std::get<1>(i));
+	uint32_t k = parser.value<uint32_t>("k");
+	uint32_t L = parser.value<uint32_t>("L");
+	uint32_t N = parser.value<uint32_t>("N");
+	float R	   = parser.value<float>("R");
+
+	if (parser.parsed("d"))
+		data_path = parser.value<std::string>("d");
+	else {
+		std::cout << "Enter path to dataset: ";
+		std::getline(std::cin, data_path);
+	}
+
+	DataSet train(data_path);
+
+	if (parser.parsed("q"))
+		query_path = parser.value<std::string>("q");
+	else {
+		std::cout << "Enter path to query file: ";
+		std::getline(std::cin, query_path);
+	}
+
+	if (parser.parsed("o"))
+		out_path = parser.value<std::string>("o");
+	else {
+		std::cout << "Enter path to out file: ";
+		std::getline(std::cin, out_path);
+	}
+
+	DataSet test(query_path);
+
+	std::ofstream output_file(out_path, std::ios::out);
+	if (output_file.fail()) 
+        throw std::runtime_error(out_path + " could not be opened!\n");
+
+	LSH lsh(train, 5, k, L, train.dim() / 8);
 
 
+
+} 
+catch (exception& e) {
+	std::cerr << e.what();
+	return -1;
+}
 	return 0;
 }

@@ -6,7 +6,7 @@ COMMON       := ./src/common
 COMMON_INCS  := $(COMMON)/include
 COMMON_PROG  := $(wildcard $(COMMON)/*.cpp)
 COMMON_SRCS  := $(wildcard $(COMMON)/modules/*.cpp)
-COMMON_OBJS  := $(subst .cpp,.o,$(COMMON_PROG)) 
+COMMON_OBJS  := $(subst .cpp,.o,$(COMMON_PROG)) $(subst .cpp,.o,$(COMMON_SRCS))
 
 
 LSH		  := ./src/lsh
@@ -30,15 +30,16 @@ CLUSTER_OBJS  := $(subst .cpp,.o,$(CLUSTER_SRCS))
 
 
 
-TARGET      := $(word 1, $(MAKECMDGOALS))
+TARGET   := $(word 1, $(MAKECMDGOALS))
+CXXFLAGS := -std=c++17 -g3 -Wall -Wextra 
 
 # Compile options
 ifeq ($(TARGET),lsh)
-	CXXFLAGS = -std=c++11 -g3 -Wall -I$(LSH_INCS)
+	CXXFLAGS += -I$(LSH_INCS)
 else ifeq ($(TARGET),cube)
-	CXXFLAGS = -std=c++11 -g3 -Wall -I$(CUBE_INCS)
+	CXXFLAGS += -I$(CUBE_INCS)
 else ifeq ($(TARGET),cluster)
-	CXXFLAGS = -std=c++11 -g3 -Wall -I$(CLUSTER_INCS) -I$(LSH_INCS) -I$(CUBE_INCS)
+	CXXFLAGS += -I$(CLUSTER_INCS) -I$(LSH_INCS) -I$(CUBE_INCS)
 endif
 
 CXXFLAGS += -I$(COMMON_INCS)
@@ -48,13 +49,10 @@ CXXFLAGS += -I$(COMMON_INCS)
 	$(CC) $(CXXFLAGS) -c $^ -o $@
 
 clean:
-	@rm -f $(LSH_OBJS) $(CUBE_OBJS) $(CLUSTER_OBJS) ./common ./lsh ./cube ./cluster
+	@rm -f $(COMMON_OBJS) $(LSH_OBJS) $(CUBE_OBJS) $(CLUSTER_OBJS) ./common ./lsh ./cube ./cluster
 
 run: $(COMMON_OBJS)
 	$(CC) $(COMMON_OBJS) -o ./common
-	
-valgrind: $(EXEC)
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s ./$(EXEC) $(ARGS)
 
 lsh: $(LSH_OBJS)
 	$(CC) $^ -o ./lsh

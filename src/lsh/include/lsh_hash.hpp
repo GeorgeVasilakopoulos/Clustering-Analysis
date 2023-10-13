@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vector.hpp"
+#include <cmath>
 
 class LshHash {
     private:
