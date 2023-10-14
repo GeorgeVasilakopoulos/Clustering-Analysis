@@ -5,14 +5,14 @@
 #include "cluster.hpp"
 
 
-double dist(Vector<double>& v1, Vector<double>& v2){
+double dist(Vector<uint8_t>& v1, Vector<float>& v2){
     
     if (v1.len() != v2.len()) 
         throw std::runtime_error("Exception in Distance Metric: Dimensions of vectors must match!\n");
 
     double sum = 0;
     for(uint32_t i = 0; i < v1.len(); i++){
-        double diff = (double)v1[i] - (double)v2[i];
+        double diff = (float)v1[i] - (float)v2[i];
         sum += diff * diff; 
     }
 
@@ -21,12 +21,12 @@ double dist(Vector<double>& v1, Vector<double>& v2){
 
 int main() {
     
-    DataSet test("test_images");
-    ClusteringAlgorithm algo(test,2,dist);
+    DataSet dataset("train_images");
+    Clustering algo(dataset, 15, dist);
 
-    // std::vector<Vector<double>> centers = algo.getClusterCenters();
+    // std::vector<Vector<double>*> centers = algo.getClusterCenters();
 
-
+    // centers[0]->print();
 
   
 

@@ -1,151 +1,71 @@
-
-#include <tuple>
 #include <vector>
 #include <unordered_set>
+#include <cfloat>
 
-#include "Vector.hpp"
 #include "cluster.hpp"
 
-#include "utils.hpp"
+
+double Clustering::min_dist(DataPoint& point) {
+	double min = DBL_MAX;
+
+	for (auto cluster : clusters) {
+		double distance = dist(point.data(), cluster->center());
+		min = distance < min ? distance : min;
+	}
+
+	return min;
+}
 
 
-using namespace std;
-
-
-
-
-ClusteringAlgorithm::ClusteringAlgorithm(DataSet& dataset_, uint32_t k_, double (*dist_)(Vector<double>&, Vector<double>&))
-: dataset(dataset_), k(k_), dist(dist_){
+Clustering::Clustering(DataSet& dataset_, uint32_t k, double (*metric_)(Vector<uint8_t>&, Vector<float>&)) 
+: dataset(dataset_), dist(metric_) {
 	
-	vector<tuple<double,Vector<uint8_t>*>> distribution;
+	bool* chosen = new bool[dataset.size()]();
 
+	uint32_t init_center = Vector<uint32_t>(1, UNIFORM, 0, dataset.size() - 1)[0];
 
-	//Uniform distribution across the entire dataset
-	double accumulated = 0;
-	for(auto point : dataset){
-		double probability = 1. / dataset.size();
-		accumulated += probability;
-		distribution.push_back(make_tuple(accumulated, &(point->data())));
-	}
-
-	random_device rd;
-	mt19937 gen(rd());
-	uniform_real_distribution<double> unif(0.0, 1.0);
-
-	vector<Vector<uint8_t>> cluster_centers_;
-
-
-	for(uint32_t i = 0; i < k; i++){
-		double random_value = unif(gen);
-
-		//Select point randomly, according to distribution
-		auto candidate = distribution.begin();
-		for(;candidate != distribution.end() && random_value > get<0>(*candidate); 
-		     ++candidate);
-
-		if(candidate == distribution.end());//Unexpected Error, exit
+	clusters.push_back(new Cluster(dataset[init_center]));
+	chosen[init_center] = true;
 	
+	for (uint32_t i = 1; i < k; i++) {
+		std::vector<std::pair<uint32_t, double>> distances;
+		std::vector<std::pair<uint32_t, double>> probs;
 
-		//Push chosen center and remove from distribution
-		Vector<uint8_t> center = *get<1>(*candidate);
-		cluster_centers_.push_back(center);
-		distribution.erase(candidate);
-
-
-		//Find D(i) for all i and Sum of D(i)^2 (denominator)
-		vector<double> D;	//Optimization?
-		double denominator = 0;
-		for(auto& pair : distribution){
+		double sum = 0;
+		for (uint32_t j = 0, size = dataset.size(); j < size; j++) {
+			if (chosen[j])
+				continue;
 			
-			Vector<double> v = *get<1>(pair);
+			double distance = min_dist(*dataset[j]);
+			distance *= distance;
 
-			//Trivial initialization
-
-			Vector<double> myvec = *(cluster_centers_.begin());
-			double min_dist = dist(v, myvec);
-			
-			for(auto& c : cluster_centers_){
-				myvec = c;
-				min_dist = min(min_dist, dist(v,myvec));
-			}
-			D.push_back(min_dist);
-			denominator += min_dist*min_dist;
+			distances.push_back(std::pair(j, distance));
+			sum += distance;
 		}
+
+		for (auto pair : distances) 
+			probs.push_back(std::pair(pair.first, pair.second / sum));
+		
+		double prob = Vector<float>(1, UNIFORM, 0, 1)[0];
+		double accum = 0;
+
+		for (auto pair : probs) {
+			accum += pair.second;
+
+			if (prob > accum)
+				continue;
 			
-
-
-
-		//Reevaluate probability distribution
-		for(uint32_t i = 0; i < D.size(); i++){
-			double enumerator = D[i]*D[i];	//Optimization?
-			distribution[i] = make_tuple(enumerator/denominator,get<1>(distribution[i]));
+			clusters.push_back(new Cluster(dataset[pair.first]));
+			chosen[pair.first] = true;
+			break;
 		}
 	}
-	
-	for(auto& v : cluster_centers_){
-		cluster_centers.push_back(v);
-	}
-}
 
-void ClusteringAlgorithm::fit(){}
-
-
-
-
-
-vector<Vector<double>> ClusteringAlgorithm::getClusterCenters()const{return cluster_centers;}
-
-
-
-uint32_t LloydsAlgorithm::closestCenter(Vector<uint8_t>& v){
-			
-	uint32_t out = 0;
-	Vector<double> myvec = v;
-	double min_dist = dist(myvec,cluster_centers[0]);
-
-
-	uint32_t i = 0;
-	for(auto c : cluster_centers){
-		double distance = dist(myvec,c);
-		if(distance < min_dist){
-			min_dist = distance;
-			out = i;
-		}
-		i++;
-	}
-	return out;
-}
-
-Vector<double> LloydsAlgorithm::meanVector(unordered_set<Vector<uint8_t>*>& set){
-	if(set.empty()){
-		//ERROR
-	}
-	uint32_t vector_size = (*(set.begin()))->len();
-	Vector<double> sum(vector_size);
-	for(auto v : set){
-		sum += *v;
-	}
-	sum /= set.size();
-	return sum;
+	delete [] chosen;
 }
 
 
-LloydsAlgorithm::LloydsAlgorithm(DataSet& dataset_, uint32_t k_, double (*dist_)(Vector<double>&, Vector<double>&))
-:ClusteringAlgorithm(dataset_,k_,dist_){
-	clusters = new unordered_set<Vector<uint8_t>*>[k];
-}
-
-void LloydsAlgorithm::fit(){
-	for(uint32_t counter = 0; counter < 10; counter++){
-		for(auto point : dataset){
-			clusters[closestCenter(point->data())].insert(&(point->data()));			
-		}      
-
-		uint32_t i = 0;
-		for(auto& center : cluster_centers){
-			center = meanVector(clusters[i]);
-			clusters[i].clear();
-			i++;
-		}
-	}
-}	
+Clustering::~Clustering() {
+	for (auto cluster : clusters)
+		delete cluster;
+};
