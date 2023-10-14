@@ -19,10 +19,10 @@ class HashTable {
     HashTable(uint32_t table_size_, T* hash_);
     ~HashTable();
 
-    T* get_hash() const;
+    uint32_t get_hash(DataPoint& point) const;
     bool insert(DataPoint& point);
     Bucket& bucket(DataPoint& point);
 
 };
 
-#include "../modules/HashTable.cpp"
+#include "../modules/HashTable.inl"

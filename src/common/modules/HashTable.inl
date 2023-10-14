@@ -1,8 +1,4 @@
-#ifndef HASHTABLE_C
-#define HASHTABLE_C
-
 #include <vector>
-#include "HashTable.hpp"
 
 template <typename T>
 HashTable<T>::HashTable(uint32_t table_size_, T* hash_)
@@ -23,12 +19,10 @@ bool HashTable<T>::insert(DataPoint& point) {
 }
 
 template <typename T>
-T* HashTable<T>::get_hash() const { return hash; }
+uint32_t HashTable<T>::get_hash(DataPoint& point) const { return hash->apply(point.data()); }
 
 template <typename T>
 Bucket& HashTable<T>::bucket(DataPoint& point) {
 	uint32_t hvalue = hash->apply(point.data());
 	return buckets[hvalue % table_size];
 }
-
-#endif

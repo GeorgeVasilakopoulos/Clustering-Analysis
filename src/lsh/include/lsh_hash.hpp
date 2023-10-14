@@ -20,13 +20,13 @@ class LshHash {
 
 class LshAmplifiedHash {
     private:
-        uint32_t hash_count;
+        uint32_t k;
         Vector<uint32_t> r;
         std::vector<LshHash*> h;
     public:
-        LshAmplifiedHash(uint32_t size, uint32_t window, uint32_t hash_count_)
-        : hash_count(hash_count_), r(hash_count, UNIFORM, 0, UINT32_MAX) {
-            for (uint32_t i = 0; i < hash_count; i++)
+        LshAmplifiedHash(uint32_t size, uint32_t window, uint32_t k_)
+        : k(k_), r(k, UNIFORM, 0, UINT32_MAX) {
+            for (uint32_t i = 0; i < k; i++)
                 h.push_back(new LshHash(size, window));
         }
         
@@ -41,7 +41,7 @@ class LshAmplifiedHash {
 
             uint32_t sum = 0;
 
-            for (uint32_t i = 0; i < hash_count; i++)
+            for (uint32_t i = 0; i < k; i++)
                 sum += r[i] * h[i]->apply(p) % M;
 
             return sum % M;

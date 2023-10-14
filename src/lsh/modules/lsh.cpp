@@ -6,11 +6,11 @@
 
 using namespace std;
 
-LSH::LSH(DataSet& dataset_, uint32_t window, uint32_t hash_count, uint32_t L, uint32_t table_size)
+LSH::LSH(DataSet& dataset_, uint32_t window, uint32_t k, uint32_t L, uint32_t table_size)
 : dataset(dataset_) {
 
 	for (uint32_t i = 0; i < L; i++) {
-		auto ht = new HashTable<LshAmplifiedHash>(table_size, new LshAmplifiedHash(dataset_.dim(), window, hash_count));
+		auto ht = new HashTable<LshAmplifiedHash>(table_size, new LshAmplifiedHash(dataset_.dim(), window, k));
 
 		for (auto point : dataset) 
 			ht->insert(*point);
@@ -32,28 +32,28 @@ LSH::kANN(DataPoint& query, uint32_t k, double (*dist)(Vector<uint8_t>&, Vector<
 		return get<1>(t1) > get<1>(t2);
 	};
 
-	priority_queue<tuple<uint32_t, double>, vector<tuple<uint32_t, double>>, decltype(comparator)> knn(comparator);
-	unordered_set<uint32_t> k_point_set;
+	priority_queue<tuple<uint32_t, double>, vector<tuple<uint32_t, double>>, decltype(comparator)> pq(comparator);
+	unordered_set<uint32_t> considered;
 	
 	for (auto ht : htables) {
 		for(auto pair : ht->bucket(query)) {
 			
 			auto point = get<1>(pair);
 
-			if(query.label() == point->label() || k_point_set.find(point->label()) != k_point_set.end())
+			if (query.label() == point->label() || considered.find(point->label()) != considered.end())
 				continue; 
 
 			double distance = dist(query.data(), point->data());
 
-			knn.push(make_tuple(point->label(), distance));
-			k_point_set.insert(point->label());
+			pq.push(make_tuple(point->label(), distance));
+			considered.insert(point->label());
 		}
 	}
 
 	vector< tuple<uint32_t, double> > out;
-	while(!knn.empty() && (int)k-- > 0) {
-		out.push_back(knn.top());
-		knn.pop();
+	while(!pq.empty() && (int)k-- > 0) {
+		out.push_back(pq.top());
+		pq.pop();
 	}
 
 	return out;
@@ -63,7 +63,7 @@ LSH::kANN(DataPoint& query, uint32_t k, double (*dist)(Vector<uint8_t>&, Vector<
 vector< tuple<uint32_t, double> > 
 LSH::RangeSearch(DataPoint& query, double range, double (*dist)(Vector<uint8_t>&, Vector<uint8_t>&)) {
 
-	unordered_set<uint32_t> k_point_set;
+	unordered_set<uint32_t> considered;
 	vector< tuple<uint32_t, double> > out;
 
 
@@ -72,15 +72,14 @@ LSH::RangeSearch(DataPoint& query, double range, double (*dist)(Vector<uint8_t>&
 			
 			auto point = get<1>(pair);
 
-			// If query point is point itself or if point is already contained in the pq
-			if(query.label() == point->label() || k_point_set.find(point->label()) != k_point_set.end())
+			if(query.label() == point->label() || considered.find(point->label()) != considered.end())
 				continue; 
 
 			double distance = dist(query.data(), point->data());
 
 			if(distance < range) {
 				out.push_back(make_tuple(point->label(),distance));
-				k_point_set.insert(point->label());
+				considered.insert(point->label());
 			}
 		}
 	}

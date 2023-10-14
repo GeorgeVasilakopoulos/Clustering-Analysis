@@ -1,9 +1,5 @@
-#ifndef VECTOR_C
-#define VECTOR_C
-
-#include "Vector.hpp"
 #include <random>
-#include <cstdio>
+
 //////////////////
 // Consturctors //
 //////////////////
@@ -32,12 +28,10 @@ Vector<T>::Vector(uint32_t size_, Distribution distr, T a, T b)
 
 
 template <typename T>
-template <typename U>
-Vector<T>::Vector(const Vector<U>& v)
+Vector<T>::Vector(const Vector<T>& v)
 : size(v.len()), data(new T[v.len()]){
-	// printf("copy\n");
 	for(uint32_t i = 0; i < v.len(); i++)
-		data[i] = (T) v[i];
+		data[i] = v[i];
 }
 
 
@@ -60,14 +54,6 @@ Vector<T>::~Vector() { delete[] data; }
 ///////////////
 // Utilities //
 ///////////////
-
-template <typename T>
-void Vector<T>::print()const{
-	for(uint32_t i = 0; i < size; i++){
-		printf("%d ",data[i]);
-	}
-}
-
 
 template <typename T>
 uint32_t Vector<T>::len() const { return size; }
@@ -120,21 +106,6 @@ Vector<T> Vector<T>::operator+(const Vector<T>& v) const{
 	return out;
 }
 
-
-
-template <typename T>
-template <typename U>
-Vector<T>& Vector<T>::operator=(const Vector<U>& v){
-	if(size != v.len()){
-		delete[] data;
-		data = new T[v.len()];
-	}
-	for(uint32_t i = 0; i < v.len(); i++)
-		data[i] = (T) v[i];
-	return *this;
-}
-
-
 template <typename T>
 template <typename U>
 T Vector<T>::operator*(const Vector<U>& v) const {
@@ -150,37 +121,28 @@ T Vector<T>::operator*(const Vector<U>& v) const {
 }
 
 template <typename T>
-template <typename U>
-Vector<T>& Vector<T>::operator+=(const U& scalar) {
+Vector<T>& Vector<T>::operator+=(const T& scalar) {
 	for (uint32_t i = 0; i < size; i++)
-		data[i] += (T&) scalar;
+		data[i] += scalar;
 
 	return *this;
 }
 
 template <typename T>
-template <typename U>
-Vector<T>& Vector<T>::operator*=(const U& scalar) {
+Vector<T>& Vector<T>::operator*=(const T& scalar) {
 	for (uint32_t i = 0; i < size; i++)
-		data[i] *= (T&) scalar;
+		data[i] *= scalar;
 
 	return *this;
 }
 
 template <typename T>
-template <typename U>
-Vector<T>& Vector<T>::operator/=(const U& scalar) {
+Vector<T>& Vector<T>::operator/=(const T& scalar) {
 	if (scalar == 0) 
         throw std::runtime_error("Exception in Scalar Division operation: Cannot divide by 0!\n");
 
 	for (uint32_t i = 0; i < size; i++)
-		data[i] /= (T&) scalar;
+		data[i] /= scalar;
 
 	return *this;
 }
-
-
-
-
-
-#endif
