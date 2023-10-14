@@ -18,12 +18,9 @@ class ArgParser {
         void add(std::string flag, Type type, std::string def="");
         bool parsed(std::string flag);
         template <typename T>
-        T& value(std::string flag) { 
-            if (!parsed(flag))
-                throw std::runtime_error("Exception in Argument Retrieval operation: Argument " + flag + " was not parsed!\n");
-            
-            return *(T*)flags[flag];
-        }
+        T& value(std::string flag);
 
         void parse(uint32_t argc, const char** argv);
 };
+
+#include "../modules/ArgParser.tcc"

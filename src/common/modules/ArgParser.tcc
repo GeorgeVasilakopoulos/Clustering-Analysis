@@ -26,6 +26,17 @@ void ArgParser::add(std::string flag, Type type, std::string def) {
 
 bool ArgParser::parsed(std::string flag) { return flags.find(flag) != flags.end() && flags[flag] != nullptr; }
 
+
+
+template <typename T>
+T& ArgParser::value(std::string flag) { 
+    if (!parsed(flag))
+        throw std::runtime_error("Exception in Argument Retrieval operation: Argument " + flag + " was not parsed!\n");
+    
+    return *(T*)flags[flag];
+}
+
+
 void ArgParser::parse(uint32_t argc, const char** argv) {
     for (uint32_t i = 1; i + 1 < argc; i++) {
         if (argv[i][0] == '-' && argv[i][1] != '\0') {            
