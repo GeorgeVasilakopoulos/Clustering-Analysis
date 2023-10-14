@@ -1,4 +1,5 @@
 #include <random>
+#include "Vector.hpp"
 
 //////////////////
 // Consturctors //
@@ -29,11 +30,19 @@ Vector<T>::Vector(uint32_t size_, Distribution distr, T a, T b)
 
 template <typename T>
 Vector<T>::Vector(const Vector<T>& v)
-: size(v.len()), data(new T[v.len()]){
+: size(v.len()), data(new T[v.len()]) {
 	for(uint32_t i = 0; i < v.len(); i++)
 		data[i] = v[i];
 }
 
+
+template <typename T>
+template <typename U>
+Vector<T>::Vector(const Vector<U>& v)
+: size(v.len()), data(new T[v.len()]) {
+	for(uint32_t i = 0; i < v.len(); i++)
+		data[i] = v[i];
+}
 
 template<typename T>
 Vector<T>::Vector(std::ifstream& input, uint32_t size_)

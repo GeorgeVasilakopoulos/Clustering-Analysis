@@ -1,4 +1,5 @@
 #include <vector>
+#include "HashTable.hpp"
 
 template <typename T>
 HashTable<T>::HashTable(uint32_t table_size_, T* hash_)

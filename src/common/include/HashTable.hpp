@@ -25,4 +25,4 @@ class HashTable {
 
 };
 
-#include "../modules/HashTable.inl"
+#include "../modules/HashTable.tcc"
