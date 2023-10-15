@@ -2,7 +2,7 @@
 #include <vector>
 #include "Vector.hpp"
 #include "utils.hpp"
-#include "cluster.hpp"
+#include "Clustering.hpp"
 
 
 double dist(Vector<uint8_t>& v1, Vector<float>& v2){
@@ -20,7 +20,7 @@ double dist(Vector<uint8_t>& v1, Vector<float>& v2){
 }
 
 int main() {
-    
+
     DataSet dataset("train_images");
     Clustering algo(dataset, 15, dist);
 

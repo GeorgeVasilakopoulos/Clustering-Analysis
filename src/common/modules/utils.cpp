@@ -1,24 +1,45 @@
 #include "utils.hpp"
 #include <endian.h>
 
+using namespace std;
+
+template<typename T>
+double l2_distance(Vector<uint8_t>& v1, Vector<T>& v2) {
+    if (v1.len() != v2.len()) 
+        throw runtime_error("Exception in L2 Metric: Dimensions of vectors must match!\n");
+
+	double sum = 0;
+	for(uint32_t i = 0, size = v1.len(); i < size; i++) {
+		double diff = (double)v1[i] - (double)v2[i];
+		sum += diff * diff; 
+	}
+
+	return sqrt(sum);
+}
+
+
+template double l2_distance<uint8_t>(Vector<uint8_t>& v1, Vector<uint8_t>& v2);
+template double l2_distance<float>(Vector<uint8_t>& v1, Vector<float>& v2);
+template double l2_distance<double>(Vector<uint8_t>& v1, Vector<double>& v2);
+
 
 ///////////////
 // Stopwatch //
 ///////////////
 
 
-Stopwatch::Stopwatch() : time(std::chrono::high_resolution_clock::now()) { }
-void Stopwatch::start() { time = std::chrono::high_resolution_clock::now(); }
+Stopwatch::Stopwatch() : time(chrono::high_resolution_clock::now()) { }
+void Stopwatch::start() { time = chrono::high_resolution_clock::now(); }
 double Stopwatch::stop() { 
-    auto end_time = std::chrono::high_resolution_clock::now(); 
-    return std::chrono::duration_cast<std::chrono::duration<float>>(end_time - time).count();
+    auto end_time = chrono::high_resolution_clock::now(); 
+    return chrono::duration_cast<chrono::duration<float>>(end_time - time).count();
 }
 
 ////////////////
 // Data Point //
 ////////////////
 
-DataPoint::DataPoint(std::ifstream& input_, uint32_t size, uint32_t id_) : id(id_), vector(new Vector<uint8_t>(input_, size)) { }
+DataPoint::DataPoint(ifstream& input_, uint32_t size, uint32_t id_) : id(id_), vector(new Vector<uint8_t>(input_, size)) { }
 DataPoint::~DataPoint() { delete vector; }
 
 uint32_t DataPoint::label() const { return id; }
@@ -30,12 +51,12 @@ Vector<uint8_t>& DataPoint::data() const { return *vector; }
 // Data Set //
 //////////////
 
-DataSet::DataSet(std::string path, uint32_t files) {
+DataSet::DataSet(string path, uint32_t files) {
     
-    std::ifstream input(path.data(), std::ios::binary);
+    ifstream input(path.data(), ios::binary);
 
     if (input.fail())
-        throw std::runtime_error("Exception during DataSet creation: " + path + " could not be opened!\n");
+        throw runtime_error("Exception during DataSet creation: " + path + " could not be opened!\n");
 
     uint32_t count, h, w;
     input.read((char*)&count, 4); // Discard magic number
@@ -63,5 +84,5 @@ uint32_t DataSet::size() const{ return points.size(); }
 
 DataPoint* DataSet::operator[](uint32_t i) const { return points[i]; }
 
-std::vector<DataPoint*>::iterator DataSet::begin() { return points.begin(); }
-std::vector<DataPoint*>::iterator DataSet::end() { return points.end(); }
+vector<DataPoint*>::iterator DataSet::begin() { return points.begin(); }
+vector<DataPoint*>::iterator DataSet::end() { return points.end(); }

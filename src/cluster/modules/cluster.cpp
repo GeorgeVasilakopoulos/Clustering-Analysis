@@ -1,26 +1,10 @@
-#include <vector>
-#include <unordered_set>
-#include <cfloat>
+#include "Cluster.hpp"
 
-#include "cluster.hpp"
+using namespace std;
 
-
-double Clustering::min_dist(DataPoint& point) {
-	double min = DBL_MAX;
-
-	for (auto cluster : clusters) {
-		double distance = dist(point.data(), cluster->center());
-		min = distance < min ? distance : min;
-	}
-
-	return min;
-}
-
-
-Clustering::Clustering(DataSet& dataset_, uint32_t k, double (*metric_)(Vector<uint8_t>&, Vector<float>&)) 
-: dataset(dataset_), dist(metric_) {
-	
-	bool* chosen = new bool[dataset.size()]();
+Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<double> dist_) 
+: dataset(dataset_), k(k_), dist(dist_) { 
+    bool* chosen = new bool[dataset.size()]();
 
 	uint32_t init_center = Vector<uint32_t>(1, UNIFORM, 0, dataset.size() - 1)[0];
 
@@ -28,8 +12,8 @@ Clustering::Clustering(DataSet& dataset_, uint32_t k, double (*metric_)(Vector<u
 	chosen[init_center] = true;
 	
 	for (uint32_t i = 1; i < k; i++) {
-		std::vector<std::pair<uint32_t, double>> distances;
-		std::vector<std::pair<uint32_t, double>> probs;
+		vector<pair<uint32_t, double>> distances;
+		vector<pair<uint32_t, double>> probs;
 
 		double sum = 0;
 		for (uint32_t j = 0, size = dataset.size(); j < size; j++) {
@@ -39,24 +23,24 @@ Clustering::Clustering(DataSet& dataset_, uint32_t k, double (*metric_)(Vector<u
 			double distance = min_dist(*dataset[j]);
 			distance *= distance;
 
-			distances.push_back(std::pair(j, distance));
+			distances.push_back(pair(j, distance));
 			sum += distance;
 		}
 
-		for (auto pair : distances) 
-			probs.push_back(std::pair(pair.first, pair.second / sum));
+		for (auto p : distances) 
+			probs.push_back(pair(p.first, p.second / sum));
 		
 		double prob = Vector<float>(1, UNIFORM, 0, 1)[0];
 		double accum = 0;
 
-		for (auto pair : probs) {
-			accum += pair.second;
+		for (auto p : probs) {
+			accum += p.second;
 
 			if (prob > accum)
 				continue;
 			
-			clusters.push_back(new Cluster(dataset[pair.first]));
-			chosen[pair.first] = true;
+			clusters.push_back(new Cluster(dataset[p.first]));
+			chosen[p.first] = true;
 			break;
 		}
 	}
@@ -65,7 +49,17 @@ Clustering::Clustering(DataSet& dataset_, uint32_t k, double (*metric_)(Vector<u
 }
 
 
-Clustering::~Clustering() {
-	for (auto cluster : clusters)
-		delete cluster;
-};
+Lloyd::Lloyd(DataSet& dataset, uint32_t k, Distance<double> dist) 
+: Clusterer(dataset, k, dist) { }
+
+vector<Cluster*> Lloyd::apply() {
+
+}
+
+
+RAssignment::RAssignment(DataSet& dataset, uint32_t k, Distance<double> dist, Approximator* approx_) 
+: Clusterer(dataset, k, dist), approx(approx_) { }
+
+vector<Cluster*> RAssignment::apply() {
+	
+}

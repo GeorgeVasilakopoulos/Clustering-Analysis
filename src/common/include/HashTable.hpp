@@ -6,7 +6,7 @@
 #include "utils.hpp"
 
 // uint32_t is the hash value, used on the qUeRiNg TrIcK
-typedef std::vector<std::tuple<uint32_t, DataPoint*>> Bucket;
+typedef std::vector<std::pair<uint32_t, DataPoint*>> Bucket;
 
 template <typename T>
 class HashTable {

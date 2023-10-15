@@ -9,14 +9,14 @@ COMMON_SRCS  := $(wildcard $(COMMON)/modules/*.cpp)
 COMMON_OBJS  := $(subst .cpp,.o,$(COMMON_PROG)) $(subst .cpp,.o,$(COMMON_SRCS))
 
 
-LSH		  := ./src/lsh
+LSH		  := ./src/approximators/lsh
 LSH_INCS  := $(LSH)/include
 LSH_PROG  := $(wildcard $(LSH)/*.cpp)
 LSH_SRCS  := $(wildcard $(LSH)/modules/*.cpp) $(COMMON_SRCS)
 LSH_OBJS  := $(subst .cpp,.o,$(LSH_PROG)) $(subst .cpp,.o,$(LSH_SRCS))
 
 
-CUBE	   := ./src/cube
+CUBE	   := ./src/approximators/cube
 CUBE_INCS  := $(CUBE)/include
 CUBE_PROG  := $(wildcard $(CUBE)/*.cpp)
 CUBE_SRCS  := $(wildcard $(CUBE)/modules/*.cpp) $(COMMON_SRCS)

@@ -4,6 +4,14 @@
 #include <chrono>
 #include "Vector.hpp"
 
+template<typename T>
+using Distance = double (*)(Vector<uint8_t>&, Vector<T>&);
+
+// T: uint8_t, float or double
+template<typename T>
+double l2_distance(Vector<uint8_t>& v1, Vector<T>& v2);
+
+
 class Stopwatch {
     private:
         std::chrono::time_point<std::chrono::high_resolution_clock> time;
@@ -24,7 +32,6 @@ class DataPoint {
         uint32_t label() const;
         Vector<uint8_t>& data() const;
 };
-
 
 class DataSet {
     private:

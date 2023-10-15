@@ -14,7 +14,7 @@ bool HashTable<T>::insert(DataPoint& point) {
 
 	// if already exists return false
 
-	buckets[hvalue % table_size].push_back(std::make_tuple(hvalue, &point)); //qUeRying TrIcK
+	buckets[hvalue % table_size].push_back(std::pair(hvalue, &point)); //qUeRying TrIcK
 
 	return true; //?
 }
