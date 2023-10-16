@@ -31,10 +31,14 @@ class Vector{
 		Vector operator+(const Vector& vector) const;
 		template <typename U>
 		T operator*(const Vector<U>& vector) const;
+		template <typename U>
+		Vector& operator+=(const Vector<U>& vector);
 
 		Vector& operator+=(const T& scalar);
 		Vector& operator*=(const T& scalar);
 		Vector& operator/=(const T& scalar);
+
+		T* get();
 };
 
 #include "../modules/Vector.tcc"

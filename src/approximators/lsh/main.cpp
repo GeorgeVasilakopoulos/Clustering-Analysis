@@ -95,18 +95,18 @@ try {
 			output_file << R << "-near neighbors:\n";
 
 			for (auto vec : range)
-				output_file << get<0>(vec) << "\n";
+				output_file << vec.first << "\n";
 			output_file << "\n";
 		}
-	
+
 		cout << "Enter path to new query file (Nothing in order to stop): ";
 		getline(cin, query_path);
 
 		if (query_path.empty()) 
-			break;	
+			break;
 	}
-
-
+	
+	output_file.close();
 } 
 catch (exception& e) {
 	cerr << e.what();

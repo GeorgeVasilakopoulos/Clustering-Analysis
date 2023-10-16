@@ -1,6 +1,30 @@
 #include "Cluster.hpp"
+#include <unordered_map>
+#include <cfloat>
 
 using namespace std;
+
+/////////////
+// Cluster //
+/////////////
+
+void Cluster::update() {
+	auto sum = new Vector<uint32_t>(center_->len());
+
+	for (auto point : points_)
+		*sum += point->data();
+	
+	delete center_;
+	center_ = new Vector<double>(*sum);
+	*center_ /= (double)points_.size();
+
+	delete sum;
+}
+
+
+///////////////
+// Clusterer //
+///////////////
 
 Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<double> dist_) 
 : dataset(dataset_), k(k_), dist(dist_) { 
@@ -12,6 +36,7 @@ Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<double> dist_)
 	chosen[init_center] = true;
 	
 	for (uint32_t i = 1; i < k; i++) {
+		printf("Beginning %d\n", i + 1);
 		vector<pair<uint32_t, double>> distances;
 		vector<pair<uint32_t, double>> probs;
 
@@ -20,7 +45,8 @@ Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<double> dist_)
 			if (chosen[j])
 				continue;
 			
-			double distance = min_dist(*dataset[j]);
+			auto p = closest(*dataset[j]);
+			double distance = p.first;
 			distance *= distance;
 
 			distances.push_back(pair(j, distance));
@@ -46,20 +72,97 @@ Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<double> dist_)
 	}
 
 	delete [] chosen;
-}
-
-
-Lloyd::Lloyd(DataSet& dataset, uint32_t k, Distance<double> dist) 
-: Clusterer(dataset, k, dist) { }
-
-vector<Cluster*> Lloyd::apply() {
-
-}
-
-
-RAssignment::RAssignment(DataSet& dataset, uint32_t k, Distance<double> dist, Approximator* approx_) 
-: Clusterer(dataset, k, dist), approx(approx_) { }
-
-vector<Cluster*> RAssignment::apply() {
 	
+
+	// for (auto cluster : clusters) {
+	// 	for (size_t i = 0; i < cluster->center().len(); i++)
+	// 		printf("%3d%s", (int)(cluster->center())[i], ((i + 1) % 28) == 0 ? "\n" : " ");
+	// 	printf("\n");
+	// }
 }
+
+Clusterer::~Clusterer() {
+	for (auto cluster : clusters)
+		delete cluster;
+}
+
+void Clusterer::clear() {
+	for (auto cluster : clusters)
+		cluster->clear();
+}
+
+pair<double, Cluster*> Clusterer::closest(DataPoint& point) {
+
+	if (clusters.size() == 0)
+        throw runtime_error("Exception in min_dist: Zero clusters present!\n");
+
+	double min = DBL_MAX;
+	Cluster* closest = nullptr;
+
+	for (auto cluster : clusters) {
+		double distance = dist(point.data(), cluster->center());
+
+		if (distance < min) {
+			min = distance;
+			closest = cluster;
+		}
+	}
+
+	return pair(min, closest);
+}
+
+std::vector<Cluster*>& Clusterer::get() { return clusters; }
+
+
+////////////
+// Lloyd //
+///////////
+
+Lloyd::Lloyd(DataSet& dataset, uint32_t k, Distance<double> dist) : Clusterer(dataset, k, dist) { }
+
+void Lloyd::apply() {
+	Cluster** indexes = new Cluster*[dataset.size()]();
+	
+	while (true) {
+		uint32_t changes = 0;
+
+		for (auto point : dataset) {
+			uint32_t index = point->label() - 1;
+
+			auto p = closest(*point);
+			p.second->add(point);
+
+			if (p.second != indexes[index]) {
+				changes++;
+				indexes[index] = p.second;
+			}
+		}
+
+		if (changes == 0)
+			break;
+
+		for (auto cluster : clusters)
+			cluster->update();
+
+		clear();
+	}
+
+
+	delete [] indexes;
+
+	
+	// for (auto cluster : clusters) {
+	// 	for (size_t i = 0; i < cluster->center().len(); i++)
+	// 		printf("%3d%s", (int)(cluster->center())[i], ((i + 1) % 28) == 0 ? "\n" : " ");
+	// 	printf("\n");
+	// }
+}
+
+
+////////////////////////
+// Reverse Assignment //
+////////////////////////
+
+RAssignment::RAssignment(DataSet& dataset, uint32_t k, Distance<double> dist, Approximator* approx_) : Clusterer(dataset, k, dist), approx(approx_) { }
+
+void RAssignment::apply() { }

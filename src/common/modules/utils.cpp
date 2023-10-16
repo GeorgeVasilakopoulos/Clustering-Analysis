@@ -7,6 +7,8 @@ template<typename T>
 double l2_distance(Vector<uint8_t>& v1, Vector<T>& v2) {
     if (v1.len() != v2.len()) 
         throw runtime_error("Exception in L2 Metric: Dimensions of vectors must match!\n");
+    
+    //
 
 	double sum = 0;
 	for(uint32_t i = 0, size = v1.len(); i < size; i++) {
@@ -72,6 +74,8 @@ DataSet::DataSet(string path, uint32_t files) {
 
     for (uint32_t i = 0; i < count; i++) 
         points.push_back(new DataPoint(input, vector_size, i + 1));
+    
+    input.close();
 }
 
 DataSet::~DataSet() {

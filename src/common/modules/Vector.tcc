@@ -130,6 +130,20 @@ T Vector<T>::operator*(const Vector<U>& v) const {
 }
 
 template <typename T>
+template <typename U>
+Vector<T>& Vector<T>::operator+=(const Vector<U>& v) {
+
+	if (size != v.len()) 
+        throw std::runtime_error("Exception in Dot Product operation: Dimensions of vectors must match!\n");
+
+	for(uint32_t i = 0; i < size; i++)
+		data[i] += v[i];
+
+	return *this;
+}
+
+
+template <typename T>
 Vector<T>& Vector<T>::operator+=(const T& scalar) {
 	for (uint32_t i = 0; i < size; i++)
 		data[i] += scalar;
@@ -155,3 +169,7 @@ Vector<T>& Vector<T>::operator/=(const T& scalar) {
 
 	return *this;
 }
+
+
+template <typename T>
+T* Vector<T>::get() { return data; } 

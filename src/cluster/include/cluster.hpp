@@ -8,33 +8,38 @@
 class Cluster {
 	private:
 		Vector<double>* center_;
-		std::vector<DataPoint*> points;
+		std::vector<DataPoint*> points_;
 
 	public:
 		Cluster(uint32_t size) : center_(new Vector<double>(size)) { }
 		Cluster(DataPoint* point) : center_(new Vector<double>(point->data())) { }
 		~Cluster() { delete center_; }
 
-		uint32_t size() const { return points.size(); }
-		void add(DataPoint* point) { points.push_back(point); }
-		std::vector<DataPoint*> cluster() { return points; }
+		uint32_t size() const { return points_.size(); }
+		void add(DataPoint* point) { points_.push_back(point); }
+		std::vector<DataPoint*> points() { return points_; }
 		Vector<double>& center() { return *center_; }
+        void update();
+        void clear() { points_.clear(); }
 };
 
 class Clusterer {
-    private:
+    protected:
         DataSet& dataset;
         uint32_t k;
 		Distance<double> dist;
 
 		std::vector<Cluster*> clusters;
 
-		double min_dist(DataPoint& point);
+		std::pair<double, Cluster*> closest(DataPoint& point);
     public:
         Clusterer(DataSet& dataset, uint32_t k, Distance<double> dist);
-        virtual ~Clusterer() { }
+        virtual ~Clusterer();
+        
+        void clear();
 
-        virtual std::vector<Cluster*> apply() = 0;
+        std::vector<Cluster*>& get();
+        virtual void apply() = 0;
 };
 
 class Lloyd : public Clusterer {
@@ -42,7 +47,7 @@ class Lloyd : public Clusterer {
 
     public:
         Lloyd(DataSet& dataset, uint32_t k, Distance<double> dist);
-        std::vector<Cluster*> apply() override;
+        void apply() override;
 };
 
 class RAssignment : public Clusterer {
@@ -50,5 +55,5 @@ class RAssignment : public Clusterer {
         Approximator* approx;
     public:
         RAssignment(DataSet& dataset, uint32_t k, Distance<double> dist, Approximator* approx);
-        std::vector<Cluster*> apply() override;
+        void apply() override;
 };
