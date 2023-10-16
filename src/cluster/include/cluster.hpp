@@ -31,7 +31,7 @@ class Clusterer {
 
 		std::vector<Cluster*> clusters;
 
-		std::pair<double, Cluster*> closest(DataPoint& point);
+		std::pair<double, Cluster*> closest(DataPoint* point);
     public:
         Clusterer(DataSet& dataset, uint32_t k, Distance<double> dist);
         virtual ~Clusterer();

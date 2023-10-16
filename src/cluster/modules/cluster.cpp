@@ -45,7 +45,7 @@ Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<double> dist_)
 			if (chosen[j])
 				continue;
 			
-			auto p = closest(*dataset[j]);
+			auto p = closest(dataset[j]);
 			double distance = p.first;
 			distance *= distance;
 
@@ -91,7 +91,7 @@ void Clusterer::clear() {
 		cluster->clear();
 }
 
-pair<double, Cluster*> Clusterer::closest(DataPoint& point) {
+pair<double, Cluster*> Clusterer::closest(DataPoint* point) {
 
 	if (clusters.size() == 0)
         throw runtime_error("Exception in min_dist: Zero clusters present!\n");
@@ -100,7 +100,7 @@ pair<double, Cluster*> Clusterer::closest(DataPoint& point) {
 	Cluster* closest = nullptr;
 
 	for (auto cluster : clusters) {
-		double distance = dist(point.data(), cluster->center());
+		double distance = dist(point->data(), cluster->center());
 
 		if (distance < min) {
 			min = distance;
@@ -129,7 +129,7 @@ void Lloyd::apply() {
 		for (auto point : dataset) {
 			uint32_t index = point->label() - 1;
 
-			auto p = closest(*point);
+			auto p = closest(point);
 			p.second->add(point);
 
 			if (p.second != indexes[index]) {
