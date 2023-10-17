@@ -36,7 +36,6 @@ Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<double> dist_)
 	chosen[init_center] = true;
 	
 	for (uint32_t i = 1; i < k; i++) {
-		printf("Beginning %d\n", i + 1);
 		vector<pair<uint32_t, double>> distances;
 		vector<pair<uint32_t, double>> probs;
 
