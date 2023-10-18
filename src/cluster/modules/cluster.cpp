@@ -169,23 +169,25 @@ void RAssignment::apply() {
 
 	double radius ; //Initialize
 
-	// Cluster** indexes = new Cluster*[dataset.size()]();
+	unordered_map<uint32_t,Cluster*> markings;
+	unordered_set<uint32_t> point_set;
 
 
 	while(/**/){	//Set looping condition
 		for(auto cluster : clusters){
 			auto pointsInRange = approx.RangeSearchVector(cluster->center(),radius,dist);
 			for(auto pair : pointsInRange){
-				uint32_t index = pair.first - 1;
+				uint32_t index = pair.first;
 				double distance = pair.second;
 
-				if(!indexes[index]){
-					indexes[index] = cluster;
+				if(point_set.find(index) == point_set.end()){
+					markings[index] = cluster;
+					point_set.insert(index);
 					continue;
 				}
 
-				if(distance < dist(indexes[index]->center(),dataset[index+1])){
-					indexes[index] = cluster;
+				if(distance < dist(markings[index]->center(),dataset[index])){
+					markings[index] = cluster;
 				}
 
 				//To be continued
