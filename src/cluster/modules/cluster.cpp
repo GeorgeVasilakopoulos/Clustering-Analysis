@@ -164,4 +164,44 @@ void Lloyd::apply() {
 
 RAssignment::RAssignment(DataSet& dataset, uint32_t k, Distance<double> dist, Approximator* approx_) : Clusterer(dataset, k, dist), approx(approx_) { }
 
-void RAssignment::apply() { }
+//Incomplete
+void RAssignment::apply() {
+
+	double radius ; //Initialize
+
+	// Cluster** indexes = new Cluster*[dataset.size()]();
+
+
+	while(/**/){	//Set looping condition
+		for(auto cluster : clusters){
+			auto pointsInRange = approx.RangeSearchVector(cluster->center(),radius,dist);
+			for(auto pair : pointsInRange){
+				uint32_t index = pair.first - 1;
+				double distance = pair.second;
+
+				if(!indexes[index]){
+					indexes[index] = cluster;
+					continue;
+				}
+
+				if(distance < dist(indexes[index]->center(),dataset[index+1])){
+					indexes[index] = cluster;
+				}
+
+				//To be continued
+
+			}
+
+
+
+
+
+		}
+	}
+
+
+
+
+
+
+}

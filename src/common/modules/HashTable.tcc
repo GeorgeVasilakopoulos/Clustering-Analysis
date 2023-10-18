@@ -27,3 +27,11 @@ Bucket& HashTable<T>::bucket(DataPoint& point) {
 	uint32_t hvalue = hash->apply(point.data());
 	return buckets[hvalue % table_size];
 }
+
+template <typename T>
+Bucket& HashTable<T>::bucketOfVector(Vector<double>& v) {
+	uint32_t hvalue = hash->apply(v);
+	return buckets[hvalue % table_size];
+}
+
+

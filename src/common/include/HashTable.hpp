@@ -22,6 +22,7 @@ class HashTable {
     uint32_t get_hash(DataPoint& point) const;
     bool insert(DataPoint& point);
     Bucket& bucket(DataPoint& point);
+    Bucket& bucketOfVector(Vector<double>& v);
 
 };
 

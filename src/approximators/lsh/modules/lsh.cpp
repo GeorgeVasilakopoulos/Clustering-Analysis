@@ -86,4 +86,30 @@ LSH::RangeSearch(DataPoint& query, double range, Distance<uint8_t> dist) {
 	return out;
 }
 
+vector< pair<uint32_t, double> > 
+LSH::RangeSearchVector(Vector<double>& query, double range, Distance<double> dist) {
+
+	unordered_set<uint32_t> considered;
+	vector< pair<uint32_t, double> > out;
+
+
+	for (auto ht : htables) {
+		for(auto p : ht->bucketOfVector(query)) {
+			
+			auto point = p.second;
+
+			if(considered.find(point->label()) != considered.end())
+				continue; 
+
+			double distance = dist(point->data(),query);
+
+			if(distance < range) {
+				out.push_back(pair(point->label(),distance));
+				considered.insert(point->label());
+			}
+		}
+	}
+
+	return out;
+}
 
