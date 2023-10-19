@@ -42,7 +42,6 @@ try {
 		getline(cin, data_path);
 	}
 
-	// time this
 	DataSet train(data_path);
 
 	if (parser.parsed("q"))

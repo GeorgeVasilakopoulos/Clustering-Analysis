@@ -3,27 +3,6 @@
 
 using namespace std;
 
-template<typename T>
-double l2_distance(Vector<uint8_t>& v1, Vector<T>& v2) {
-    if (v1.len() != v2.len()) 
-        throw runtime_error("Exception in L2 Metric: Dimensions of vectors must match!\n");
-    
-    //
-
-	double sum = 0;
-	for(uint32_t i = 0, size = v1.len(); i < size; i++) {
-		double diff = (double)v1[i] - (double)v2[i];
-		sum += diff * diff; 
-	}
-
-	return sqrt(sum);
-}
-
-
-template double l2_distance<uint8_t>(Vector<uint8_t>& v1, Vector<uint8_t>& v2);
-template double l2_distance<float>(Vector<uint8_t>& v1, Vector<float>& v2);
-template double l2_distance<double>(Vector<uint8_t>& v1, Vector<double>& v2);
-
 
 ///////////////
 // Stopwatch //

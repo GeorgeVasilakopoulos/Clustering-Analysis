@@ -10,7 +10,7 @@ using Distance = double (*)(Vector<uint8_t>&, Vector<T>&);
 // T: uint8_t, float or double
 template<typename T>
 double l2_distance(Vector<uint8_t>& v1, Vector<T>& v2);
-
+#include "../modules/Distances.tcc"
 
 class Stopwatch {
     private:
