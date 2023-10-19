@@ -37,7 +37,7 @@ class Clusterer {
         virtual ~Clusterer();
         
         void clear();
-
+        double minDistBetweenClusters();
         std::vector<Cluster*>& get();
         virtual void apply() = 0;
 };

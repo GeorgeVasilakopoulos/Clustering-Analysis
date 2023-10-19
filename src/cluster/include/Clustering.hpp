@@ -6,7 +6,7 @@
 #include <unordered_set>
 #include "Vector.hpp"
 #include "utils.hpp"
-#include "Cluster.hpp"
+#include "cluster.hpp"
 
 
 class Clustering {
