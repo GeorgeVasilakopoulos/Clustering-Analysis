@@ -203,8 +203,9 @@ void RAssignment::apply() {
 	unordered_map<uint32_t, Cluster*> markings;
 	unordered_set<uint32_t> point_set;
 
-
+	uint32_t LOOP_COUNT = 0;
 	while(true){
+		// printf("%f\n",radius);
 		for(auto cluster : clusters){	
 			auto pointsInRange = approx->RangeSearchVector(cluster->center(),radius, Clusterer::dist);
 			for(auto pair : pointsInRange){
@@ -225,12 +226,13 @@ void RAssignment::apply() {
 		for(auto point : point_set){
 			Cluster* assigned_cluster = markings[point];
 			assigned_cluster->add(dataset[point-1]);
+			assigned_cluster->update();
 		}
 
-		for(auto cluster : clusters)
+		/*for(auto cluster : clusters)
 			cluster->update();
-		
-		if(((double)point_set.size())/dataset.size() > 0.8) //Change break condition
+		*/
+		if(((double)point_set.size())/dataset.size() > 0.8 ||LOOP_COUNT==15) //Change break condition
 			break;
 
 
@@ -239,6 +241,7 @@ void RAssignment::apply() {
 		point_set.clear();
 		markings.clear();
 		clear();
+		LOOP_COUNT++;
 	}
 
 }
