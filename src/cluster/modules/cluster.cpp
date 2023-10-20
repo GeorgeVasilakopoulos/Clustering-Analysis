@@ -26,12 +26,12 @@ void Cluster::update() {
 	if (points_.size() > 1)
 		*center_ *= ((double)points_.size() - 1.);
 
-	*center_ /= (double)points_.size();
-
 	auto point = points_.back();
 
 	for (uint32_t i = 0, size = (*center_).len(); i < size; i++)
-		(*center_)[i] += point->data()[i] / (double)points_.size();
+		(*center_)[i] += point->data()[i];
+
+	*center_ /= (double)points_.size();
 }
 
 ///////////////
@@ -150,7 +150,7 @@ void Lloyd::apply() {
 			p.second->update();
 		}
 
-		printf("changes: %d\n", changes);
+		// printf("changes: %d\n", changes);
 		if (changes == 0)
 			break;
 
