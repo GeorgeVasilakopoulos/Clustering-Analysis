@@ -31,7 +31,7 @@ CLUSTER_OBJS  := $(subst .cpp,.o,$(CLUSTER_SRCS))
 
 
 TARGET   := $(word 1, $(MAKECMDGOALS))
-CXXFLAGS := -std=c++17 -g3 -Wall -Wextra 
+CXXFLAGS := -std=c++17 -O2 -Wall -Wextra 
 
 # Compile options
 ifeq ($(TARGET),lsh)

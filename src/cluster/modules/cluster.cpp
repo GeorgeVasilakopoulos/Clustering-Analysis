@@ -159,12 +159,6 @@ pair<double, Cluster*> Clusterer::closest(DataPoint* point) {
 
 std::vector<Cluster*>& Clusterer::get() { return clusters; }
 
-double fast_l2_distance(DataPoint* p1, DataPoint* p2) {
-	// return p1->squared + p2->squared - 2 * (p1->data() * p2->data());
-	return sqrt(p1->squared + p2->squared - 2 * (p1->data() * p2->data()));
-	// return sqrt(p1->squared + p2->squared - 2 * p1->dot_prods[p2->label() - 1]);
-}
-
 double average_distance(DataPoint* point, Cluster* cluster, Distance<uint8_t, uint8_t> dist_) {
 	double sum = 0;
 	size_t count = 0;
