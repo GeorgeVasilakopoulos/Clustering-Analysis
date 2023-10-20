@@ -9,19 +9,30 @@ using namespace std;
 // Cluster //
 /////////////
 
-void Cluster::update() {
-	auto sum = new Vector<uint32_t>(center_->len());
+// void Cluster::update() {
+// 	auto sum = new Vector<uint32_t>(center_->len());
 
-	for (auto point : points_)
-		*sum += point->data();
+// 	for (auto point : points_)
+// 		*sum += point->data();
 	
-	delete center_;
-	center_ = new Vector<double>(*sum);
+// 	delete center_;
+// 	center_ = new Vector<double>(*sum);
+// 	*center_ /= (double)points_.size();
+
+// 	delete sum;
+// }
+
+void Cluster::update() {
+	if (points_.size() > 1)
+		*center_ *= ((double)points_.size() - 1.);
+
 	*center_ /= (double)points_.size();
 
-	delete sum;
-}
+	auto point = points_.back();
 
+	for (uint32_t i = 0, size = (*center_).len(); i < size; i++)
+		(*center_)[i] += point->data()[i] / (double)points_.size();
+}
 
 ///////////////
 // Clusterer //
@@ -136,14 +147,15 @@ void Lloyd::apply() {
 				changes++;
 				indexes[index] = p.second;
 			}
+			p.second->update();
 		}
 
-		// printf("changes: %d\n", changes);
+		printf("changes: %d\n", changes);
 		if (changes == 0)
 			break;
 
-		for (auto cluster : clusters)
-			cluster->update();
+		// for (auto cluster : clusters)
+		// 	cluster->update();
 
 		clear();
 	}

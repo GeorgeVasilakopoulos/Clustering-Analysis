@@ -8,7 +8,7 @@
 
 int main() {
 
-    DataSet dataset("train_images", 1000);
+    DataSet dataset("train_images");
 
     
     Lloyd l(dataset, 10, l2_distance);
