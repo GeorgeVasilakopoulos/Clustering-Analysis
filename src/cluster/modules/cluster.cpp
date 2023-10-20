@@ -23,13 +23,48 @@ using namespace std;
 // }
 
 void Cluster::update() {
-	if (points_.size() > 1)
-		*center_ *= ((double)points_.size() - 1.);
+	// if (points_.size() > 1)
+	// 	*center_ *= ((double)points_.size() - 1.);
 
-	auto point = points_.back();
+	// auto point = points_.back();
+
+	// for (uint32_t i = 0, size = (*center_).len(); i < size; i++)
+	// 	(*center_)[i] += point->data()[i];
+
+	// *center_ /= (double)points_.size();
+}
+
+void Cluster::add(DataPoint* point) {
+
+	if (points_.size() > 1)
+		*center_ *= (double)points_.size();
+
+	points_.insert(point);
 
 	for (uint32_t i = 0, size = (*center_).len(); i < size; i++)
 		(*center_)[i] += point->data()[i];
+
+	*center_ /= (double)points_.size();
+
+}
+
+void Cluster::remove(DataPoint* point) {
+
+	if (points_.size() == 1) {
+		points_.erase(point);
+		
+		for (uint32_t i = 0, size = (*center_).len(); i < size; i++)
+			(*center_)[i] = 0;
+		
+		return ;
+	}
+	
+	*center_ *= (double)points_.size();
+
+	points_.erase(point);
+
+	for (uint32_t i = 0, size = (*center_).len(); i < size; i++)
+		(*center_)[i] -= point->data()[i];
 
 	*center_ /= (double)points_.size();
 }
@@ -124,6 +159,68 @@ pair<double, Cluster*> Clusterer::closest(DataPoint* point) {
 
 std::vector<Cluster*>& Clusterer::get() { return clusters; }
 
+double fast_l2_distance(DataPoint* p1, DataPoint* p2) {
+	// return p1->squared + p2->squared - 2 * (p1->data() * p2->data());
+	return sqrt(p1->squared + p2->squared - 2 * (p1->data() * p2->data()));
+	// return sqrt(p1->squared + p2->squared - 2 * p1->dot_prods[p2->label() - 1]);
+}
+
+double average_distance(DataPoint* point, Cluster* cluster, Distance<uint8_t, uint8_t> dist_) {
+	double sum = 0;
+	size_t count = 0;
+
+	for (auto point2 : cluster->points()) {
+		if (point == point2)
+			continue;
+		
+		// sum += fast_l2_distance(point, point2);
+		sum += dist_(point->data(), point2->data());
+		count++;
+	}
+
+	return sum / count;
+
+}
+
+vector<double> Clusterer::silhouettes(Distance<uint8_t, uint8_t> dist_) {
+	vector<double> metr(dataset.size());
+
+	int i = 0;
+	Stopwatch sw;
+	for (auto cluster : clusters) {
+		printf("Staring cluster %2d/10, size: %5d\n", ++i, cluster->size());
+		int j = 0;
+		sw.start();
+		for (auto point : cluster->points()) {
+
+			double min = DBL_MAX;
+			Cluster* closest = nullptr;
+
+			for (auto cluster1 : clusters) {
+				if (cluster1 == cluster)
+					continue; 
+
+				double distance = dist(point->data(), cluster->center());
+
+				if (distance < min) {
+					min = distance;
+					closest = cluster1;
+				}
+			}
+
+			double a = average_distance(point, cluster, dist_);
+			double b = average_distance(point, closest, dist_);
+
+			metr[point->label() - 1] = (b - a) / max(a, b);
+			if (++j % 1000 == 0) {
+				printf("\tscore %5d: %f, time: %f sec\n", j, metr[point->label() - 1], sw.stop());
+				sw.start();
+			}
+		}
+	}
+
+	return metr;
+}
 
 ////////////
 // Lloyd //
@@ -141,28 +238,34 @@ void Lloyd::apply() {
 			uint32_t index = point->label() - 1;
 
 			auto p = closest(point);
-			p.second->add(point);
 
 			if (p.second != indexes[index]) {
 				changes++;
+				
+				if (indexes[index] != nullptr)
+					indexes[index]->remove(point);
+					
+				p.second->add(point);
+
 				indexes[index] = p.second;
 			}
-			p.second->update();
 		}
 
-		// printf("changes: %d\n", changes);
+		printf("changes: %d\n", changes);
 		if (changes == 0)
 			break;
 
 		// for (auto cluster : clusters)
 		// 	cluster->update();
 
-		clear();
+		// clear();
 	}
 
 
 	delete [] indexes;
 
+	for (auto cluster : clusters)
+		printf("cluster size: %d\n", cluster->size());
 	
 	// for (auto cluster : clusters) {
 	// 	for (size_t i = 0; i < cluster->center().len(); i++)

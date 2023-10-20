@@ -11,17 +11,23 @@ int main() {
 
     DataSet dataset("train_images");
 
-    LSH mylsh(dataset,10,10,10,1000);
+    // LSH mylsh(dataset, 10, 10, 10, 1000);
 
-    printf("Defined\n");
-    RAssignment l(dataset, 3, &mylsh,l2_distance,l2_distance);
-    l.apply();
+    // RAssignment l(dataset, 3, &mylsh, l2_distance, l2_distance);
+    // l.apply();
 
-
-    printf("done\n");
     Lloyd l2(dataset, 10, l2_distance);
     l2.apply();
-    printf("done\n");
+
+    Stopwatch sw;
+    sw.start();
+
+    printf("Starting silh\n");
+    auto sil = l2.silhouettes(l2_distance);
+    printf("took %f seconds\n", sw.stop());
+
+    for (uint32_t i = 0; i < 10; i++)
+        printf("%f\n", sil[i]);
 
 
     return 0;

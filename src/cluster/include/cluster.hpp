@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <set>
 #include "Vector.hpp"
 #include "utils.hpp"
 #include "Approximator.hpp"
@@ -8,7 +9,8 @@
 class Cluster {
 	private:
 		Vector<double>* center_;
-		std::vector<DataPoint*> points_;
+		// std::vector<DataPoint*> points_;
+		std::set<DataPoint*> points_;
 
 	public:
 		Cluster(uint32_t size) : center_(new Vector<double>(size)) { }
@@ -16,8 +18,9 @@ class Cluster {
 		~Cluster() { delete center_; }
 
 		uint32_t size() const { return points_.size(); }
-		void add(DataPoint* point) { points_.push_back(point); }
-		std::vector<DataPoint*> points() { return points_; }
+		void add(DataPoint* point);
+		void remove(DataPoint* point);
+		std::set<DataPoint*> points() { return points_; }
 		Vector<double>& center() { return *center_; }
         void update();
         void clear() { points_.clear(); }
@@ -39,6 +42,7 @@ class Clusterer {
         void clear();
         double minDistBetweenClusters();
         std::vector<Cluster*>& get();
+        std::vector<double> silhouettes(Distance<uint8_t, uint8_t> dist);
         virtual void apply() = 0;
 };
 
