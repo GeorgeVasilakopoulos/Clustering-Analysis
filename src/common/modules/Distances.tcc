@@ -1,5 +1,5 @@
-template<typename T>
-double l2_distance(Vector<uint8_t>& v1, Vector<T>& v2) {
+template<typename T1, typename T2>
+double l2_distance(Vector<T1>& v1, Vector<T2>& v2) {
     if (v1.len() != v2.len()) 
         throw std::runtime_error("Exception in L2 Metric: Dimensions of vectors must match!\n");
     
@@ -13,3 +13,4 @@ double l2_distance(Vector<uint8_t>& v1, Vector<T>& v2) {
 
 	return sqrt(sum);
 }
+

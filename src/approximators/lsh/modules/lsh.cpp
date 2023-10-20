@@ -25,7 +25,7 @@ LSH::~LSH() {
 
 
 vector< pair<uint32_t, double> > 
-LSH::kANN(DataPoint& query, uint32_t k, Distance<uint8_t> dist){
+LSH::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist){
 			
 	auto comparator = [](const pair<uint32_t, double> t1, const pair<uint32_t, double> t2) {
 		return t1.second > t2.second;
@@ -60,7 +60,7 @@ LSH::kANN(DataPoint& query, uint32_t k, Distance<uint8_t> dist){
 
 
 vector< pair<uint32_t, double> > 
-LSH::RangeSearch(DataPoint& query, double range, Distance<uint8_t> dist) {
+LSH::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist) {
 
 	unordered_set<uint32_t> considered;
 	vector< pair<uint32_t, double> > out;
@@ -87,7 +87,7 @@ LSH::RangeSearch(DataPoint& query, double range, Distance<uint8_t> dist) {
 }
 
 vector< pair<uint32_t, double> > 
-LSH::RangeSearchVector(Vector<double>& query, double range, Distance<double> dist) {
+LSH::RangeSearchVector(Vector<double>& query, double range, Distance<uint8_t, double> dist) {
 
 	unordered_set<uint32_t> considered;
 	vector< pair<uint32_t, double> > out;

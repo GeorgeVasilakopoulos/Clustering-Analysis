@@ -27,7 +27,7 @@ void Cluster::update() {
 // Clusterer //
 ///////////////
 
-Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<double> dist_) 
+Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<uint8_t, double> dist_) 
 : dataset(dataset_), k(k_), dist(dist_) { 
     bool* chosen = new bool[dataset.size()]();
 
@@ -118,7 +118,7 @@ std::vector<Cluster*>& Clusterer::get() { return clusters; }
 // Lloyd //
 ///////////
 
-Lloyd::Lloyd(DataSet& dataset, uint32_t k, Distance<double> dist) : Clusterer(dataset, k, dist) { }
+Lloyd::Lloyd(DataSet& dataset, uint32_t k, Distance<uint8_t, double> dist) : Clusterer(dataset, k, dist) { }
 
 void Lloyd::apply() {
 	Cluster** indexes = new Cluster*[dataset.size()]();
@@ -138,6 +138,7 @@ void Lloyd::apply() {
 			}
 		}
 
+		// printf("changes: %d\n", changes);
 		if (changes == 0)
 			break;
 
@@ -163,31 +164,37 @@ void Lloyd::apply() {
 // Reverse Assignment //
 ////////////////////////
 
-RAssignment::RAssignment(DataSet& dataset, uint32_t k, Distance<double> dist, Approximator* approx_) : Clusterer(dataset, k, dist), approx(approx_) { }
+RAssignment::RAssignment(DataSet& dataset, uint32_t k, Approximator* approx_, 
+						 Distance<uint8_t, double> dist1, 
+						 Distance<double, double>  dist2) : Clusterer(dataset, k, dist1), approx(approx_), dist(dist2) { }
 
-double Clusterer::minDistBetweenClusters(){
+double RAssignment::minDistBetweenClusters() {
 	double distance = DBL_MAX;
-	for(auto cluster1 : clusters){
-		for(auto cluster2 : clusters){
-			if (cluster1 == cluster2) continue;
-			distance = min(distance,dist(cluster1->center(),cluster2->center()));
+
+	for(auto cluster1 : clusters) {
+		for(auto cluster2 : clusters) {
+			if (cluster1 == cluster2) 
+				continue;
+
+			distance = min(distance, dist(cluster1->center(), cluster2->center()));
 		}
 	}
+
 	return distance;
 }
 
 
 void RAssignment::apply() {
 
-	double radius = minDistBetweenClusters()/2;
+	double radius = minDistBetweenClusters() / 2;
 
-	unordered_map<uint32_t,Cluster*> markings;
+	unordered_map<uint32_t, Cluster*> markings;
 	unordered_set<uint32_t> point_set;
 
 
 	while(true){
 		for(auto cluster : clusters){	
-			auto pointsInRange = approx->RangeSearchVector(cluster->center(),radius,dist);
+			auto pointsInRange = approx->RangeSearchVector(cluster->center(),radius, Clusterer::dist);
 			for(auto pair : pointsInRange){
 				uint32_t index = pair.first;
 				double distance = pair.second;
@@ -198,9 +205,9 @@ void RAssignment::apply() {
 					continue;
 				}
 
-				if(distance < dist(dataset[index-1]->data(),markings[index]->center())){
+				if(distance < Clusterer::dist(dataset[index - 1]->data(), markings[index]->center()))
 					markings[index] = cluster;
-				}
+				
 			}
 		}
 		for(auto point : point_set){

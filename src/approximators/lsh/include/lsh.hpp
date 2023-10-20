@@ -17,11 +17,11 @@ class LSH : public Approximator{
 		~LSH();
 
 		std::vector< std::pair<uint32_t, double> >
-		kANN(DataPoint& p, uint32_t k, Distance<uint8_t> dist) override;
+		kANN(DataPoint& p, uint32_t k, Distance<uint8_t, uint8_t> dist) override;
 
 		std::vector< std::pair<uint32_t, double> > 
-		RangeSearch(DataPoint& query, double range, Distance<uint8_t> dist) override;
+		RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist) override;
 
 		std::vector< std::pair<uint32_t, double> > 
-		RangeSearchVector(Vector<double>& query, double range, Distance<double> dist) override;
+		RangeSearchVector(Vector<double>& query, double range, Distance<uint8_t, double> dist) override;
 };

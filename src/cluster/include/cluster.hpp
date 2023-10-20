@@ -27,13 +27,13 @@ class Clusterer {
     protected:
         DataSet& dataset;
         uint32_t k;
-		Distance<double> dist;
+		Distance<uint8_t, double> dist;
 
 		std::vector<Cluster*> clusters;
 
 		std::pair<double, Cluster*> closest(DataPoint* point);
     public:
-        Clusterer(DataSet& dataset, uint32_t k, Distance<double> dist);
+        Clusterer(DataSet& dataset, uint32_t k, Distance<uint8_t, double> dist);
         virtual ~Clusterer();
         
         void clear();
@@ -46,14 +46,18 @@ class Lloyd : public Clusterer {
     private:
 
     public:
-        Lloyd(DataSet& dataset, uint32_t k, Distance<double> dist);
+        Lloyd(DataSet& dataset, uint32_t k, Distance<uint8_t, double> dist);
         void apply() override;
 };
 
 class RAssignment : public Clusterer {
     private:
         Approximator* approx;
+		Distance<double, double>  dist;
+        double minDistBetweenClusters();
     public:
-        RAssignment(DataSet& dataset, uint32_t k, Distance<double> dist, Approximator* approx);
+        RAssignment(DataSet& dataset, uint32_t k, Approximator* approx,
+                    Distance<uint8_t, double> dist1, 
+		            Distance<double, double>  dist2); 
         void apply() override;
 };

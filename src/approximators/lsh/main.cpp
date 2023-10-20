@@ -69,7 +69,7 @@ try {
 	Stopwatch sw = Stopwatch();
 
 	while (true) {
-		for (auto point : DataSet(query_path, 1)) {
+		for (auto point : DataSet(query_path, 10)) {
 
 			sw.start();
 			auto aknn = lsh.kANN(*point, N, l2_distance<uint8_t>);

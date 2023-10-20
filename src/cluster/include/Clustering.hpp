@@ -9,15 +9,15 @@
 #include "cluster.hpp"
 
 
-class Clustering {
-	protected:
-		DataSet& dataset;
-		Distance<double> dist;
-		std::vector<Cluster*> clusters;
+// class Clustering {
+// 	protected:
+// 		DataSet& dataset;
+// 		Distance<double> dist;
+// 		std::vector<Cluster*> clusters;
 
-		double min_dist(DataPoint& point);
+// 		double min_dist(DataPoint& point);
 
-	public:
-		Clustering(DataSet& dataset_, uint32_t k_, Distance<double> dist);
-		~Clustering();
-};
+// 	public:
+// 		Clustering(DataSet& dataset_, uint32_t k_, Distance<double> dist);
+// 		~Clustering();
+// };

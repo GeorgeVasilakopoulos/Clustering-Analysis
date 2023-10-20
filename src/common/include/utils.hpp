@@ -4,12 +4,11 @@
 #include <chrono>
 #include "Vector.hpp"
 
-template<typename T>
-using Distance = double (*)(Vector<uint8_t>&, Vector<T>&);
+template<typename T1, typename T2>
+using Distance = double (*)(Vector<T1>&, Vector<T2>&);
 
-// T: uint8_t, float or double
-template<typename T>
-double l2_distance(Vector<uint8_t>& v1, Vector<T>& v2);
+template<typename T1, typename T2>
+double l2_distance(Vector<T1>& v1, Vector<T2>& v2);
 #include "../modules/Distances.tcc"
 
 class Stopwatch {
