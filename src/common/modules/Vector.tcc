@@ -1,4 +1,5 @@
 #include <random>
+#include <iomanip>
 #include "Vector.hpp"
 
 //////////////////
@@ -108,11 +109,12 @@ std::string Vector<T>:: asString()const{
 template <typename T>
 std:: string Vector<T>:: asDigit()const{
 	std::ostringstream oss;
-	for (size_t i = 0; i < size-1; i++){
+	for (size_t i = 0; i < size; i++){
         oss << std::setw(3) << (int) data[i];
         oss <<  (((i + 1) % 28) == 0 ? "\n" : " ");
     }
- 	return oss.str();
+    std::string out = oss.str();
+    return out;
 }
 
 

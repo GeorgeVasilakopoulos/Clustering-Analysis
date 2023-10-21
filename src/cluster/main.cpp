@@ -126,9 +126,7 @@ try {
 
     auto p = clusterer->get()[0]->points().begin();
     auto point = (*p)->data();
-    for (size_t i = 0; i < point.len(); i++)
-        printf("%3d%s", point[i], ((i + 1) % 28) == 0 ? "\n" : " ");
-    printf("\n");
+    cout << point.asDigit()<<endl;
 } 
 catch (exception& e) {
     cerr << e.what();
