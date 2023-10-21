@@ -304,7 +304,7 @@ void RAssignment::apply() {
 	while(true){
 		// printf("%f\n",radius);
 		for(auto cluster : clusters){	
-			auto pointsInRange = approx->RangeSearchVector(cluster->center(),radius, Clusterer::dist);
+			auto pointsInRange = approx->RangeSearch(cluster->center(),radius, Clusterer::dist);
 			for(auto pair : pointsInRange){
 				uint32_t index = pair.first;
 				double distance = pair.second;
