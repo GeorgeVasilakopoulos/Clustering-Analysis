@@ -19,8 +19,11 @@ class HashTable {
     HashTable(uint32_t table_size, T* hash);
     ~HashTable();
 
-    uint32_t get_hash(DataPoint& point) const;
     bool insert(DataPoint& point);
+
+    uint32_t get_hash(DataPoint& point) const;
+    uint32_t get_hash(Vector<double>& v) const;
+    
     Bucket& bucket(uint32_t index);
     Bucket& bucket(DataPoint& point);
     Bucket& bucket(Vector<double>& v);

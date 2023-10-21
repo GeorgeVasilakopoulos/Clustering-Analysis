@@ -79,7 +79,7 @@ Cube::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist){
             
             auto point = p.second;
 
-            if (query.label() == point->label() || considered.find(point->label()) != considered.end())
+            if (considered.find(point->label()) != considered.end())
                 continue; 
 
             double distance = dist(query.data(), point->data());
@@ -87,10 +87,8 @@ Cube::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist){
             pq.push(pair(point->label(), distance));
             considered.insert(point->label());
 
-            if (++i >= points) {
-                // printf("probed %d different vertices %d %d\n", j, i, points);
+            if (++i >= points) 
                 break;
-            }
         }
     }
 
@@ -106,25 +104,33 @@ Cube::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist){
 
 vector< pair<uint32_t, double> > 
 Cube::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist) {
-
-	unordered_set<uint32_t> considered;
+    
+    unordered_set<uint32_t> considered;
 	vector< pair<uint32_t, double> > out;
+    
+    uint32_t vertex = htable.get_hash(query);
+    VertexHelper vertices(vertex, probes, k_);
 
-    for(auto p : htable.bucket(query)) {
-        
-        auto point = p.second;
+    for (uint32_t i = 0, j = 1; i < points && !vertices.stop(); j++, vertex = vertices.next(vertex)) {
+        for(auto p : htable.bucket(query)) {
+            
+            auto point = p.second;
 
-        if(considered.find(point->label()) != considered.end())
-            continue; 
+            if(considered.find(point->label()) != considered.end())
+                continue; 
 
-        double distance = dist(query.data(), point->data());
+            double distance = dist(query.data(), point->data());
 
-        if(distance < range) {
-            out.push_back(pair(point->label(),distance));
-            considered.insert(point->label());
+            if(distance < range) {
+                out.push_back(pair(point->label(),distance));
+                considered.insert(point->label());
+            }
+
+            
+            if (++i >= points) 
+                break;
         }
-    }
-	
+    }    
 
 	return out;
 }
@@ -133,24 +139,31 @@ Cube::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dis
 vector< pair<uint32_t, double> > 
 Cube::RangeSearch(Vector<double>& query, double range, Distance<uint8_t, double> dist) {
 	
-	unordered_set<uint32_t> considered;
+    unordered_set<uint32_t> considered;
 	vector< pair<uint32_t, double> > out;
+    
+    uint32_t vertex = htable.get_hash(query);
+    VertexHelper vertices(vertex, probes, k_);
 
-    for(auto p : htable.bucket(query)) {
-        
-        auto point = p.second;
+    for (uint32_t i = 0, j = 1; i < points && !vertices.stop(); j++, vertex = vertices.next(vertex)) {
+        for(auto p : htable.bucket(query)) {
+            
+            auto point = p.second;
 
-        if(considered.find(point->label()) != considered.end())
-            continue; 
+            if(considered.find(point->label()) != considered.end())
+                continue; 
 
-        double distance = dist(point->data(), query);
+            double distance = dist(point->data(), query);
 
-        if(distance < range) {
-            out.push_back(pair(point->label(),distance));
-            considered.insert(point->label());
+            if(distance < range) {
+                out.push_back(pair(point->label(), distance));
+                considered.insert(point->label());
+            }
+            
+            if (++i >= points) 
+                break;
         }
-    }
-	
+    }    
 
 	return out;
 }

@@ -301,8 +301,8 @@ void RAssignment::apply() {
 	unordered_set<uint32_t> point_set;
 
 	uint32_t LOOP_COUNT = 0;
-	while(true){
-		// printf("%f\n",radius);
+	while(true) {
+		
 		for(auto cluster : clusters){	
 			auto pointsInRange = approx->RangeSearch(cluster->center(),radius, Clusterer::dist);
 			for(auto pair : pointsInRange){
