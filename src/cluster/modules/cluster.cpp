@@ -334,11 +334,18 @@ void RAssignment::apply() {
 
 
 
+
+
+
 		radius *= 2;
 		point_set.clear();
 		markings.clear();
 		clear();
 		LOOP_COUNT++;
 	}
-
+	for(auto point : dataset){
+		if(point_set.find(point->label()) == point_set.end())continue;
+		auto closest_cluster = closest(point).second;
+		closest_cluster->add(point);
+	}
 }

@@ -3,6 +3,7 @@
 #include <queue>
 #include <unordered_set>
 #include <cmath>
+#include <iomanip>
 
 #include "utils.hpp"
 #include "HashTable.hpp"
@@ -23,7 +24,7 @@ try {
     parser.add("c", STRING);
     parser.add("o", STRING);
     parser.add("complete", BOOL);
-    parser.add("m", STRING, "5");
+    parser.add("m", STRING);
     parser.parse(argc, argv);
 
     string input_path;
@@ -87,16 +88,40 @@ try {
     uint32_t table_size = dataset.size() / 8;
     printf("here2\n");
     Clusterer* clusterer = 
-    parser.value<string>("m") == "Classic" ? 
+    approx_method == "Classic" ? 
         (Clusterer*)new Lloyd(dataset, k, l2_distance) :
         (Clusterer*)new RAssignment(dataset, k, 
-                                    parser.value<string>("m") == "LSH" ? 
+                                    approx_method == "LSH" ? 
                                         (Approximator*)new LSH(dataset, window, lsh_k, L, table_size) : 
                                         (Approximator*)new Cube(dataset, window, cube_k, probes, M), 
                                     l2_distance, l2_distance);
 
     printf("here3\n");
+    
+    Stopwatch timer;
+    timer.start();
     clusterer->apply();
+    double clustering_time = timer.stop();
+
+
+    output_file << "Algorithm: ";
+    output_file << ((approx_method=="Classic") ? "Lloyds" : ("Range Search " + approx_method));
+    output_file << '\n';
+
+    auto clusters = clusterer->get();
+    for(uint32_t i = 0; i < k; i++){
+        output_file << "CLUSTER-";
+        output_file << left << setw(3) << to_string(i+1);
+        output_file << "{size: ";
+        output_file << right << setw(5) << to_string(clusters[i]->size());
+        output_file << ", centroid: }";
+        output_file << '\n';
+    }
+
+    output_file << "clustering_time: ";
+    output_file <<  std::fixed << std::setprecision(3) << clustering_time << " sec\n";
+
+
 
     auto p = clusterer->get()[0]->points().begin();
     auto point = (*p)->data();
