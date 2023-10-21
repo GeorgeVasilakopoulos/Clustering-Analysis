@@ -92,6 +92,30 @@ void Vector<T>::uniform(T lower, T upper) {
 }
 
 
+template <typename T>
+std::string Vector<T>:: asString()const{
+	std::string out="[";
+	for(uint32_t i = 0; i < size-1; i++){
+		out += std::to_string((long)data[i]);
+		out += ", ";
+	}
+	out += std::to_string(data[size-1]);
+	out += "]";
+	return out;
+}
+
+
+template <typename T>
+std:: string Vector<T>:: asDigit()const{
+	std::ostringstream oss;
+	for (size_t i = 0; i < size-1; i++){
+        oss << std::setw(3) << (int) data[i];
+        oss <<  (((i + 1) % 28) == 0 ? "\n" : " ");
+    }
+ 	return oss.str();
+}
+
+
 ///////////////////////////
 // Overloaded Operations //
 ///////////////////////////

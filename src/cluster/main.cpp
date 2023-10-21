@@ -114,8 +114,9 @@ try {
         output_file << left << setw(3) << to_string(i+1);
         output_file << "{size: ";
         output_file << right << setw(5) << to_string(clusters[i]->size());
-        output_file << ", centroid: }";
-        output_file << '\n';
+        output_file << ", centroid: \n";
+        output_file << clusters[i]->center().asDigit(); //clusters[i]->center().asString();
+        output_file << "\n}\n\n";
     }
 
     output_file << "clustering_time: ";

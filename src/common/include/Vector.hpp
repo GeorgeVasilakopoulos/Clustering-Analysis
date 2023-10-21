@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
 
 typedef enum { NORMAL, UNIFORM } Distribution;
 
@@ -24,6 +25,8 @@ class Vector{
 		uint32_t len() const;
 		void normal(T mean, T std);
 		void uniform(T lower, T upper);
+		std::string asString()const;
+		std:: string asDigit()const;
 
 		T& operator[](uint32_t index) const;
 		Vector& operator-() const;
