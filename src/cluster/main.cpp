@@ -8,7 +8,9 @@
 #include "HashTable.hpp"
 #include "ArgParser.hpp"
 #include "FileParser.hpp"
+#include "cluster.hpp"
 #include "lsh.hpp"
+#include "cube.hpp"
 
 using namespace std;
 
@@ -20,8 +22,8 @@ try {
     parser.add("i", STRING);
     parser.add("c", STRING);
     parser.add("o", STRING);
-    parser.add("complete", STRING);
-    parser.add("m", UINT, "5");
+    parser.add("complete", BOOL);
+    parser.add("m", STRING, "5");
     parser.parse(argc, argv);
 
     string input_path;
@@ -29,79 +31,78 @@ try {
     string out_path;
     string approx_method;
 
-    uint32_t number_of_clusters=0, number_of_vector_hash_tables = 3;
-    uint32_t number_of_vector_hash_functions = 4, max_number_M_hypercube = 10;
-    uint32_t number_of_hypercube_dimensions = 2, number_of_probes = 2;
-
+    uint32_t k = 10, L = 5;
+    uint32_t lsh_k = 4, M = 6000;
+    uint32_t cube_k = 14, probes = 10;
 
     if(parser.parsed("i"))
         input_path = parser.value<string>("i");
-    else{
+    else {
         cout << "Enter path to input file: ";
-        getline(cin,input_path);
+        getline(cin, input_path);
     }
 
 
     if(parser.parsed("c"))
         configuration_path = parser.value<string>("c");
-    else{
+    else {
         cout << "Enter path to configuration file: ";
-        getline(cin,configuration_path);
+        getline(cin, configuration_path);
     }
 
     if(parser.parsed("o"))
         out_path = parser.value<string>("o");
-    else{
+    else {
         cout << "Enter path to output file: ";
-        getline(cin,out_path);
+        getline(cin, out_path);
     }
 
     if(parser.parsed("m"))
         approx_method = parser.value<string>("m");
     else{
         cout << "Enter approximator method: ";
-        getline(cin,approx_method);
+        getline(cin, approx_method);
         if(approx_method != "Classic" && approx_method != "LSH" && approx_method != "Hypercube")
             throw runtime_error("Invalid Approximator Method: Valid options are 'Classic', 'LSH' and 'Hypercube'");
     }
     
-    FileParser fparser;
-    fparser.parse(configuration_path);
-
-    
-    
-    #define RESOLVE_VARIABLE(X)     \
-        if(fparser.parsed(#X)){     \
-            X = fparser.value(#X);  \
-        }                           \
-
-    RESOLVE_VARIABLE(number_of_clusters);
-    RESOLVE_VARIABLE(number_of_vector_hash_tables);
-    RESOLVE_VARIABLE(number_of_vector_hash_functions);
-    RESOLVE_VARIABLE(max_number_M_hypercube);
-    RESOLVE_VARIABLE(number_of_hypercube_dimensions);
-    RESOLVE_VARIABLE(number_of_probes);
 
 
-    if(!number_of_clusters){
+    if(!k){
         std::string n_of_clusters;
         cout << "Enter number of clusters: ";
-        getline(cin,n_of_clusters);
-        number_of_clusters = std::stoi(n_of_clusters);
+        getline(cin, n_of_clusters);
+        k = std::stoi(n_of_clusters);
     }
-
-
 
 
     ofstream output_file(out_path, ios::out);
     if (output_file.fail()) 
         throw runtime_error(out_path + " could not be opened!\n");
 
+    printf("here1\n");
     DataSet dataset(input_path);
 
+    uint32_t window = 4000;
+    uint32_t table_size = dataset.size() / 8;
+    printf("here2\n");
+    Clusterer* clusterer = 
+    parser.value<string>("m") == "Classic" ? 
+        (Clusterer*)new Lloyd(dataset, k, l2_distance) :
+        (Clusterer*)new RAssignment(dataset, k, 
+                                    parser.value<string>("m") == "LSH" ? 
+                                        (Approximator*)new LSH(dataset, window, lsh_k, L, table_size) : 
+                                        (Approximator*)new Cube(dataset, window, cube_k, probes, M), 
+                                    l2_distance, l2_distance);
 
+    printf("here3\n");
+    clusterer->apply();
 
-    //To be continued
+    auto p = clusterer->get()[0]->points().begin();
+    auto point = (*p)->data();
+    for (size_t i = 0; i < point.len(); i++)
+        printf("%3d%s", point[i], ((i + 1) % 28) == 0 ? "\n" : " ");
+    printf("\n");
 } 
 catch (exception& e) {
     cerr << e.what();

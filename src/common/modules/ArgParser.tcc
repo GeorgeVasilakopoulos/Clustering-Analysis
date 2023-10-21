@@ -4,7 +4,7 @@ static void* parse_arg(Type type, const std::string arg) {
     return  type == STRING ? (void*)new std::string(arg) : 
             type == UINT   ? (void*)new uint32_t(std::stoul(arg, nullptr, 0)) : 
             type == FLOAT  ? (void*)new float(std::stof(arg)) : 
-                             (void*)new bool(arg == "false");
+                             (void*)new bool(arg == "true");
 }
 
 static void dealloc(Type type, void* value) {
@@ -41,6 +41,7 @@ void ArgParser::parse(uint32_t argc, const char** argv) {
     for (uint32_t i = 1; i + 1 < argc; i++) {
         if (argv[i][0] == '-' && argv[i][1] != '\0') {            
             std::string name = std::string(argv[i]).erase(0, 1);
+            // printf("parsing %s of type %d\n", name.data(), types[name]);
             if (parsed(name))
                 dealloc(types[name], flags[name]);
             flags[name] = parse_arg(types[name], types[name] == BOOL ? "true" : std::string(argv[i++ + 1]));

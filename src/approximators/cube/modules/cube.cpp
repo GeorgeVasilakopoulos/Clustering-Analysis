@@ -27,7 +27,7 @@ class VertexHelper {
                     return vertex;
 
                 // https://stackoverflow.com/questions/40813022/generate-all-sequences-of-bits-within-hamming-distance-t
-                // hamming(u, v) = k ==> u ^ v sets k bytes
+                // hamming(u, v) = k ==> u ^ v sets k bits
                 for (uint32_t variation = 0; variation < max; variation++) {
                     if (std::bitset<32>(variation ^ init).count() == hamming) 
                         queue_.push(variation);
