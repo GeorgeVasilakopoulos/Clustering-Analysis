@@ -24,6 +24,6 @@ class Approximator {
         RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist) = 0;
 
         virtual std::vector< std::pair<uint32_t, double> > 
-        RangeSearchVector(Vector<double>& query, double range, Distance<uint8_t, double> dist) = 0;
+        RangeSearch(Vector<double>& query, double range, Distance<uint8_t, double> dist) = 0;
 
 };

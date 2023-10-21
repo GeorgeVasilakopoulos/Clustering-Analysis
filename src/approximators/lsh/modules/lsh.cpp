@@ -71,13 +71,13 @@ LSH::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist
 			
 			auto point = p.second;
 
-			if(query.label() == point->label() || considered.find(point->label()) != considered.end())
+			if(considered.find(point->label()) != considered.end())
 				continue; 
 
 			double distance = dist(query.data(), point->data());
 
 			if(distance < range) {
-				out.push_back(pair(point->label(),distance));
+				out.push_back(pair(point->label(), distance));
 				considered.insert(point->label());
 			}
 		}
@@ -87,7 +87,7 @@ LSH::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist
 }
 
 vector< pair<uint32_t, double> > 
-LSH::RangeSearchVector(Vector<double>& query, double range, Distance<uint8_t, double> dist) {
+LSH::RangeSearch(Vector<double>& query, double range, Distance<uint8_t, double> dist) {
 
 	unordered_set<uint32_t> considered;
 	vector< pair<uint32_t, double> > out;
@@ -101,10 +101,10 @@ LSH::RangeSearchVector(Vector<double>& query, double range, Distance<uint8_t, do
 			if(considered.find(point->label()) != considered.end())
 				continue; 
 
-			double distance = dist(point->data(),query);
+			double distance = dist(point->data(), query);
 
 			if(distance < range) {
-				out.push_back(pair(point->label(),distance));
+				out.push_back(pair(point->label(), distance));
 				considered.insert(point->label());
 			}
 		}

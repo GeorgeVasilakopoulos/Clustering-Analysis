@@ -62,8 +62,10 @@ try {
 	if (output_file.fail()) 
         throw runtime_error(out_path + " could not be opened!\n");
 
-	uint32_t window = 5; // 100
-	uint32_t table_size =  train.dim() / 8; // 100
+	uint32_t window = 5;
+	uint32_t table_size =  train.dim() / 8;
+	// uint32_t window = 100;
+	// uint32_t table_size =  100;
 	LSH lsh(train, window, k, L, table_size);
 
 	Stopwatch sw = Stopwatch();

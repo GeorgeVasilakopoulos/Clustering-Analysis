@@ -27,5 +27,5 @@ class Cube : public Approximator{
 		RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist) override;
 
 		std::vector< std::pair<uint32_t, double> > 
-		RangeSearchVector(Vector<double>& query, double range, Distance<uint8_t, double> dist) override;
+		RangeSearch(Vector<double>& query, double range, Distance<uint8_t, double> dist) override;
 };

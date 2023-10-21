@@ -114,7 +114,7 @@ Cube::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dis
         
         auto point = p.second;
 
-        if(query.label() == point->label() || considered.find(point->label()) != considered.end())
+        if(considered.find(point->label()) != considered.end())
             continue; 
 
         double distance = dist(query.data(), point->data());
@@ -131,11 +131,11 @@ Cube::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dis
 
 
 vector< pair<uint32_t, double> > 
-Cube::RangeSearchVector(Vector<double>& query, double range, Distance<uint8_t, double> dist) {
+Cube::RangeSearch(Vector<double>& query, double range, Distance<uint8_t, double> dist) {
 	
 	unordered_set<uint32_t> considered;
 	vector< pair<uint32_t, double> > out;
-    
+
     for(auto p : htable.bucket(query)) {
         
         auto point = p.second;
@@ -143,7 +143,7 @@ Cube::RangeSearchVector(Vector<double>& query, double range, Distance<uint8_t, d
         if(considered.find(point->label()) != considered.end())
             continue; 
 
-        double distance = dist(point->data(),query);
+        double distance = dist(point->data(), query);
 
         if(distance < range) {
             out.push_back(pair(point->label(),distance));
