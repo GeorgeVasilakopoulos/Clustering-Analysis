@@ -37,9 +37,9 @@ CXXFLAGS := -std=c++17 -O2 -Wall -Wextra
 ifeq ($(TARGET),lsh)
 	CXXFLAGS += -I$(LSH_INCS)
 else ifeq ($(TARGET),cube)
-	CXXFLAGS += -I$(CUBE_INCS)
+	CXXFLAGS += -I$(LSH_INCS) -I$(CUBE_INCS)
 else ifeq ($(TARGET),cluster)
-	CXXFLAGS += -I$(CLUSTER_INCS) -I$(LSH_INCS) -I$(CUBE_INCS)
+	CXXFLAGS += -I$(LSH_INCS) -I$(CUBE_INCS) -I$(CLUSTER_INCS)
 endif
 
 CXXFLAGS += -I$(COMMON_INCS)

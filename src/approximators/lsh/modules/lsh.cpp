@@ -94,7 +94,7 @@ LSH::RangeSearchVector(Vector<double>& query, double range, Distance<uint8_t, do
 
 
 	for (auto ht : htables) {
-		for(auto p : ht->bucketOfVector(query)) {
+		for(auto p : ht->bucket(query)) {
 			
 			auto point = p.second;
 

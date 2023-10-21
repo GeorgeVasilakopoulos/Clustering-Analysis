@@ -16,13 +16,14 @@ class HashTable {
         Bucket* buckets;
 
     public:
-    HashTable(uint32_t table_size_, T* hash_);
+    HashTable(uint32_t table_size, T* hash);
     ~HashTable();
 
     uint32_t get_hash(DataPoint& point) const;
     bool insert(DataPoint& point);
+    Bucket& bucket(uint32_t index);
     Bucket& bucket(DataPoint& point);
-    Bucket& bucketOfVector(Vector<double>& v);
+    Bucket& bucket(Vector<double>& v);
 
 };
 

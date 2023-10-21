@@ -11,7 +11,6 @@ class LSH : public Approximator{
 
 	private:
         std::vector<HashTable<LshAmplifiedHash>*> htables;
-		uint32_t table_size;
 	public:
 		LSH(DataSet& dataset_, uint32_t window, uint32_t k, uint32_t L, uint32_t table_size);
 		~LSH();
