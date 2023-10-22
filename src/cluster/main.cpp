@@ -34,7 +34,7 @@ try {
 
     uint32_t k = 10, L = 5;
     uint32_t lsh_k = 4, M = 6000;
-    uint32_t cube_k = 14, probes = 10;
+    uint32_t cube_k = 7, probes = 10;
 
     if(parser.parsed("i"))
         input_path = parser.value<string>("i");
@@ -124,9 +124,9 @@ try {
 
 
 
-    auto p = clusterer->get()[0]->points().begin();
-    auto point = (*p)->data();
-    cout << point.asDigit()<<endl;
+    // auto p = clusterer->get()[0]->points().begin();
+    // auto point = (*p)->data();
+    // cout << point.asDigit()<<endl;
 } 
 catch (exception& e) {
     cerr << e.what();

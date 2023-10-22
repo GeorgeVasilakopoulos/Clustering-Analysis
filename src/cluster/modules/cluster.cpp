@@ -303,9 +303,12 @@ void RAssignment::apply() {
 	uint32_t LOOP_COUNT = 0;
 	while(true) {
 		
-		for(auto cluster : clusters){	
+		for(auto cluster : clusters) {
+
 			auto pointsInRange = approx->RangeSearch(cluster->center(),radius, Clusterer::dist);
-			for(auto pair : pointsInRange){
+
+			for(auto pair : pointsInRange) {
+
 				uint32_t index = pair.first;
 				double distance = pair.second;
 
@@ -320,31 +323,25 @@ void RAssignment::apply() {
 				
 			}
 		}
-		for(auto point : point_set){
+
+		for(auto point : point_set) {
 			Cluster* assigned_cluster = markings[point];
 			assigned_cluster->add(dataset[point-1]);
-			assigned_cluster->update();
 		}
 
-		/*for(auto cluster : clusters)
-			cluster->update();
-		*/
-		if(((double)point_set.size())/dataset.size() > 0.8 ||LOOP_COUNT==15) //Change break condition
+		if(point_set.size() / (double) dataset.size() > 0.8 || LOOP_COUNT++ == 15) //Change break condition
 			break;
-
-
-
-
-
 
 		radius *= 2;
 		point_set.clear();
 		markings.clear();
 		clear();
-		LOOP_COUNT++;
 	}
-	for(auto point : dataset){
-		if(point_set.find(point->label()) == point_set.end())continue;
+
+	for(auto point : dataset) {
+		if(point_set.find(point->label()) == point_set.end())
+			continue;
+			
 		auto closest_cluster = closest(point).second;
 		closest_cluster->add(point);
 	}
