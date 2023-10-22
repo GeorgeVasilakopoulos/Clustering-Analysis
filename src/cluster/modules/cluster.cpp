@@ -258,8 +258,8 @@ void Lloyd::apply() {
 
 	delete [] indexes;
 
-	for (auto cluster : clusters)
-		printf("cluster size: %d\n", cluster->size());
+	// for (auto cluster : clusters)
+	// 	printf("cluster size: %d\n", cluster->size());
 	
 	// for (auto cluster : clusters) {
 	// 	for (size_t i = 0; i < cluster->center().len(); i++)
@@ -292,57 +292,59 @@ double RAssignment::minDistBetweenClusters() {
 	return distance;
 }
 
-
+#define MAX_ITERS 15
 void RAssignment::apply() {
 
-	double radius = minDistBetweenClusters() / 2;
+	Cluster** indexes = new Cluster*[dataset.size()]();
 
-	unordered_map<uint32_t, Cluster*> markings;
-	unordered_set<uint32_t> point_set;
+	double radius    = minDistBetweenClusters() / 2;
+	uint8_t iters    = 0;
 
-	uint32_t LOOP_COUNT = 0;
-	while(true) {
+	while (iters++ < MAX_ITERS) {
+
+		uint32_t changes = 0;
 		
-		for(auto cluster : clusters) {
+		for (auto cluster : clusters) {
 
-			auto pointsInRange = approx->RangeSearch(cluster->center(),radius, Clusterer::dist);
-
-			for(auto pair : pointsInRange) {
-
-				uint32_t index = pair.first;
-				double distance = pair.second;
-
-				if(point_set.find(index) == point_set.end()){
-					markings[index] = cluster;
-					point_set.insert(index);
-					continue;
-				}
-
-				if(distance < Clusterer::dist(dataset[index - 1]->data(), markings[index]->center()))
-					markings[index] = cluster;
+			for (auto p : approx->RangeSearch(cluster->center(), radius, Clusterer::dist)) {
 				
+				auto index = p.first - 1;
+				auto dist  = p.second;
+
+				auto point = dataset[index];
+				auto prev  = indexes[index];
+				
+				if (prev == nullptr || (
+						cluster != prev && 
+						dist < Clusterer::dist(point->data(), prev->center())
+						)
+					) {
+
+					changes++;
+					
+					if (prev != nullptr)
+						prev->remove(point);
+						
+					cluster->add(point);
+					indexes[index] = cluster;
+				}
 			}
 		}
 
-		for(auto point : point_set) {
-			Cluster* assigned_cluster = markings[point];
-			assigned_cluster->add(dataset[point-1]);
-		}
-
-		if(point_set.size() / (double) dataset.size() > 0.8 || LOOP_COUNT++ == 15) //Change break condition
+		printf("\tchanges: %d, radius: %f\n", changes, radius);
+		if (changes == 0)
 			break;
-
+		
 		radius *= 2;
-		point_set.clear();
-		markings.clear();
-		clear();
 	}
 
-	for(auto point : dataset) {
-		if(point_set.find(point->label()) == point_set.end())
-			continue;
-			
-		auto closest_cluster = closest(point).second;
-		closest_cluster->add(point);
+	for (auto point : dataset) {
+		if (indexes[point->label() - 1] == nullptr) 
+			closest(point).second->add(point);
 	}
+
+	for (auto cluster : clusters)
+		printf("cluster size: %d\n", cluster->size());
+
+	delete [] indexes;
 }
