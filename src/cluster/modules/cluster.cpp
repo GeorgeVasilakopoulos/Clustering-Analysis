@@ -277,6 +277,10 @@ RAssignment::RAssignment(DataSet& dataset, uint32_t k, Approximator* approx_,
 						 Distance<uint8_t, double> dist1, 
 						 Distance<double, double>  dist2) : Clusterer(dataset, k, dist1), approx(approx_), dist(dist2) { }
 
+RAssignment::~RAssignment() {
+	delete approx;
+}
+
 double RAssignment::minDistBetweenClusters() {
 	double distance = DBL_MAX;
 
@@ -297,8 +301,8 @@ void RAssignment::apply() {
 
 	Cluster** indexes = new Cluster*[dataset.size()]();
 
-	double radius    = minDistBetweenClusters() / 2;
-	uint8_t iters    = 0;
+	double radius = minDistBetweenClusters() / 2;
+	uint8_t iters = 0;
 
 	while (iters++ < MAX_ITERS) {
 

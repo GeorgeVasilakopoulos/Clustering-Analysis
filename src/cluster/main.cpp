@@ -127,6 +127,8 @@ try {
     // auto p = clusterer->get()[0]->points().begin();
     // auto point = (*p)->data();
     // cout << point.asDigit()<<endl;
+
+    delete clusterer;
 } 
 catch (exception& e) {
     cerr << e.what();

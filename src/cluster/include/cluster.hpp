@@ -63,5 +63,6 @@ class RAssignment : public Clusterer {
         RAssignment(DataSet& dataset, uint32_t k, Approximator* approx,
                     Distance<uint8_t, double> dist1, 
 		            Distance<double, double>  dist2); 
+        ~RAssignment();
         void apply() override;
 };
