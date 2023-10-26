@@ -9,29 +9,20 @@ using namespace std;
 // Cluster //
 /////////////
 
-// void Cluster::update() {
-// 	auto sum = new Vector<uint32_t>(center_->len());
-
-// 	for (auto point : points_)
-// 		*sum += point->data();
-	
-// 	delete center_;
-// 	center_ = new Vector<double>(*sum);
-// 	*center_ /= (double)points_.size();
-
-// 	delete sum;
-// }
-
 void Cluster::update() {
-	// if (points_.size() > 1)
-	// 	*center_ *= ((double)points_.size() - 1.);
+	if (points_.size() == 0)
+		return ;
 
-	// auto point = points_.back();
+	auto sum = new Vector<uint32_t>(center_->len());
 
-	// for (uint32_t i = 0, size = (*center_).len(); i < size; i++)
-	// 	(*center_)[i] += point->data()[i];
+	for (auto point : points_)
+		*sum += point->data();
+	
+	delete center_;
+	center_ = new Vector<double>(*sum);
+	*center_ /= (double)points_.size();
 
-	// *center_ /= (double)points_.size();
+	delete sum;
 }
 
 void Cluster::add(DataPoint* point) {
@@ -177,12 +168,13 @@ double average_distance(DataPoint* point, Cluster* cluster, Distance<uint8_t, ui
 }
 
 vector<double> Clusterer::silhouettes(Distance<uint8_t, uint8_t> dist_) {
-	vector<double> metr(dataset.size());
+	vector<double> metr;
 
 	int i = 0;
 	Stopwatch sw;
 	for (auto cluster : clusters) {
 		printf("Staring cluster %2d/10, size: %5d\n", ++i, cluster->size());
+		double sum = 0.;
 		int j = 0;
 		sw.start();
 		for (auto point : cluster->points()) {
@@ -205,12 +197,14 @@ vector<double> Clusterer::silhouettes(Distance<uint8_t, uint8_t> dist_) {
 			double a = average_distance(point, cluster, dist_);
 			double b = average_distance(point, closest, dist_);
 
-			metr[point->label() - 1] = (b - a) / max(a, b);
+			sum += (b - a) / max(a, b);
 			if (++j % 1000 == 0) {
-				printf("\tscore %5d: %f, time: %f sec\n", j, metr[point->label() - 1], sw.stop());
+				// printf("\tscore %5d: %f, time: %f sec\n", j, metr[point->label() - 1], sw.stop());
 				sw.start();
 			}
 		}
+		
+		metr.push_back(sum / cluster->size());
 	}
 
 	return metr;
@@ -327,13 +321,18 @@ void RAssignment::apply() {
 					changes++;
 					
 					if (prev != nullptr)
-						prev->remove(point);
+						// prev->remove(point);
+						prev->points().erase(point);
 						
-					cluster->add(point);
+					// cluster->add(point);
+					cluster->points().insert(point);
 					indexes[index] = cluster;
 				}
 			}
 		}
+
+		for (auto cluster : clusters)
+			cluster->update();
 
 		printf("\tchanges: %d, radius: %f\n", changes, radius);
 		if (changes == 0)

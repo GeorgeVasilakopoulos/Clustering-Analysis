@@ -3,18 +3,22 @@
 #include <string>
 #include <unordered_map>
 #include <iostream>
-#include <fstream>
-#include <sstream>
 
 
 class FileParser {
 
     private:
-        std::unordered_map<std::string, uint32_t> labels;
+        std::unordered_map<std::string, std::string> aliases;
+        std::unordered_map<std::string, uint32_t> values;
 
     public:
-        // ~FileParser();
-        bool parsed(std::string label);
-        uint32_t value(std::string label);
+        void add(std::string line, std::string alias, uint32_t def=0);
+        bool parsed(std::string alias);
+        uint32_t& value(std::string alias);
+
         void parse(std::string path);
+
+        void print();
 };
+
+#include "../modules/FileParser.tcc"

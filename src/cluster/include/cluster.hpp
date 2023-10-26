@@ -20,7 +20,7 @@ class Cluster {
 		uint32_t size() const { return points_.size(); }
 		void add(DataPoint* point);
 		void remove(DataPoint* point);
-		std::set<DataPoint*> points() { return points_; }
+		std::set<DataPoint*>& points() { return points_; }
 		Vector<double>& center() { return *center_; }
         void update();
         void clear() { points_.clear(); }

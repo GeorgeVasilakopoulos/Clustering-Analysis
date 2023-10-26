@@ -18,62 +18,74 @@ using namespace std;
 
 int main(int argc, const char* argv[]) {
 try {
-    ArgParser parser = ArgParser();
+    ArgParser arg_parser = ArgParser();
 
-    parser.add("i", STRING);
-    parser.add("c", STRING);
-    parser.add("o", STRING);
-    parser.add("complete", BOOL);
-    parser.add("m", STRING);
-    parser.parse(argc, argv);
+    arg_parser.add("i", STRING);
+    arg_parser.add("c", STRING);
+    arg_parser.add("o", STRING);
+    arg_parser.add("complete", BOOL);
+    arg_parser.add("m", STRING);
+    arg_parser.parse(argc, argv);
 
     string input_path;
     string configuration_path;
     string out_path;
     string approx_method;
 
-    uint32_t k = 10, L = 5;
-    uint32_t lsh_k = 4, M = 6000;
-    uint32_t cube_k = 7, probes = 10;
+    
+    FileParser file_parser = FileParser();
 
-    if(parser.parsed("i"))
-        input_path = parser.value<string>("i");
+    file_parser.add("number_of_clusters",              "k"         );
+    file_parser.add("number_of_vector_hash_tables",    "L",       3);
+    file_parser.add("number_of_vector_hash_functions", "lsh_k",   4);
+    file_parser.add("max_number_M_hypercube",          "M",      10);
+    file_parser.add("number_of_hypercube_dimensions",  "cube_k",  3);
+    file_parser.add("number_of_probes",                "probes",  2);
+
+    if(arg_parser.parsed("i"))
+        input_path = arg_parser.value<string>("i");
     else {
         cout << "Enter path to input file: ";
         getline(cin, input_path);
     }
 
 
-    if(parser.parsed("c"))
-        configuration_path = parser.value<string>("c");
+    if(arg_parser.parsed("c"))
+        configuration_path = arg_parser.value<string>("c");
     else {
         cout << "Enter path to configuration file: ";
         getline(cin, configuration_path);
     }
 
-    if(parser.parsed("o"))
-        out_path = parser.value<string>("o");
+    if(arg_parser.parsed("o"))
+        out_path = arg_parser.value<string>("o");
     else {
         cout << "Enter path to output file: ";
         getline(cin, out_path);
     }
 
-    if(parser.parsed("m"))
-        approx_method = parser.value<string>("m");
+    if(arg_parser.parsed("m"))
+        approx_method = arg_parser.value<string>("m");
     else{
         cout << "Enter approximator method: ";
         getline(cin, approx_method);
         if(approx_method != "Classic" && approx_method != "LSH" && approx_method != "Hypercube")
             throw runtime_error("Invalid Approximator Method: Valid options are 'Classic', 'LSH' and 'Hypercube'");
     }
+
+    
+    file_parser.parse(configuration_path);
+
+    uint32_t k = file_parser.parsed("k") ? file_parser.value("k") : 0, L = file_parser.value("L");
+    uint32_t lsh_k = file_parser.value("lsh_k"), M = file_parser.value("M");
+    uint32_t cube_k = file_parser.value("cube_k"), probes = file_parser.value("probes");
     
 
-
-    if(!k){
+    if(k == 0) {
         std::string n_of_clusters;
         cout << "Enter number of clusters: ";
         getline(cin, n_of_clusters);
-        k = std::stoi(n_of_clusters);
+        k = std::stoul(n_of_clusters);
     }
 
 
@@ -111,7 +123,7 @@ try {
     auto clusters = clusterer->get();
     for(uint32_t i = 0; i < k; i++){
         output_file << "CLUSTER-";
-        output_file << left << setw(3) << to_string(i+1);
+        output_file << left << setw(3) << to_string(i + 1);
         output_file << "{size: ";
         output_file << right << setw(5) << to_string(clusters[i]->size());
         output_file << ", centroid: \n";
@@ -123,10 +135,16 @@ try {
     output_file <<  std::fixed << std::setprecision(3) << clustering_time << " sec\n";
 
 
+    
+    timer.start();
+    printf("Starting Silhouettes\n");
 
-    // auto p = clusterer->get()[0]->points().begin();
-    // auto point = (*p)->data();
-    // cout << point.asDigit()<<endl;
+    auto s = clusterer->silhouettes(l2_distance);
+
+    printf("Silhouettes time: %f seconds\n", timer.stop());
+
+    for (auto score : s)
+        printf("\tscore: %f\n", score);
 
     delete clusterer;
 } 
