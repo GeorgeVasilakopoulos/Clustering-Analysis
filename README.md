@@ -93,13 +93,50 @@ Both `LSH` and `Cube` are subclasses of `Approximator` and implement `kANN( )` a
 
 #### LSH
 
-
-
 ```
 $ make lsh
 $ ./lsh –d <input file> –q <query file> –k <int> -L <int> -ο <output file> -Ν
 <number of nearest> -R <radius>
 ```
+
+
+
+
+
+
+
+#### Cube
+
+
+
+
+
+#### Clustering
+
+- The `Cluster` class stores pointers to `DataPoint` objects that are members of the cluster. It provides several functionalities that are essential for the management of a cluster:
+
+	- Inclusion of a datapoint in the cluster, `add( )`
+	- Removal of a datapoint from the cluster, `remove( )`
+	- Center calculation, `update( )` 
+
+- `Clusterer` is an abstract class, the objects of which are **handles** for clustering algorithms. Upon construction, a `Clusterer` object stores a reference to a `DataSet` object and performs the *k-means++* algorithm for the initialization of the clusters.
+
+- `Lloyd` is a subclass of `Clusterer` that implements the classical clustering algorithm, through the `apply( )` function.
+
+- `RAssignment` is also a subclass of `Clusterer`. Additionally to the common parameters, it also stores an `Approximator` object (`LSH` or `Cube`), that is used in order to accelerate the clustering process, with the tradeoff of finding *approximate* neighbors.
+
+
+//Say say more about the algorithma
+
+
+
+
+
+
+
+
+
+
 
 
 
