@@ -68,14 +68,14 @@
 
 - Each `DataPoint` encapsulates a unique ID and a vector of type `Vector<uint8_t>`.
 
-- The Vector\<\> template class allows convenient manipulation of vectorized data, through constructs such as overloaded operators, type conversions and indexing. 
+- The `Vector<>` template class allows convenient manipulation of vectorized data, through constructs such as overloaded operators, type conversions and indexing. 
 
 Related Modules: `common/modules/Vector.tcc`, `common/modules/utils.cpp`
 
 
 ### Approximators
 
-The `Approximator` class is a 'base' class that stores a `DataSet` reference and provides abstract methods for
+The `Approximator` abstract class is a 'base' class that stores a `DataSet` reference and provides functions for
 
 - K Nearest Neighbors `kNN( )`
 - K Approximate Nearest Neighbors `kANN( )` (pure virtual)
@@ -83,7 +83,7 @@ The `Approximator` class is a 'base' class that stores a `DataSet` reference and
 
 Each of these functions takes as arguments:
 
-- A metric function (such as the l2 metric)
+- A metric function (such as the `l2` metric)
 - A query `DataPoint`
 - Algorithm-related parameters
 
@@ -95,8 +95,7 @@ Both `LSH` and `Cube` are subclasses of `Approximator` and implement `kANN( )` a
 
 ```
 $ make lsh
-$ ./lsh –d <input file> –q <query file> –k <int> -L <int> -ο <output file> -Ν
-<number of nearest> -R <radius>
+$ ./lsh –d <input file> –q <query file> –k <int> -L <int> -ο <output file> -Ν <number of nearest> -R <radius>
 ```
 
 
