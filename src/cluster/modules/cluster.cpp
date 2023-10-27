@@ -167,16 +167,14 @@ double average_distance(DataPoint* point, Cluster* cluster, Distance<uint8_t, ui
 
 }
 
-vector<double> Clusterer::silhouettes(Distance<uint8_t, uint8_t> dist_) {
+pair<vector<double>, double> Clusterer::silhouettes(Distance<uint8_t, uint8_t> dist_) {
 	vector<double> metr;
+	double stotal = 0;
 
-	int i = 0;
-	Stopwatch sw;
 	for (auto cluster : clusters) {
-		printf("Staring cluster %2d/10, size: %5d\n", ++i, cluster->size());
+		
 		double sum = 0.;
-		int j = 0;
-		sw.start();
+
 		for (auto point : cluster->points()) {
 
 			double min = DBL_MAX;
@@ -198,16 +196,13 @@ vector<double> Clusterer::silhouettes(Distance<uint8_t, uint8_t> dist_) {
 			double b = average_distance(point, closest, dist_);
 
 			sum += (b - a) / max(a, b);
-			if (++j % 1000 == 0) {
-				// printf("\tscore %5d: %f, time: %f sec\n", j, metr[point->label() - 1], sw.stop());
-				sw.start();
-			}
 		}
 		
+		stotal += sum;
 		metr.push_back(sum / cluster->size());
 	}
 
-	return metr;
+	return pair(metr, stotal / dataset.size());
 }
 
 ////////////

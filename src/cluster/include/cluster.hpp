@@ -42,7 +42,7 @@ class Clusterer {
         void clear();
         double minDistBetweenClusters();
         std::vector<Cluster*>& get();
-        std::vector<double> silhouettes(Distance<uint8_t, uint8_t> dist);
+        std::pair<std::vector<double>, double> silhouettes(Distance<uint8_t, uint8_t> dist);
         virtual void apply() = 0;
 };
 

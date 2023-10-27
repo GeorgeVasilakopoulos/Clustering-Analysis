@@ -23,7 +23,7 @@ try {
     arg_parser.add("i", STRING);
     arg_parser.add("c", STRING);
     arg_parser.add("o", STRING);
-    arg_parser.add("complete", BOOL);
+    arg_parser.add("complete", BOOL, "false");
     arg_parser.add("m", STRING);
     arg_parser.parse(argc, argv);
 
@@ -94,7 +94,7 @@ try {
         throw runtime_error(out_path + " could not be opened!\n");
 
     printf("here1\n");
-    DataSet dataset(input_path);
+    DataSet dataset(input_path, 10000);
 
     uint32_t window = 4000;
     uint32_t table_size = dataset.size() / 8;
@@ -122,13 +122,10 @@ try {
 
     auto clusters = clusterer->get();
     for(uint32_t i = 0; i < k; i++){
-        output_file << "CLUSTER-";
-        output_file << left << setw(3) << to_string(i + 1);
-        output_file << "{size: ";
-        output_file << right << setw(5) << to_string(clusters[i]->size());
-        output_file << ", centroid: \n";
-        output_file << clusters[i]->center().asDigit(); //clusters[i]->center().asString();
-        output_file << "\n}\n\n";
+        output_file << "CLUSTER-" << left << setw(3) << to_string(i + 1);
+        output_file << "{size: " << right << setw(5) << to_string(clusters[i]->size());
+        output_file << ", centroid: " << clusters[i]->center().asString();
+        output_file << "}\n";
     }
 
     output_file << "clustering_time: ";
@@ -139,12 +136,36 @@ try {
     timer.start();
     printf("Starting Silhouettes\n");
 
-    auto s = clusterer->silhouettes(l2_distance);
+    auto p = clusterer->silhouettes(l2_distance);
+
+    auto silhouettes = p.first;
+    auto stotal = p.second;
 
     printf("Silhouettes time: %f seconds\n", timer.stop());
 
-    for (auto score : s)
-        printf("\tscore: %f\n", score);
+    output_file << "Silhouette: [";
+    for (auto score : silhouettes)
+        output_file << std::fixed << std::setprecision(3) << score << ", ";
+
+    output_file << std::fixed << std::setprecision(3) << stotal << "]\n\n";
+
+    if (arg_parser.value<bool>("complete")) {
+        for(uint32_t i = 0; i < k; i++){
+            output_file << "CLUSTER-" << left << setw(3) << to_string(i + 1);
+            output_file << "{centroid, ";
+
+            uint32_t j = 0;
+            uint32_t size = clusters[i]->points().size();
+            for (auto point : clusters[i]->points()) {
+                if (j++ + 1 >= size)
+                    break;
+
+                output_file << right << setw(5) << point->label() << ", ";
+            }
+
+            output_file << right << setw(5) << (*--clusters[i]->points().end())->label() << "}\n";
+        }
+    }
 
     delete clusterer;
 } 

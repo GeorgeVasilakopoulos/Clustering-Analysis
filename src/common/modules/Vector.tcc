@@ -94,14 +94,14 @@ void Vector<T>::uniform(T lower, T upper) {
 
 
 template <typename T>
-std::string Vector<T>:: asString()const{
-	std::string out="[";
-	for(uint32_t i = 0; i < size-1; i++){
-		out += std::to_string((long)data[i]);
-		out += ", ";
-	}
-	out += std::to_string(data[size-1]);
-	out += "]";
+std::string Vector<T>::asString() const {
+	std::string out = "[";
+
+	for(uint32_t i = 0; i < size - 1; i++)
+		out += std::to_string(data[i]) + ", ";
+
+	out += std::to_string(data[size-1]) + "]";
+
 	return out;
 }
 
