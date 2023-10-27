@@ -114,7 +114,7 @@ The `Cube` class contains a single hashtable, defined by a unique `CubeHash` and
 
 
 
-#### Clustering
+### Clustering
 
 - The `Cluster` class stores pointers to `DataPoint` objects that are members of the cluster. It provides several functionalities that are essential for the management of a cluster:
 
