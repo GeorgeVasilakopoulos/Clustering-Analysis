@@ -11,36 +11,35 @@
 
 <pre>
 .
-├── cluster.conf
 ├── Makefile
-├── out.txt
 ├── README.md
 ├── src
 │		 ├── approximators
 │		 │		 ├── cube
+│		 │		 │		 ├── main.cpp
 │		 │		 │		 ├── include
 │		 │		 │		 │		 ├── cube_hash.hpp
 │		 │		 │		 │		 └── cube.hpp
-│		 │		 │		 ├── main.cpp
 │		 │		 │		 └── modules
 │		 │		 │		     └── cube.cpp
 │		 │		 └── lsh
+│		 │		     ├── main.cpp
 │		 │		     ├── include
 │		 │		     │		 ├── lsh_hash.hpp
 │		 │		     │		 └── lsh.hpp
-│		 │		     ├── main.cpp
 │		 │		     └── modules
 │		 │		         └── lsh.cpp
 │		 ├── cluster
 │		 │		 ├── config.conf
+│		 │		 ├── main.cpp
 │		 │		 ├── include
 │		 │		 │		 ├── cluster.hpp
 │		 │		 │		 └── Clustering.hpp
-│		 │		 ├── main.cpp
 │		 │		 └── modules
 │		 │		     ├── cluster.cpp
 │		 │		     └── Clustering.cpp
 │		 └── common
+│		     ├── main.cpp
 │		     ├── include
 │		     │		 ├── Approximator.hpp
 │		     │		 ├── ArgParser.hpp
@@ -48,8 +47,6 @@
 │		     │		 ├── HashTable.hpp
 │		     │		 ├── utils.hpp
 │		     │		 └── Vector.hpp
-│		     ├── main.cpp
-│		     ├── metrics.cpp
 │		     └── modules
 │		         ├── Approximator.cpp
 │		         ├── ArgParser.tcc
@@ -110,12 +107,10 @@ $ ./lsh –d <input file> –q <query file> –k <int> -L <int> -ο <output file
 
 - `Clusterer` is an abstract class, the objects of which are **handles** for clustering algorithms. Upon construction, a `Clusterer` object stores a reference to a `DataSet` object and performs the *k-means++* algorithm for the initialization of the clusters.
 
-- `Lloyd` is a subclass of `Clusterer` that implements the classical clustering algorithm, through the `apply( )` function.
+- `Lloyd` is a subclass of `Clusterer` that implements the classical clustering algorithm augmented with the `MacQueen` update step, through the `apply( )` function.
 
 - `RAssignment` is also a subclass of `Clusterer`. Additionally to the common parameters, it also stores an `Approximator` object (`LSH` or `Cube`), that is used in order to accelerate the clustering process, with the tradeoff of finding *approximate* neighbors.
 
-
-//Say say more about the algorithma
 
 
 
