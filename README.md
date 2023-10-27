@@ -98,17 +98,7 @@ $ make lsh
 $ ./lsh –d <input file> –q <query file> –k <int> -L <int> -ο <output file> -Ν <number of nearest> -R <radius>
 ```
 
-
-
-
-
-
-
 #### Cube
-
-
-
-
 
 #### Clustering
 

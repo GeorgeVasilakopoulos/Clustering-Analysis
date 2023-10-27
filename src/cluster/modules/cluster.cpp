@@ -217,11 +217,13 @@ void Lloyd::apply() {
 	while (true) {
 		uint32_t changes = 0;
 
+		// For every point
 		for (auto point : dataset) {
 			uint32_t index = point->label() - 1;
 
 			auto p = closest(point);
 
+			// Add point to the closest cluster, updating both centers
 			if (p.second != indexes[index]) {
 				changes++;
 				
@@ -234,27 +236,13 @@ void Lloyd::apply() {
 			}
 		}
 
-		printf("changes: %d\n", changes);
+		// Break if algorithm has converged
 		if (changes == 0)
 			break;
 
-		// for (auto cluster : clusters)
-		// 	cluster->update();
-
-		// clear();
 	}
 
-
 	delete [] indexes;
-
-	// for (auto cluster : clusters)
-	// 	printf("cluster size: %d\n", cluster->size());
-	
-	// for (auto cluster : clusters) {
-	// 	for (size_t i = 0; i < cluster->center().len(); i++)
-	// 		printf("%3d%s", (int)(cluster->center())[i], ((i + 1) % 28) == 0 ? "\n" : " ");
-	// 	printf("\n");
-	// }
 }
 
 
@@ -298,7 +286,7 @@ void RAssignment::apply() {
 		uint32_t changes = 0;
 		
 		for (auto cluster : clusters) {
-
+			
 			for (auto p : approx->RangeSearch(cluster->center(), radius, Clusterer::dist)) {
 				
 				auto index = p.first - 1;
@@ -316,10 +304,8 @@ void RAssignment::apply() {
 					changes++;
 					
 					if (prev != nullptr)
-						// prev->remove(point);
 						prev->points().erase(point);
 						
-					// cluster->add(point);
 					cluster->points().insert(point);
 					indexes[index] = cluster;
 				}
@@ -329,7 +315,6 @@ void RAssignment::apply() {
 		for (auto cluster : clusters)
 			cluster->update();
 
-		printf("\tchanges: %d, radius: %f\n", changes, radius);
 		if (changes == 0)
 			break;
 		
@@ -340,9 +325,6 @@ void RAssignment::apply() {
 		if (indexes[point->label() - 1] == nullptr) 
 			closest(point).second->add(point);
 	}
-
-	for (auto cluster : clusters)
-		printf("cluster size: %d\n", cluster->size());
 
 	delete [] indexes;
 }
