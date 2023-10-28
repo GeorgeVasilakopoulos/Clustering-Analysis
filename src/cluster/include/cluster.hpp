@@ -9,7 +9,6 @@
 class Cluster {
 	private:
 		Vector<double>* center_;
-		// std::vector<DataPoint*> points_;
 		std::set<DataPoint*> points_;
 
 	public:

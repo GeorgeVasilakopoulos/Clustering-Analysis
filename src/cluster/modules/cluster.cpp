@@ -105,7 +105,7 @@ Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<uint8_t, double> d
 		
 
 
-		//Select new center according to distribution:
+		// Select new center according to distribution:
 			
 
 		// Random number, Uniform(0,1)
@@ -193,6 +193,7 @@ pair<vector<double>, double> Clusterer::silhouettes(Distance<uint8_t, uint8_t> d
 			double min = DBL_MAX;
 			Cluster* closest = nullptr;
 
+			// Find closest cluster, other than the assigned one
 			for (auto cluster1 : clusters) {
 				if (cluster1 == cluster)
 					continue; 
@@ -212,6 +213,8 @@ pair<vector<double>, double> Clusterer::silhouettes(Distance<uint8_t, uint8_t> d
 		}
 		
 		stotal += sum;
+
+		// Push Silhouette coefficient in vector
 		metr.push_back(sum / cluster->size());
 	}
 
@@ -249,7 +252,7 @@ void Lloyd::apply() {
 			}
 		}
 
-		// Break if algorithm has converged
+		// Convergence of algorithm
 		if (changes == 0)
 			break;
 
@@ -289,6 +292,7 @@ double RAssignment::minDistBetweenClusters() {
 #define MAX_ITERS 15
 void RAssignment::apply() {
 
+	// Mapping from datapoints to clusters
 	Cluster** indexes = new Cluster*[dataset.size()]();
 
 	double radius = minDistBetweenClusters() / 2;
@@ -300,14 +304,16 @@ void RAssignment::apply() {
 		
 		for (auto cluster : clusters) {
 			
+			// For each point within radius
 			for (auto p : approx->RangeSearch(cluster->center(), radius, Clusterer::dist)) {
 				
-				auto index = p.first - 1;
-				auto dist  = p.second;
+				uint32_t index = p.first - 1;
+				double dist  = p.second;
 
 				auto point = dataset[index];
 				auto prev  = indexes[index];
 				
+				// If new cluster is closer than previous
 				if (prev == nullptr || (
 						cluster != prev && 
 						dist < Clusterer::dist(point->data(), prev->center())
@@ -316,15 +322,18 @@ void RAssignment::apply() {
 
 					changes++;
 					
+					//	Erase point from previous cluster
 					if (prev != nullptr)
 						prev->points().erase(point);
 						
+					// Add point to new one
 					cluster->points().insert(point);
 					indexes[index] = cluster;
 				}
 			}
 		}
 
+		// Update cluster centers
 		for (auto cluster : clusters)
 			cluster->update();
 
@@ -334,6 +343,7 @@ void RAssignment::apply() {
 		radius *= 2;
 	}
 
+	// Unnasigned points are assigned to closest cluster
 	for (auto point : dataset) {
 		if (indexes[point->label() - 1] == nullptr) 
 			closest(point).second->add(point);
