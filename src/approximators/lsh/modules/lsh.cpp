@@ -34,6 +34,7 @@ LSH::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist){
 	priority_queue<pair<uint32_t, double>, vector<pair<uint32_t, double>>, decltype(comparator)> pq(comparator);
 	unordered_set<uint32_t> considered;
 	
+	// For each hashtable, search for neighbours in the corresponding buckets 
 	for (auto ht : htables) {
 		for(auto p : ht->bucket(query)) {
 			
@@ -65,7 +66,7 @@ LSH::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist
 	unordered_set<uint32_t> considered;
 	vector< pair<uint32_t, double> > out;
 
-
+	// For each hashtable, search for neighbours in the corresponding buckets 
 	for (auto ht : htables) {
 		for(auto p : ht->bucket(query)) {
 			
@@ -86,13 +87,14 @@ LSH::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist
 	return out;
 }
 
+// For Reverse Assignment
 vector< pair<uint32_t, double> > 
 LSH::RangeSearch(Vector<double>& query, double range, Distance<uint8_t, double> dist) {
 
 	unordered_set<uint32_t> considered;
 	vector< pair<uint32_t, double> > out;
 
-
+	// For each hashtable, search for neighbours in the corresponding buckets 
 	for (auto ht : htables) {
 		for(auto p : ht->bucket(query)) {
 			

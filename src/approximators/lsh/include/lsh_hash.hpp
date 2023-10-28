@@ -40,7 +40,8 @@ class LshAmplifiedHash {
             uint32_t M = UINT32_MAX - 4; // 2^32 - 1 == UINT32_MAX --> UINT32_MAX - 4 = (UINT32_MAX + 1) - 5 = 2^32 - 5
 
             uint32_t sum = 0;
-
+            
+            // Linear combination
             for (uint32_t i = 0; i < k; i++)
                 sum += r[i] * h[i]->apply(p) % M;
 

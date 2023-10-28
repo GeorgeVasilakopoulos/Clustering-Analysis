@@ -6,7 +6,7 @@
 
 using namespace std;
 
-
+// Helper class for finding vertices to search
 class VertexHelper {
     private:
         uint32_t init;
@@ -22,19 +22,22 @@ class VertexHelper {
 
         uint32_t next(uint32_t vertex) {
             
-            if (queue_.size() == 0) {
+            // Queue empty => Finished with vertices within hamming distance "hamming" of the original
+            if (queue_.empty()) {
                 if (++hamming > k_)
                     return vertex;
 
                 // https://stackoverflow.com/questions/40813022/generate-all-sequences-of-bits-within-hamming-distance-t
                 // hamming(u, v) = k ==> u ^ v sets k bits
+                // Append new vertices
                 for (uint32_t variation = 0; variation < max; variation++) {
                     if (std::bitset<32>(variation ^ init).count() == hamming) 
                         queue_.push(variation);
                 }
             }
-
-            if (queue_.size() == 0) {
+            
+            // If no vertices were added, signal to stop
+            if (queue_.empty()) {
                 hamming = k_ + 1;
                 return vertex;
             }
@@ -73,6 +76,7 @@ Cube::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist){
     uint32_t vertex = htable.get_hash(query);
     VertexHelper vertices(vertex, probes, k_);
 	
+    // Search exactly "probes" number of vertices and consider at most "points" number of points
     for (uint32_t i = 0, j = 1; i < points && !vertices.stop(); j++, vertex = vertices.next(vertex)) {
         
         for(auto p : htable.bucket(vertex)) {
@@ -111,6 +115,7 @@ Cube::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dis
     uint32_t vertex = htable.get_hash(query);
     VertexHelper vertices(vertex, probes, k_);
 
+    // Search exactly "probes" number of vertices and consider at most "points" number of points
     for (uint32_t i = 0, j = 1; i < points && !vertices.stop(); j++, vertex = vertices.next(vertex)) {
         for(auto p : htable.bucket(query)) {
             
@@ -126,7 +131,6 @@ Cube::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dis
                 considered.insert(point->label());
             }
 
-            
             if (++i >= points) 
                 break;
         }
@@ -135,7 +139,7 @@ Cube::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dis
 	return out;
 }
 
-
+// Reverse Assignment
 vector< pair<uint32_t, double> > 
 Cube::RangeSearch(Vector<double>& query, double range, Distance<uint8_t, double> dist) {
 	
@@ -145,6 +149,7 @@ Cube::RangeSearch(Vector<double>& query, double range, Distance<uint8_t, double>
     uint32_t vertex = htable.get_hash(query);
     VertexHelper vertices(vertex, probes, k_);
 
+    // Search exactly "probes" number of vertices and consider at most "points" number of points
     for (uint32_t i = 0, j = 1; i < points && !vertices.stop(); j++, vertex = vertices.next(vertex)) {
         for(auto p : htable.bucket(query)) {
             
