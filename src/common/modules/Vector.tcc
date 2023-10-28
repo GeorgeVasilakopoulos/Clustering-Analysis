@@ -160,13 +160,28 @@ template <typename U>
 Vector<T>& Vector<T>::operator+=(const Vector<U>& v) {
 
 	if (size != v.len()) 
-        throw std::runtime_error("Exception in Dot Product operation: Dimensions of vectors must match!\n");
+        throw std::runtime_error("Exception in Vector addition operation: Dimensions of vectors must match!\n");
 
 	for(uint32_t i = 0; i < size; i++)
 		data[i] += v[i];
 
 	return *this;
 }
+
+template <typename T>
+template <typename U>
+Vector<T>& Vector<T>::operator-=(const Vector<U>& v) {
+
+	if (size != v.len()) 
+        throw std::runtime_error("Exception in Vector subtraction operation: Dimensions of vectors must match!\n");
+
+	for(uint32_t i = 0; i < size; i++)
+		data[i] -= v[i];
+
+	return *this;
+}
+
+
 
 
 template <typename T>

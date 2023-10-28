@@ -37,28 +37,28 @@ try {
 	if (parser.parsed("d"))
 		data_path = parser.value<string>("d");
 	else {
-		cout << "Enter path to dataset: ";
+		cout << "Enter path to dataset: " << flush;
 		getline(cin, data_path);
 	}
 
 	Stopwatch swcout = Stopwatch();
 
+	cout << "Loading data... " << flush;
 	swcout.start();
-	cout << "Loading data: ";
 	DataSet train(data_path);
-	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)\n"; 
+	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)" << endl; 
 
 	if (parser.parsed("q"))
 		query_path = parser.value<string>("q");
 	else {
-		cout << "Enter path to query file: ";
+		cout << "Enter path to query file: " << flush;
 		getline(cin, query_path);
 	}
 
 	if (parser.parsed("o"))
 		out_path = parser.value<string>("o");
 	else {
-		cout << "Enter path to out file: ";
+		cout << "Enter path to out file: " << flush;
 		getline(cin, out_path);
 	}
 
@@ -70,13 +70,13 @@ try {
 	uint32_t table_size =  train.dim() / 8;
 
 	swcout.start();
-	cout << "Populating HashTables: ";
+	cout << "Populating HashTables... " << flush;
 	LSH lsh(train, window, k, L, table_size);
-	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)\n"; 
+	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)" << endl; 
 
 
 	swcout.start();
-	cout << "Begining search for \"" << query_path << "\": ";
+	cout << "Beginning search for \"" << query_path << "\"... " << flush;
 
 	Stopwatch sw = Stopwatch();
 	while (true) {
@@ -109,8 +109,8 @@ try {
 			output_file << "\n";
 		}
 
-		cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)\n"; 
-		cout << "Enter path to new query file (Nothing in order to stop): ";
+		cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)" << endl; 
+		cout << "Enter path to new query file (Nothing in order to stop): " << flush;
 		getline(cin, query_path);
 
 		if (query_path.empty()) 

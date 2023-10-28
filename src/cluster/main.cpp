@@ -32,7 +32,7 @@ try {
     string out_path;
     string approx_method;
 
-    
+    Stopwatch timer;    
     FileParser file_parser = FileParser();
 
     file_parser.add("number_of_clusters",              "k"         );
@@ -45,7 +45,7 @@ try {
     if(arg_parser.parsed("i"))
         input_path = arg_parser.value<string>("i");
     else {
-        cout << "Enter path to input file: ";
+        cout << "Enter path to input file: " << flush;
         getline(cin, input_path);
     }
 
@@ -53,21 +53,21 @@ try {
     if(arg_parser.parsed("c"))
         configuration_path = arg_parser.value<string>("c");
     else {
-        cout << "Enter path to configuration file: ";
+        cout << "Enter path to configuration file: " << flush;
         getline(cin, configuration_path);
     }
 
     if(arg_parser.parsed("o"))
         out_path = arg_parser.value<string>("o");
     else {
-        cout << "Enter path to output file: ";
+        cout << "Enter path to output file: " << flush;
         getline(cin, out_path);
     }
 
     if(arg_parser.parsed("m"))
         approx_method = arg_parser.value<string>("m");
     else{
-        cout << "Enter approximator method: ";
+        cout << "Enter approximator method: " << flush;
         getline(cin, approx_method);
         if(approx_method != "Classic" && approx_method != "LSH" && approx_method != "Hypercube")
             throw runtime_error("Invalid Approximator Method: Valid options are 'Classic', 'LSH' and 'Hypercube'");
@@ -83,7 +83,7 @@ try {
 
     if(k == 0) {
         std::string n_of_clusters;
-        cout << "Enter number of clusters: ";
+        cout << "Enter number of clusters: " << flush;
         getline(cin, n_of_clusters);
         k = std::stoul(n_of_clusters);
     }
@@ -93,11 +93,17 @@ try {
     if (output_file.fail()) 
         throw runtime_error(out_path + " could not be opened!\n");
 
+    cout << "Loading input data... " << flush;
+    timer.start();
     DataSet dataset(input_path);
+    cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)" << endl; 
+
 
     uint32_t window = 2600;
     uint32_t table_size = dataset.size() / 8;
     
+    cout << "Selecting initial cluster centers... " << flush;
+    timer.start();
     Clusterer* clusterer = 
     approx_method == "Classic" ? 
         (Clusterer*)new Lloyd(dataset, k, l2_distance) :
@@ -106,13 +112,14 @@ try {
                                         (Approximator*)new LSH(dataset, window, lsh_k, L, table_size) : 
                                         (Approximator*)new Cube(dataset, window, cube_k, probes, M), 
                                     l2_distance, l2_distance);
-
+    cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)"<< endl; 
     
-    Stopwatch timer;
+    
+    cout << "Applying " << approx_method << " clustering algorithm... "<< flush;
     timer.start();
     clusterer->apply();
     double clustering_time = timer.stop();
-
+    cout << "Done! (" << std::fixed << std::setprecision(3) << clustering_time << " seconds)"<< endl; 
 
     output_file << "Algorithm: ";
     output_file << ((approx_method=="Classic") ? "Lloyds" : ("Range Search " + approx_method));
@@ -130,10 +137,11 @@ try {
     output_file <<  std::fixed << std::setprecision(3) << clustering_time << " sec\n";
 
 
-    
+    cout << "Evaluating the Silhouette coefficient... " << flush;
     timer.start();
-
     auto p = clusterer->silhouettes(l2_distance);
+    cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)" << endl; 
+    
 
     auto silhouettes = p.first;
     auto stotal = p.second;

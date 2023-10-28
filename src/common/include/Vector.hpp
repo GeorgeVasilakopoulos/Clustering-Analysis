@@ -17,6 +17,7 @@ class Vector{
 		Vector(uint32_t size);
 		Vector(uint32_t size, Distribution distr, T a, T b);
 		Vector(const Vector<T>& v);
+		
 		template <typename U>
 		Vector(const Vector<U>& v);
 		Vector(std::ifstream& input, uint32_t size);
@@ -32,11 +33,15 @@ class Vector{
 		Vector& operator-() const;
 
 		Vector operator+(const Vector& vector) const;
+		
 		template <typename U>
 		T operator*(const Vector<U>& vector) const;
+		
 		template <typename U>
-		Vector& operator+=(const Vector<U>& vector);
-
+		Vector& operator+=(const Vector<U>& v);
+		
+		template <typename U>
+		Vector& operator-=(const Vector<U>& v);
 		Vector& operator+=(const T& scalar);
 		Vector& operator*=(const T& scalar);
 		Vector& operator/=(const T& scalar);

@@ -62,3 +62,6 @@ cube: $(CUBE_OBJS)
 
 cluster: $(CLUSTER_OBJS)
 	$(CC) $^ -o ./cluster
+
+all: 
+	make lsh; make cube; make cluster;

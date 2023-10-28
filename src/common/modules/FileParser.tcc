@@ -6,7 +6,7 @@ void FileParser::parse(std::string path) {
     std::ifstream input(path.data(), std::ifstream::in);
 
 	 if (input.fail()) 
-        throw std::runtime_error("Failed to open file");
+        throw std::runtime_error("Failed to open file\n");
     
 
 	std::string line;

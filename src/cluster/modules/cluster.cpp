@@ -9,12 +9,14 @@ using namespace std;
 // Cluster //
 /////////////
 
+// Update cluster center
 void Cluster::update() {
 	if (points_.size() == 0)
 		return ;
 
 	auto sum = new Vector<uint32_t>(center_->len());
 
+	// Compute average vector
 	for (auto point : points_)
 		*sum += point->data();
 	
@@ -27,36 +29,35 @@ void Cluster::update() {
 
 void Cluster::add(DataPoint* point) {
 
+	// Quickly find sum of all vectors
 	if (points_.size() > 1)
 		*center_ *= (double)points_.size();
 
+
 	points_.insert(point);
+	*center_ += point->data();
 
-	for (uint32_t i = 0, size = (*center_).len(); i < size; i++)
-		(*center_)[i] += point->data()[i];
-
+	// Recompute average
 	*center_ /= (double)points_.size();
 
 }
 
 void Cluster::remove(DataPoint* point) {
 
+	// Corner Case
 	if (points_.size() == 1) {
 		points_.erase(point);
-		
-		for (uint32_t i = 0, size = (*center_).len(); i < size; i++)
-			(*center_)[i] = 0;
-		
+		*center_ *= 0;
 		return ;
 	}
 	
+	// Sum of vectors
 	*center_ *= (double)points_.size();
 
 	points_.erase(point);
+	*center_ -= point->data();
 
-	for (uint32_t i = 0, size = (*center_).len(); i < size; i++)
-		(*center_)[i] -= point->data()[i];
-
+	// Recompute Average
 	*center_ /= (double)points_.size();
 }
 
@@ -66,34 +67,51 @@ void Cluster::remove(DataPoint* point) {
 
 Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<uint8_t, double> dist_) 
 : dataset(dataset_), k(k_), dist(dist_) { 
+    
     bool* chosen = new bool[dataset.size()]();
 
+    // Random point as initial center
 	uint32_t init_center = Vector<uint32_t>(1, UNIFORM, 0, dataset.size() - 1)[0];
 
 	clusters.push_back(new Cluster(dataset[init_center]));
 	chosen[init_center] = true;
 	
-	for (uint32_t i = 1; i < k; i++) {
+	// Finding rest k-1 centers
+	for (uint32_t j = 1; j < k; j++) {
+		
+		// Stores (i, D(i)*D(i))
 		vector<pair<uint32_t, double>> distances;
+		
+		// Probability distribution of points - candidate centers
 		vector<pair<uint32_t, double>> probs;
 
-		double sum = 0;
-		for (uint32_t j = 0, size = dataset.size(); j < size; j++) {
-			if (chosen[j])
+
+		double sum = 0; //-> sum(D(i)*D(i))
+
+		for (uint32_t i = 0; i < dataset.size(); i++) {
+			if (chosen[i])
 				continue;
 			
-			auto p = closest(dataset[j]);
-			double distance = p.first;
-			distance *= distance;
+			auto p = closest(dataset[i]);
+			double distance = p.first; // = D(i)
 
-			distances.push_back(pair(j, distance));
-			sum += distance;
+			distances.push_back(pair(i, distance*distance));
+			sum += distance*distance;
 		}
 
+		// Calculate distribution
 		for (auto p : distances) 
 			probs.push_back(pair(p.first, p.second / sum));
 		
+
+
+		//Select new center according to distribution:
+			
+
+		// Random number, Uniform(0,1)
 		double prob = Vector<float>(1, UNIFORM, 0, 1)[0];
+
+		// Probability accumulator
 		double accum = 0;
 
 		for (auto p : probs) {
@@ -102,6 +120,7 @@ Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<uint8_t, double> d
 			if (prob > accum)
 				continue;
 			
+			// If prob <= accum, select this point
 			clusters.push_back(new Cluster(dataset[p.first]));
 			chosen[p.first] = true;
 			break;
@@ -121,6 +140,8 @@ void Clusterer::clear() {
 		cluster->clear();
 }
 
+
+// Find closest center to point
 pair<double, Cluster*> Clusterer::closest(DataPoint* point) {
 
 	if (clusters.size() == 0)
@@ -151,7 +172,6 @@ double average_distance(DataPoint* point, Cluster* cluster, Distance<uint8_t, ui
 		if (point == point2)
 			continue;
 		
-		// sum += fast_l2_distance(point, point2);
 		sum += dist_(point->data(), point2->data());
 		count++;
 	}
