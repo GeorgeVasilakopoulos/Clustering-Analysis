@@ -93,7 +93,7 @@ try {
     if (output_file.fail()) 
         throw runtime_error(out_path + " could not be opened!\n");
 
-    DataSet dataset(input_path, 10000);
+    DataSet dataset(input_path);
 
     uint32_t window = 2600;
     uint32_t table_size = dataset.size() / 8;
