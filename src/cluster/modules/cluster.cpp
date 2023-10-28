@@ -109,13 +109,6 @@ Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<uint8_t, double> d
 	}
 
 	delete [] chosen;
-	
-
-	// for (auto cluster : clusters) {
-	// 	for (size_t i = 0; i < cluster->center().len(); i++)
-	// 		printf("%3d%s", (int)(cluster->center())[i], ((i + 1) % 28) == 0 ? "\n" : " ");
-	// 	printf("\n");
-	// }
 }
 
 Clusterer::~Clusterer() {

@@ -11,7 +11,6 @@
 
 using namespace std;
 
-
 int main(int argc, const char* argv[]) {
 try {
 	ArgParser parser = ArgParser();
@@ -42,7 +41,12 @@ try {
 		getline(cin, data_path);
 	}
 
+	Stopwatch swcout = Stopwatch();
+
+	swcout.start();
+	cout << "Loading data: ";
 	DataSet train(data_path);
+	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)\n"; 
 
 	if (parser.parsed("q"))
 		query_path = parser.value<string>("q");
@@ -62,14 +66,19 @@ try {
 	if (output_file.fail()) 
         throw runtime_error(out_path + " could not be opened!\n");
 
-	uint32_t window = 5;
+	uint32_t window = 2600; // Average distance of points on given test dataset
 	uint32_t table_size =  train.dim() / 8;
-	// uint32_t window = 100;
-	// uint32_t table_size =  100;
+
+	swcout.start();
+	cout << "Populating HashTables: ";
 	LSH lsh(train, window, k, L, table_size);
+	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)\n"; 
+
+
+	swcout.start();
+	cout << "Begining search for \"" << query_path << "\": ";
 
 	Stopwatch sw = Stopwatch();
-
 	while (true) {
 		for (auto point : DataSet(query_path, 10)) {
 
@@ -100,6 +109,7 @@ try {
 			output_file << "\n";
 		}
 
+		cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)\n"; 
 		cout << "Enter path to new query file (Nothing in order to stop): ";
 		getline(cin, query_path);
 

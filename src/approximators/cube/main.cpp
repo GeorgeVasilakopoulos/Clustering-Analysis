@@ -44,7 +44,12 @@ try {
 		getline(cin, data_path);
 	}
 
+	Stopwatch swcout = Stopwatch();
+	
+	swcout.start();
+	cout << "Loading data: ";
 	DataSet train(data_path);
+	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)\n"; 
 
 	if (parser->parsed("q"))
 		query_path = parser->value<string>("q");
@@ -64,12 +69,17 @@ try {
 	if (output_file.fail()) 
         throw runtime_error(out_path + " could not be opened!\n");
 
-	uint32_t window = 4000;
-	printf("\tpoints: %d\n\tk = %d\n", points, k);
+	uint32_t window = 2600;
+
+	swcout.start();
+	cout << "Populating HashTable: ";
 	Cube cube(train, window, k, probes, points);
+	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)\n";
+
+	swcout.start();
+	cout << "Begining search for \"" << query_path << "\": ";
 
 	Stopwatch sw = Stopwatch();
-
 	while (true) {
 		for (auto point : DataSet(query_path, 10)) {
 
@@ -100,6 +110,7 @@ try {
 			output_file << "\n";
 		}
 
+		cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)\n"; 
 		cout << "Enter path to new query file (Nothing in order to stop): ";
 		getline(cin, query_path);
 

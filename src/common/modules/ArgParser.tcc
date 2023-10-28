@@ -41,11 +41,9 @@ void ArgParser::parse(uint32_t argc, const char** argv) {
     for (uint32_t i = 1; i < argc; i++) {
         if (argv[i][0] == '-' && argv[i][1] != '\0') {            
             std::string name = std::string(argv[i]).erase(0, 1);
-            // printf("parsing %s of type %d\n", name.data(), types[name]);
+            
             if (parsed(name))
                 dealloc(types[name], flags[name]);
-            
-            printf("%s\n", name.data());
 
             if (types[name] != BOOL && i + 1 >= argc)
                 throw std::runtime_error("Exception in Argument Parsing operation: Non boolean Argument " 

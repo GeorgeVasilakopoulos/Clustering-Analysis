@@ -24,7 +24,6 @@ void FileParser::parse(std::string path) {
 			continue;
 
 		values[label] = std::stoul(number);
-		// printf("Parsed %s with value %3d\n", label.data(), values[label]);
 	}
 
 	input.close();

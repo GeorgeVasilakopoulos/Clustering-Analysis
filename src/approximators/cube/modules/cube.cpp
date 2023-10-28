@@ -74,7 +74,7 @@ Cube::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist){
     VertexHelper vertices(vertex, probes, k_);
 	
     for (uint32_t i = 0, j = 1; i < points && !vertices.stop(); j++, vertex = vertices.next(vertex)) {
-        printf("bucket elements: %ld\n", htable.bucket(vertex).size());
+        
         for(auto p : htable.bucket(vertex)) {
             
             auto point = p.second;

@@ -93,12 +93,11 @@ try {
     if (output_file.fail()) 
         throw runtime_error(out_path + " could not be opened!\n");
 
-    printf("here1\n");
     DataSet dataset(input_path, 10000);
 
-    uint32_t window = 4000;
+    uint32_t window = 2600;
     uint32_t table_size = dataset.size() / 8;
-    printf("here2\n");
+    
     Clusterer* clusterer = 
     approx_method == "Classic" ? 
         (Clusterer*)new Lloyd(dataset, k, l2_distance) :
@@ -108,7 +107,6 @@ try {
                                         (Approximator*)new Cube(dataset, window, cube_k, probes, M), 
                                     l2_distance, l2_distance);
 
-    printf("here3\n");
     
     Stopwatch timer;
     timer.start();
@@ -134,14 +132,12 @@ try {
 
     
     timer.start();
-    printf("Starting Silhouettes\n");
 
     auto p = clusterer->silhouettes(l2_distance);
 
     auto silhouettes = p.first;
     auto stotal = p.second;
 
-    printf("Silhouettes time: %f seconds\n", timer.stop());
 
     output_file << "Silhouette: [";
     for (auto score : silhouettes)
