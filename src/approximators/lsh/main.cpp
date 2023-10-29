@@ -11,6 +11,8 @@
 
 using namespace std;
 
+#define QUERIES 10
+
 int main(int argc, const char* argv[]) {
 try {
 	ArgParser parser = ArgParser();
@@ -79,18 +81,23 @@ try {
 	cout << "Beginning search for \"" << query_path << "\"... " << flush;
 
 	Stopwatch sw = Stopwatch();
+	double ttime_lsh = 0, ttime_true = 0;
+	double tdist_lsh = 0, tdist_true = 0;
+
 	while (true) {
-		for (auto point : DataSet(query_path, 10)) {
+		for (auto point : DataSet(query_path, QUERIES)) {
 
 			sw.start();
 			auto aknn = lsh.kANN(*point, N, l2_distance<uint8_t>);
-			double lfs_time = sw.stop();
+			double lsh_time = sw.stop();
 			auto range = lsh.RangeSearch(*point, R, l2_distance<uint8_t>);
 
 			sw.start();
 			auto knn = lsh.kNN(*point, N, l2_distance<uint8_t>);
 			double true_time = sw.stop();
 
+			ttime_lsh += lsh_time;
+			ttime_true += true_time;
 			
 			output_file << "Query " << point->label() << "\n";
 
@@ -98,9 +105,12 @@ try {
 				output_file << "Nearest neighbor-" << i << ": " << aknn[i].first << "\n";
 				output_file << "distanceLSH: "  << aknn[i].second << "\n";
 				output_file << "distanceTrue: " << knn[i].second   << "\n";
+
+				tdist_lsh  += aknn[i].second;
+				tdist_true += knn[i].second;
 			}
 
-			output_file << "tLSH: "  << lfs_time  << "\n";
+			output_file << "tLSH: "  << lsh_time  << "\n";
 			output_file << "tTrue: " << true_time << "\n\n";
 			output_file << R << "-near neighbors:\n";
 
@@ -110,7 +120,9 @@ try {
 		}
 
 		cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)" << endl; 
-		cout << "Enter path to new query file (Nothing in order to stop): " << flush;
+		cout << "Relative time performance (LSH time / True time): " << std::fixed << std::setprecision(3) << ttime_lsh / ttime_true << endl; 
+		cout << "Approximation Factor (LSH dist / True dist): " << std::fixed << std::setprecision(3) << tdist_lsh / tdist_true << endl; 
+		cout << "\nEnter path to new query file (Nothing in order to stop): " << flush;
 		getline(cin, query_path);
 
 		if (query_path.empty()) 

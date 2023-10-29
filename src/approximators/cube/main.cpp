@@ -80,18 +80,23 @@ try {
 	cout << "Beginning search for \"" << query_path << "\"... " << flush;
 
 	Stopwatch sw = Stopwatch();
+	double ttime_cube = 0, ttime_true = 0;
+	double tdist_cube = 0, tdist_true = 0;
+
 	while (true) {
 		for (auto point : DataSet(query_path, 10)) {
 
 			sw.start();
 			auto aknn = cube.kANN(*point, N, l2_distance<uint8_t>);
-			double lfs_time = sw.stop();
+			double cube_time = sw.stop();
 			auto range = cube.RangeSearch(*point, R, l2_distance<uint8_t>);
 
 			sw.start();
 			auto knn = cube.kNN(*point, N, l2_distance<uint8_t>);
 			double true_time = sw.stop();
 
+			ttime_cube += cube_time;
+			ttime_true += true_time;
 			
 			output_file << "Query " << point->label() << "\n";
 
@@ -99,9 +104,12 @@ try {
 				output_file << "Nearest neighbor-" << i + 1 << ": " << aknn[i].first << "\n";
 				output_file << "distanceCube: "  << aknn[i].second << "\n";
 				output_file << "distanceTrue: " << knn[i].second   << "\n";
+
+				tdist_cube  += aknn[i].second;
+				tdist_true += knn[i].second;
 			}
 
-			output_file << "tCube: "  << lfs_time  << "\n";
+			output_file << "tCube: "  << cube_time  << "\n";
 			output_file << "tTrue: " << true_time << "\n\n";
 			output_file << R << "-near neighbors:\n";
 
@@ -110,8 +118,10 @@ try {
 			output_file << "\n";
 		}
 
-		cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)" << endl; 
-		cout << "Enter path to new query file (Nothing in order to stop): " << flush;
+		cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)" << endl;  
+		cout << "Relative time performance (Cube time / True time): " << std::fixed << std::setprecision(3) << ttime_cube / ttime_true << endl; 
+		cout << "Approximation Factor (Cube dist / True dist): " << std::fixed << std::setprecision(3) << tdist_cube / tdist_true << endl; 
+		cout << "\nEnter path to new query file (Nothing in order to stop): " << flush;
 		getline(cin, query_path);
 
 		if (query_path.empty()) 
