@@ -76,17 +76,17 @@ Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<uint8_t, double> d
 	clusters.push_back(new Cluster(dataset[init_center]));
 	chosen[init_center] = true;
 	
-	// Finding rest k-1 centers
+	// Finding rest k - 1 centers
 	for (uint32_t j = 1; j < k; j++) {
 		
-		// Stores (i, D(i)*D(i))
+		// Stores (i, D(i) * D(i))
 		vector<pair<uint32_t, double>> distances;
 		
 		// Probability distribution of points - candidate centers
 		vector<pair<uint32_t, double>> probs;
 
 
-		double sum = 0; //-> sum(D(i)*D(i))
+		double sum = 0; // -> sum(D(i) * D(i))
 
 		for (uint32_t i = 0; i < dataset.size(); i++) {
 			if (chosen[i])
@@ -108,7 +108,7 @@ Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<uint8_t, double> d
 		// Select new center according to distribution:
 			
 
-		// Random number, Uniform(0,1)
+		// Random number, Uniform(0, 1)
 		double prob = Vector<float>(1, UNIFORM, 0, 1)[0];
 
 		// Probability accumulator
@@ -239,7 +239,7 @@ void Lloyd::apply() {
 
 			auto p = closest(point);
 
-			// Add point to the closest cluster, updating both centers
+			// Add point to the closest cluster, updating both centers (MacQueen)
 			if (p.second != indexes[index]) {
 				changes++;
 				
@@ -322,7 +322,7 @@ void RAssignment::apply() {
 
 					changes++;
 					
-					//	Erase point from previous cluster
+					// Erase point from previous cluster
 					if (prev != nullptr)
 						prev->points().erase(point);
 						

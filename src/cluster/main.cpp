@@ -39,7 +39,7 @@ try {
     file_parser.add("number_of_vector_hash_tables",    "L",       3);
     file_parser.add("number_of_vector_hash_functions", "lsh_k",   4);
     file_parser.add("max_number_M_hypercube",          "M",      10);
-    file_parser.add("number_of_hypercube_dimensions",  "cube_k",  3);
+    file_parser.add("number_of_hypercube_dimensions",  "cube_k", 14);
     file_parser.add("number_of_probes",                "probes",  2);
 
     if(arg_parser.parsed("i"))
