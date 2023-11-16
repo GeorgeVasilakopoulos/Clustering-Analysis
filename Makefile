@@ -30,8 +30,15 @@ CLUSTER_OBJS  := $(subst .cpp,.o,$(CLUSTER_SRCS))
 
 
 
+GRAPH	   	:= ./src/graph/gnn
+GRAPH_INCS  := $(GRAPH)/include
+GRAPH_SRCS  := $(wildcard $(GRAPH)/*.cpp) $(wildcard $(GRAPH)/modules/*.cpp) $(COMMON_SRCS) $(LSH_SRCS) $(CUBE_SRCS)
+GRAPH_OBJS  := $(subst .cpp,.o,$(GRAPH_SRCS))
+
+
+
 TARGET   := $(word 1, $(MAKECMDGOALS))
-CXXFLAGS := -std=c++17 -O2 -Wall -Wextra 
+CXXFLAGS := -std=gnu++17 -O3 -Wall -Wextra 
 
 # Compile options
 ifeq ($(TARGET),lsh)
@@ -40,6 +47,8 @@ else ifeq ($(TARGET),cube)
 	CXXFLAGS += -I$(LSH_INCS) -I$(CUBE_INCS)
 else ifeq ($(TARGET),cluster)
 	CXXFLAGS += -I$(LSH_INCS) -I$(CUBE_INCS) -I$(CLUSTER_INCS)
+else ifeq ($(TARGET),graph)
+	CXXFLAGS += -I$(LSH_INCS) -I$(CUBE_INCS) -I$(GRAPH_INCS) -fopenmp -pthread
 endif
 
 CXXFLAGS += -I$(COMMON_INCS)
@@ -49,7 +58,7 @@ CXXFLAGS += -I$(COMMON_INCS)
 	$(CC) $(CXXFLAGS) -c $^ -o $@
 
 clean:
-	@rm -f $(COMMON_OBJS) $(LSH_OBJS) $(CUBE_OBJS) $(CLUSTER_OBJS) ./common ./lsh ./cube ./cluster
+	@rm -f $(COMMON_OBJS) $(LSH_OBJS) $(CUBE_OBJS) $(CLUSTER_OBJS) $(GRAPH_OBJS) ./common ./lsh ./cube ./cluster ./graph
 
 run: $(COMMON_OBJS)
 	$(CC) $(COMMON_OBJS) -o ./common
@@ -62,6 +71,9 @@ cube: $(CUBE_OBJS)
 
 cluster: $(CLUSTER_OBJS)
 	$(CC) $^ -o ./cluster
+
+graph: $(GRAPH_OBJS)
+	$(CC) -fopenmp $^ -o ./graph
 
 all: 
 	make -s lsh
