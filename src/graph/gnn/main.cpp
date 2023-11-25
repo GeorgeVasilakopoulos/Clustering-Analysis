@@ -18,10 +18,18 @@ int main() {
     MRNG newgraph(dataset,approx,l2_distance,10,10);
     // Graph g = Graph(dataset, 50, approx, l2_distance);
 
+
+    // auto vec = g.query(dataset[0]->data(), 5, 10, 30, 2);
+    printf("querying\n");
+    auto v = newgraph.query(dataset[0]->data(),15,10,10);
+
+    for(auto p : v){
+        std::cout<<"("<<p.first<<" "<<p.second<<")"<<std::endl;
+    }
+
 	Stopwatch sw = Stopwatch();
 
     // sw.start();
-    // auto vec = g.query(dataset[0]->data(), 5, 10, 30, 2);
     // printf("%d, %f -- %f\n", vec[0].first, vec[0].second, sw.stop());
 
     // sw.start();

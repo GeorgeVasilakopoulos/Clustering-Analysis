@@ -126,17 +126,18 @@ vector<pair<uint32_t, double>>  MRNG::query(Vector<uint8_t>& query, uint32_t sta
 
     uint32_t i = 1;
     while(i < L){
-
+        // std::cout<<i<<std::endl;
         DataPoint* p = pq.top().first;
-        while(checked.find(p) == checked.end()){
+        while(checked.find(p) != checked.end()){
             pq.pop();
-            if(pq.size() == 0);//hmmmm
+            // if(pq.size() == 0)std::cout<<"hahahaha"<<std::endl;
             p = pq.top().first;
         }
 
         checked.insert(p);
         for(auto neighbor : edges[p]){
             if(inserted.find(neighbor) != inserted.end())continue;
+            // std::cout<<"Inserting "<<neighbor<<" "<<dist(query,neighbor->data())<<std::endl;
             i++;
             pq.push(pair(neighbor,dist(query,neighbor->data())));
             inserted.insert(neighbor);
@@ -147,8 +148,9 @@ vector<pair<uint32_t, double>>  MRNG::query(Vector<uint8_t>& query, uint32_t sta
     for(i = 0; i < K; i++){
 
         DataPoint* p= pq.top().first;
-        double distance = pq.top().second; 
+        double distance = pq.top().second;
         ret.push_back(pair(p->label(),distance));
+        pq.pop();
     }
 
     return ret;
