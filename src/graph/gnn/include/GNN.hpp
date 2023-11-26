@@ -28,14 +28,15 @@ class Graph {
 class MRNG{
     private:
         DataSet& dataset;
-        // std::unordered_map<DataPoint*, std::vector<DataPoint*>> edges;
         std::vector<DataPoint*>* edges;
         Distance<uint8_t, uint8_t> dist;
-
+        uint32_t nn_of_centroid;
 
     public:
-        MRNG(DataSet& dataset_,  Approximator* approx, Distance<uint8_t,uint8_t> dist_, uint32_t k, uint32_t overhead);
-        std::vector<std::pair<uint32_t, double>>  query(Vector<uint8_t>& query, uint32_t startID, uint32_t K, uint32_t L);
+        MRNG(DataSet& dataset_,  Approximator* approx, 
+             Distance<uint8_t,uint8_t> dist, Distance<uint8_t, double> dist_centroid, 
+             uint32_t k, uint32_t overhead);
+        std::vector<std::pair<uint32_t, double>>  query(Vector<uint8_t>& query, uint32_t K, uint32_t L);
 
 
 

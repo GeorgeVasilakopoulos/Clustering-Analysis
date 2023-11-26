@@ -5,6 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <set>
 #include <queue>
 
 using std::pair;
@@ -12,6 +13,7 @@ using std::vector;
 using std::priority_queue;
 using std::unordered_map;
 using std::unordered_set;
+using std::set;
 
 Graph::Graph(DataSet& dataset_, uint32_t k_, Approximator* approx, Distance<uint8_t, uint8_t> dist_) 
 : dataset(dataset_), edges(new vector<DataPoint*>[dataset.size()]), k(k_), dist(dist_) {    
@@ -38,9 +40,12 @@ vector< pair<uint32_t, double> >  Graph::query(Vector<uint8_t>& query,
     for (uint32_t i = 0, size = dataset.size(); i < R; i++) {
         uint32_t index = Vector<uint32_t>(1, UNIFORM, 0, size - 1)[0];
         auto point = dataset[index];
-        auto pedges = edges[point->label() - 1];
 
+        double prev = DBL_MAX;
         for (uint32_t j = 0; j < T; j++) {
+
+            auto pedges = edges[point->label() - 1];
+
             DataPoint* closest = nullptr;
             double min_dist = DBL_MAX;
 
@@ -62,12 +67,15 @@ vector< pair<uint32_t, double> >  Graph::query(Vector<uint8_t>& query,
                 considered.insert(neighb->label());
             }
 
-            if (!closest)
+
+            if (closest == nullptr || prev <= min_dist)
                 break;
 
             point = closest;
+            prev = min_dist;
         }
     }
+
 
     vector< pair<uint32_t, double> > out;
     for (uint32_t i = 0; !pq.empty() && i < N; i++) {
@@ -79,13 +87,15 @@ vector< pair<uint32_t, double> >  Graph::query(Vector<uint8_t>& query,
 }
 
 
-MRNG::MRNG(DataSet& dataset_,  Approximator* approx, Distance<uint8_t,uint8_t> dist_, uint32_t k, uint32_t overhead)
+MRNG::MRNG(DataSet& dataset_,  Approximator* approx, 
+           Distance<uint8_t, uint8_t> dist_, Distance<uint8_t, double> dist_centroid, 
+           uint32_t k, uint32_t overhead)
 : dataset(dataset_), edges(new vector<DataPoint*>[dataset.size()]), dist(dist_) {
     
 
     #pragma omp parallel for
     for(auto x : dataset) {
-        printf("%d\n", x->label());
+        // printf("%d\n", x->label());
         
         vector<pair<uint32_t, double>> neighbors = approx->kANN(*x, k, dist);
         size_t size = neighbors.size();
@@ -95,6 +105,10 @@ MRNG::MRNG(DataSet& dataset_,  Approximator* approx, Distance<uint8_t,uint8_t> d
         auto& pedges = edges[x->label() - 1];
 
         while(i < size && j < overhead){
+            if (neighbors[i].first == x->label()) {
+                i++;
+                continue;
+            }
             
             DataPoint* y = dataset[neighbors[i].first - 1];
             double min_dist = neighbors[i++].second;
@@ -107,59 +121,78 @@ MRNG::MRNG(DataSet& dataset_,  Approximator* approx, Distance<uint8_t,uint8_t> d
                 }
             }
 
-            if(insert)
+            if(insert) {
+                // printf("%d neib is %d\n", x->label(), y->label());
                 pedges.push_back(y);
+            }
             
             j += insert;
         }
+
+        // printf("\n");
     }
 
+    
+	auto centroid = new Vector<double>(dataset[0]->data().len());
+
+	for (auto point : dataset)
+		*centroid += point->data();
+	
+	*centroid /= (double)dataset.size();
+
+    double min_dist = DBL_MAX;
+	for(auto point : dataset) {
+		double distance = dist_centroid(point->data(), *centroid);
+        if (distance < min_dist) {
+            min_dist = distance;
+            nn_of_centroid = point->label();
+        }
+	}
+
+	delete centroid;
 }
 
-vector<pair<uint32_t, double>>  MRNG::query(Vector<uint8_t>& query, uint32_t startID, uint32_t K, uint32_t L){
+vector<pair<uint32_t, double>>  MRNG::query(Vector<uint8_t>& query, uint32_t K, uint32_t L){
 
-    auto comparator = [](const pair<DataPoint*, double> t1, const pair<DataPoint*, double> t2) {
-        return t1.second > t2.second;
+    auto comparator = [](pair<uint32_t, double> t1, pair<uint32_t, double> t2) {
+        return t1.second < t2.second;
     };
 
-    priority_queue<pair<DataPoint*, double>, vector<pair<DataPoint*, double>>, decltype(comparator)> pq(comparator);
-    unordered_set<DataPoint*> checked;
-    unordered_set<DataPoint*> inserted;
+    set<pair<uint32_t, double>, decltype(comparator)> R(comparator);
+    unordered_set<uint32_t> considered;
+    unordered_set<uint32_t> inserted;
 
 
-    DataPoint* start = dataset[startID-1];
-    double distance = dist(start->data(),query);
-    pq.push(pair(start,distance));
-    inserted.insert(start);
+    R.insert(pair(nn_of_centroid, dist(dataset[nn_of_centroid - 1]->data(), query)));
+    inserted.insert(nn_of_centroid);
 
+    while(R.size() < L){
+        uint32_t point = 0;
 
-    uint32_t i = 1;
-    while(i < L){
-        // std::cout<<i<<std::endl;
-        DataPoint* p = pq.top().first;
-        while(checked.find(p) != checked.end()){
-            pq.pop();
-            // if(pq.size() == 0)std::cout<<"hahahaha"<<std::endl;
-            p = pq.top().first;
+        for (auto p : R) {
+            if (considered.find(p.first) == considered.end()) {
+                point = p.first;
+                break;
+            }
         }
 
-        checked.insert(p);
-        for(auto neighbor : edges[p->label() - 1]){
-            if(inserted.find(neighbor) != inserted.end())continue;
-            // std::cout<<"Inserting "<<neighbor<<" "<<dist(query,neighbor->data())<<std::endl;
-            i++;
-            pq.push(pair(neighbor,dist(query,neighbor->data())));
-            inserted.insert(neighbor);
+        considered.insert(point);
+
+        for(auto neighbor : edges[point - 1]) {
+            if(inserted.find(neighbor->label()) != inserted.end())
+                continue;
+
+            R.insert(pair(neighbor->label(), dist(query, neighbor->data())));
+            inserted.insert(neighbor->label());
         }
     }
 
     vector<pair<uint32_t, double>> ret;
-    for(i = 0; i < K; i++){
-
-        DataPoint* p= pq.top().first;
-        double distance = pq.top().second;
-        ret.push_back(pair(p->label(),distance));
-        pq.pop();
+    for (auto p : R) {
+        if ((int)K-- <= 0)
+            break;
+        
+        ret.push_back(p);
     }
 
     return ret;

@@ -19,9 +19,6 @@ Approximator::kNN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist)
 	priority_queue<pair<uint32_t, double>, vector<pair<uint32_t, double>>, decltype(comparator)> pq(comparator);
 	
 	for(auto point : dataset) {
-		if(query.label() == point->label())
-			continue; 
-
 		double distance = dist(query.data(), point->data());
 		pq.push(pair(point->label(), distance));
 	}
