@@ -80,29 +80,37 @@ vector< pair<uint32_t, double> >  Graph::query(Vector<uint8_t>& query,
 
 
 MRNG::MRNG(DataSet& dataset_,  Approximator* approx, Distance<uint8_t,uint8_t> dist_, uint32_t k, uint32_t overhead)
-: dataset(dataset_), dist(dist_) {
+: dataset(dataset_), edges(new vector<DataPoint*>[dataset.size()]), dist(dist_) {
     
 
-    for(auto x : dataset){
-        printf("%d\n",x->label());
-        vector<pair<uint32_t, double>> neighbors = approx->kANN(*x,k,dist);
-        while(neighbors.size() && edges[x].size() < overhead){
+    #pragma omp parallel for
+    for(auto x : dataset) {
+        printf("%d\n", x->label());
+        
+        vector<pair<uint32_t, double>> neighbors = approx->kANN(*x, k, dist);
+        size_t size = neighbors.size();
+
+        size_t i = 0;
+        size_t j = 0;
+        auto& pedges = edges[x->label() - 1];
+
+        while(i < size && j < overhead){
             
-            DataPoint* y = dataset[neighbors[0].first - 1];
-            double min_dist = neighbors[0].second;
+            DataPoint* y = dataset[neighbors[i].first - 1];
+            double min_dist = neighbors[i++].second;
 
             bool insert = true;
-            for(auto r : edges[x]){
-                if(min_dist >= dist(r->data(),y->data())){
+            for(auto r : pedges) {
+                if(min_dist >= dist(r->data(), y->data())) {
                     insert = false;
                     break;
                 }
             }
 
-            if(insert){
-                edges[x].push_back(y);
-            }
-            neighbors.erase(neighbors.begin());
+            if(insert)
+                pedges.push_back(y);
+            
+            j += insert;
         }
     }
 
@@ -136,7 +144,7 @@ vector<pair<uint32_t, double>>  MRNG::query(Vector<uint8_t>& query, uint32_t sta
         }
 
         checked.insert(p);
-        for(auto neighbor : edges[p]){
+        for(auto neighbor : edges[p->label() - 1]){
             if(inserted.find(neighbor) != inserted.end())continue;
             // std::cout<<"Inserting "<<neighbor<<" "<<dist(query,neighbor->data())<<std::endl;
             i++;
