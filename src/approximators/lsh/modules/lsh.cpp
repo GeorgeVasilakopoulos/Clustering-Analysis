@@ -25,7 +25,7 @@ LSH::~LSH() {
 
 
 vector< pair<uint32_t, double> > 
-LSH::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist){
+LSH::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist) const{
 			
 	auto comparator = [](const pair<uint32_t, double> t1, const pair<uint32_t, double> t2) {
 		return t1.second > t2.second;
@@ -40,7 +40,7 @@ LSH::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist){
 			
 			auto point = p.second;
 
-			if (query.label() == point->label() || considered.find(point->label()) != considered.end())
+			if (considered.find(point->label()) != considered.end())
 				continue; 
 
 			double distance = dist(query.data(), point->data());
@@ -61,7 +61,7 @@ LSH::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist){
 
 
 vector< pair<uint32_t, double> > 
-LSH::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist) {
+LSH::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist) const {
 
 	unordered_set<uint32_t> considered;
 	vector< pair<uint32_t, double> > out;
@@ -89,7 +89,7 @@ LSH::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist
 
 // For Reverse Assignment
 vector< pair<uint32_t, double> > 
-LSH::RangeSearch(Vector<double>& query, double range, Distance<uint8_t, double> dist) {
+LSH::RangeSearch(Vector<double>& query, double range, Distance<uint8_t, double> dist) const {
 
 	unordered_set<uint32_t> considered;
 	vector< pair<uint32_t, double> > out;

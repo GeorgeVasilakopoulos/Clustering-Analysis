@@ -14,7 +14,8 @@
 class Graph {
     private:
         DataSet& dataset;
-        std::unordered_map<DataPoint*, std::vector<DataPoint*>> edges;
+        // std::unordered_map<DataPoint*, std::vector<DataPoint*>> edges;
+        std::vector<DataPoint*>* edges;
         uint32_t k;
         Distance<uint8_t, uint8_t> dist;
     public:

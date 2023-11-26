@@ -25,16 +25,16 @@ template <typename T>
 uint32_t HashTable<T>::get_hash(Vector<double>& vec) const { return hash->apply(vec); }
 
 template <typename T>
-Bucket& HashTable<T>::bucket(uint32_t index) { return buckets[index]; }
+Bucket& HashTable<T>::bucket(uint32_t index) const { return buckets[index]; }
 
 template <typename T>
-Bucket& HashTable<T>::bucket(DataPoint& point) {
+Bucket& HashTable<T>::bucket(DataPoint& point) const {
 	uint32_t hvalue = hash->apply(point.data());
 	return buckets[hvalue % table_size];
 }
 
 template <typename T>
-Bucket& HashTable<T>::bucket(Vector<double>& v) {
+Bucket& HashTable<T>::bucket(Vector<double>& v) const {
 	uint32_t hvalue = hash->apply(v);
 	return buckets[hvalue % table_size];
 }

@@ -18,12 +18,12 @@ class Approximator {
         kNN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist);
 
         virtual std::vector< std::pair<uint32_t, double> >
-        kANN(DataPoint& p, uint32_t k, Distance<uint8_t, uint8_t> dist) = 0;
+        kANN(DataPoint& p, uint32_t k, Distance<uint8_t, uint8_t> dist) const = 0;
 
         virtual std::vector< std::pair<uint32_t, double> > 
-        RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist) = 0;
+        RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist) const = 0;
 
         virtual std::vector< std::pair<uint32_t, double> > 
-        RangeSearch(Vector<double>& query, double range, Distance<uint8_t, double> dist) = 0;
+        RangeSearch(Vector<double>& query, double range, Distance<uint8_t, double> dist) const = 0;
 
 };

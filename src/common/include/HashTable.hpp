@@ -24,9 +24,9 @@ class HashTable {
     uint32_t get_hash(DataPoint& point) const;
     uint32_t get_hash(Vector<double>& v) const;
     
-    Bucket& bucket(uint32_t index);
-    Bucket& bucket(DataPoint& point);
-    Bucket& bucket(Vector<double>& v);
+    Bucket& bucket(uint32_t index) const;
+    Bucket& bucket(DataPoint& point) const;
+    Bucket& bucket(Vector<double>& v) const;
 
 };
 

@@ -64,7 +64,7 @@ Cube::~Cube() { }
 
 
 vector< pair<uint32_t, double> > 
-Cube::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist){
+Cube::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist) const {
 			
 	auto comparator = [](const pair<uint32_t, double> t1, const pair<uint32_t, double> t2) {
 		return t1.second > t2.second;
@@ -107,7 +107,7 @@ Cube::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist){
 
 
 vector< pair<uint32_t, double> > 
-Cube::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist) {
+Cube::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist) const {
     
     unordered_set<uint32_t> considered;
 	vector< pair<uint32_t, double> > out;
@@ -141,7 +141,7 @@ Cube::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dis
 
 // Reverse Assignment
 vector< pair<uint32_t, double> > 
-Cube::RangeSearch(Vector<double>& query, double range, Distance<uint8_t, double> dist) {
+Cube::RangeSearch(Vector<double>& query, double range, Distance<uint8_t, double> dist) const {
 	
     unordered_set<uint32_t> considered;
 	vector< pair<uint32_t, double> > out;

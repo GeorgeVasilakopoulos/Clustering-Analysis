@@ -14,20 +14,20 @@ using std::unordered_map;
 using std::unordered_set;
 
 Graph::Graph(DataSet& dataset_, uint32_t k_, Approximator* approx, Distance<uint8_t, uint8_t> dist_) 
-: dataset(dataset_), k(k_), dist(dist_) {    
+: dataset(dataset_), edges(new vector<DataPoint*>[dataset.size()]), k(k_), dist(dist_) {    
 
     #pragma omp parallel for
     for (auto point : dataset) {
         #pragma omp parallel for
         for (auto p : approx->kANN(*point, k, dist))
-            edges[point].push_back(dataset[p.first]);
+            edges[point->label() - 1].push_back(dataset[p.first - 1]);
     }
 }
 
 vector< pair<uint32_t, double> >  Graph::query(Vector<uint8_t>& query, 
                                                uint32_t R, uint32_t T, uint32_t E, uint32_t N) {
 
-    // return vector<pair<uint32_t, double>>();
+
     auto comparator = [](const pair<uint32_t, double> t1, const pair<uint32_t, double> t2) {
         return t1.second > t2.second;
     };
@@ -38,6 +38,7 @@ vector< pair<uint32_t, double> >  Graph::query(Vector<uint8_t>& query,
     for (uint32_t i = 0, size = dataset.size(); i < R; i++) {
         uint32_t index = Vector<uint32_t>(1, UNIFORM, 0, size - 1)[0];
         auto point = dataset[index];
+        auto pedges = edges[point->label() - 1];
 
         for (uint32_t j = 0; j < T; j++) {
             DataPoint* closest = nullptr;
@@ -45,7 +46,7 @@ vector< pair<uint32_t, double> >  Graph::query(Vector<uint8_t>& query,
 
             for (uint32_t i = 0; i < E; i++) {
                 
-                auto neighb = edges[point][i];
+                auto neighb = pedges[i];
 
                 double distance = dist(query, neighb->data());
 
