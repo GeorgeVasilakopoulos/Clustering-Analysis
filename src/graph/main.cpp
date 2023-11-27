@@ -2,242 +2,194 @@
 #include "GNN.hpp"
 #include "lsh.hpp"
 #include "cube.hpp"
+#include "ArgParser.hpp"
+
+using namespace std;
+
+#define QUERIES 10
 
 
+int main(int argc, const char* argv[]) {
+try {
+    ArgParser parser = ArgParser();
 
-int main() {
+    parser.add("d", STRING);
+    parser.add("q", STRING);
+    parser.add("o", STRING);
+    parser.add("k", UINT, "50");
+    parser.add("E", UINT, "30");
+    parser.add("R", UINT, "1");
+    parser.add("N", UINT, "1");
+    parser.add("l", UINT, "20");
+    parser.add("m", STRING);
+    parser.add("a", STRING, "LSH");
+    parser.parse(argc, argv);
 
-    printf("here1\n");
+    
+	uint32_t k = parser.value<uint32_t>("k");
+	uint32_t E = parser.value<uint32_t>("E");
+	uint32_t R = parser.value<uint32_t>("R");
+    uint32_t T = 10;
+	uint32_t N = parser.value<uint32_t>("N");
+	uint32_t l = parser.value<uint32_t>("l");
+    
+    string approx_method = parser.value<string>("a");
 
-    // DataSet train_dataset("./train_images");
-    DataSet train_dataset("./train_images", 100);
-    printf("here2\n");
+    string input_path;
+    string query_path;
+    string out_path;
 
-    DataSet test_dataset("./test_images", 5);
-    printf("here3\n");
-
-    Approximator* lsh  = new LSH(train_dataset, 2600, 4, 5, train_dataset.size() / 8);
-    Approximator* cube = new Cube(train_dataset, 2600, 7, 10, 6000);
-    printf("here4\n");
-
-    // GNN graph = GNN(train_dataset, 150, lsh, l2_distance);
-    MRNG graph = MRNG(train_dataset, lsh, l2_distance, l2_distance, 1000, 500);
-    printf("here5\n");
-
-
-	Stopwatch sw = Stopwatch();
-
-    for (auto point : test_dataset) {
-        sw.start();
-        // auto vec = graph.query(point->data(), 5, 10, 30, 5);
-        auto vec = graph.query(point->data(), 1000, 10);
-        // auto vec = newgraph.query(point->data(),15,10,10);
-        printf("%d, %f -- %f\n", vec[0].first, vec[0].second, sw.stop());
-
-        sw.start();
-        auto vec1 = lsh->kANN(*point, 5, l2_distance);
-        printf("%d, %f -- %f\n", vec1[0].first, vec1[0].second, sw.stop());
-        
-        sw.start();
-        auto vec2 = cube->kANN(*point, 5, l2_distance);
-        printf("%d, %f -- %f\n", vec2[0].first, vec2[0].second, sw.stop());
-
-        sw.start();
-        auto vec3 = lsh->kNN(*point, 5, l2_distance);
-        printf("%d, %f -- %f\n\n", vec3[0].first, vec3[0].second, sw.stop());
-
+    if(parser.parsed("d"))
+        input_path = parser.value<string>("d");
+    else {
+        cout << "Enter path to input file: " << flush;
+        getline(cin, input_path);
     }
 
+    if(parser.parsed("q"))
+        query_path = parser.value<string>("q");
+    else {
+        cout << "Enter path to query file: " << flush;
+        getline(cin, query_path);
+    }
+
+    if(parser.parsed("o"))
+        out_path = parser.value<string>("o");
+    else {
+        cout << "Enter path to output file: " << flush;
+        getline(cin, out_path);
+    }
+
+	ofstream output_file(out_path, ios::out);
+	if (output_file.fail()) 
+        throw runtime_error(out_path + " could not be opened!\n");
+
+    
+    string graph_method;
+
+    if(parser.parsed("m"))
+        graph_method = parser.value<string>("m");
+    else{
+        cout << "Enter Graph method - 1 for GNNS, 2 for MRNG: " << flush;
+        getline(cin, graph_method);
+        if(graph_method != "1" && graph_method != "2")
+            throw runtime_error("Invalid Graph Method: Valid options are '1' for GNNS and '2' for MRNG");
+    }
+
+    
+    Stopwatch timer, timer_out;
+
+    cout << "Loading input data... " << flush;
+    timer.start();
+    DataSet train_dataset(input_path);
+    cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)" << endl; 
+    
+
+    uint32_t lsh_k = 4, L = 5;
+    uint32_t cube_k = 7, probes = 10, M = 6000;
+    uint32_t window = 2600;
+    uint32_t table_size = train_dataset.size() / 8;
+
+    cout << "Initializing Approximators... " << flush;
+    timer.start();
+    LSH lsh   = LSH(train_dataset, window, lsh_k, L, table_size);
+    Cube cube = Cube(train_dataset, window, cube_k, probes, M);
+    cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)"<< endl; 
 
 
-    delete lsh;
-    delete cube;
+    cout << "Creating graph... " << flush;
+    timer.start();
+    Graph* graph = 
+    graph_method == "1" ? 
+        (Graph*)new GNN(train_dataset, approx_method == "LSH" ? (Approximator*)&lsh : (Approximator*)&cube, 
+                        l2_distance, k, R, T, E) :
+        (Graph*)new MRNG(train_dataset, approx_method == "LSH" ? (Approximator*)&lsh : (Approximator*)&cube, 
+                         l2_distance, l2_distance, k, l);
+    cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)"<< endl; 
+    
+    
+	timer_out.start();
+	cout << "Beginning search for \"" << query_path << "\"... " << flush;
+	while (true) {
+        double ttime_lsh = 0, ttime_cube = 0, ttime_graph = 0, ttime_true = 0;
+        double tdist_lsh = 0, tdist_cube = 0, tdist_graph = 0, tdist_true = 0;
+		for (auto point : DataSet(query_path, QUERIES)) {
 
+			timer.start();
+			auto aknn_graph = graph->query(point->data(), N);
+			double graph_time = timer.stop();
 
+			timer.start();
+			auto aknn_lsh = lsh.kANN(*point, N, l2_distance<uint8_t>);
+			double lsh_time = timer.stop();
+
+			timer.start();
+			auto aknn_cube = cube.kANN(*point, N, l2_distance<uint8_t>);
+			double cube_time = timer.stop();
+
+			timer.start();
+			auto knn = lsh.kNN(*point, N, l2_distance<uint8_t>);
+			double true_time = timer.stop();
+
+			ttime_graph += graph_time;
+			ttime_lsh   += lsh_time;
+			ttime_cube  += cube_time;
+			ttime_true  += true_time;
+			
+			output_file << "Query " << point->label() << "\n";
+
+            double dist_graph = 0;
+            double dist_true  = 0;
+			for (uint32_t i = 0, size = aknn_graph.size(); i < size; i++) {
+				output_file << "Nearest neighbor-" << i << ": " << aknn_graph[i].first << "\n";
+				output_file << "distanceApproximate: "  << aknn_graph[i].second << "\n";
+				output_file << "distanceTrue: " << knn[i].second   << "\n";
+				dist_graph += aknn_graph[i].second;
+				dist_true  += knn[i].second;
+			}
+
+            dist_graph /= aknn_graph.size();
+            dist_true /= aknn_graph.size();
+			output_file << "tAverageApproximate: "  << std::fixed << std::setprecision(4) << dist_graph << "\n";
+			output_file << "tAverageTrue: " << std::fixed << std::setprecision(4) << dist_true << "\n\n";
+
+            const uint32_t size = std::min(aknn_graph.size(), std::min(aknn_lsh.size(), aknn_cube.size()));
+            for (uint32_t i = 0; i < size; i++) {
+				tdist_graph += aknn_graph[i].second;
+				tdist_lsh   += aknn_lsh[i].second;
+				tdist_cube  += aknn_cube[i].second;
+				tdist_true  += knn[i].second;
+            }
+		}
+
+		cout << "Done! (" << std::fixed << std::setprecision(3) << timer_out.stop() << " seconds)" << endl; 
+
+		cout << 
+        "Relative time performance (LSH/Cube/Graph time / True time): " << 
+        std::fixed << std::setprecision(4) << ttime_lsh   / ttime_true << " / " << 
+        std::fixed << std::setprecision(4) << ttime_cube  / ttime_true << " / " << 
+        std::fixed << std::setprecision(4) << ttime_graph / ttime_true << endl; 
+
+		cout << 
+        "Approximation Factor (LSH/Cube/Graph dist / True dist): " << 
+        std::fixed << std::setprecision(4) << tdist_lsh   / tdist_true << " / " << 
+        std::fixed << std::setprecision(4) << tdist_cube  / tdist_true << " / " << 
+        std::fixed << std::setprecision(4) << tdist_graph / tdist_true << endl; 
+
+		cout << "\nEnter path to new query file (Nothing in order to stop): " << flush;
+		getline(cin, query_path);
+
+		if (query_path.empty()) 
+			break;
+	}
+	
+	output_file.close();
+    delete graph;
+
+} 
+catch (exception& e) {
+    cerr << e.what();
+    return -1;
+}
     return 0;
 }
-
-
-
-
-// #include <iostream>
-// #include <fstream>
-// #include <queue>
-// #include <unordered_set>
-// #include <cmath>
-// #include <iomanip>
-
-// #include "utils.hpp"
-// #include "HashTable.hpp"
-// #include "ArgParser.hpp"
-// #include "FileParser.hpp"
-// #include "cluster.hpp"
-// #include "lsh.hpp"
-// #include "cube.hpp"
-
-// using namespace std;
-
-
-// int main(int argc, const char* argv[]) {
-// try {
-//     ArgParser arg_parser = ArgParser();
-
-//     arg_parser.add("i", STRING);
-//     arg_parser.add("c", STRING);
-//     arg_parser.add("o", STRING);
-//     arg_parser.add("complete", BOOL, "false");
-//     arg_parser.add("m", STRING);
-//     arg_parser.parse(argc, argv);
-
-//     string input_path;
-//     string configuration_path;
-//     string out_path;
-//     string approx_method;
-
-//     Stopwatch timer;    
-//     FileParser file_parser = FileParser();
-
-//     file_parser.add("number_of_clusters",              "k"         );
-//     file_parser.add("number_of_vector_hash_tables",    "L",       3);
-//     file_parser.add("number_of_vector_hash_functions", "lsh_k",   4);
-//     file_parser.add("max_number_M_hypercube",          "M",      10);
-//     file_parser.add("number_of_hypercube_dimensions",  "cube_k", 14);
-//     file_parser.add("number_of_probes",                "probes",  2);
-
-//     if(arg_parser.parsed("i"))
-//         input_path = arg_parser.value<string>("i");
-//     else {
-//         cout << "Enter path to input file: " << flush;
-//         getline(cin, input_path);
-//     }
-
-
-//     if(arg_parser.parsed("c"))
-//         configuration_path = arg_parser.value<string>("c");
-//     else {
-//         cout << "Enter path to configuration file: " << flush;
-//         getline(cin, configuration_path);
-//     }
-
-//     if(arg_parser.parsed("o"))
-//         out_path = arg_parser.value<string>("o");
-//     else {
-//         cout << "Enter path to output file: " << flush;
-//         getline(cin, out_path);
-//     }
-
-//     if(arg_parser.parsed("m"))
-//         approx_method = arg_parser.value<string>("m");
-//     else{
-//         cout << "Enter approximator method: " << flush;
-//         getline(cin, approx_method);
-//         if(approx_method != "Classic" && approx_method != "LSH" && approx_method != "Hypercube")
-//             throw runtime_error("Invalid Approximator Method: Valid options are 'Classic', 'LSH' and 'Hypercube'");
-//     }
-
-    
-//     file_parser.parse(configuration_path);
-
-//     uint32_t k = file_parser.parsed("k") ? file_parser.value("k") : 0, L = file_parser.value("L");
-//     uint32_t lsh_k = file_parser.value("lsh_k"), M = file_parser.value("M");
-//     uint32_t cube_k = file_parser.value("cube_k"), probes = file_parser.value("probes");
-    
-
-//     if(k == 0) {
-//         std::string n_of_clusters;
-//         cout << "Enter number of clusters: " << flush;
-//         getline(cin, n_of_clusters);
-//         k = std::stoul(n_of_clusters);
-//     }
-
-
-//     ofstream output_file(out_path, ios::out);
-//     if (output_file.fail()) 
-//         throw runtime_error(out_path + " could not be opened!\n");
-
-//     cout << "Loading input data... " << flush;
-//     timer.start();
-//     DataSet dataset(input_path);
-//     cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)" << endl; 
-
-
-//     uint32_t window = 2600;
-//     uint32_t table_size = dataset.size() / 8;
-    
-//     cout << "Selecting initial cluster centers... " << flush;
-//     timer.start();
-//     Clusterer* clusterer = 
-//     approx_method == "Classic" ? 
-//         (Clusterer*)new Lloyd(dataset, k, l2_distance) :
-//         (Clusterer*)new RAssignment(dataset, k, 
-//                                     approx_method == "LSH" ? 
-//                                         (Approximator*)new LSH(dataset, window, lsh_k, L, table_size) : 
-//                                         (Approximator*)new Cube(dataset, window, cube_k, probes, M), 
-//                                     l2_distance, l2_distance);
-//     cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)"<< endl; 
-    
-    
-//     cout << "Applying " << approx_method << " clustering algorithm... "<< flush;
-//     timer.start();
-//     clusterer->apply();
-//     double clustering_time = timer.stop();
-//     cout << "Done! (" << std::fixed << std::setprecision(3) << clustering_time << " seconds)"<< endl; 
-
-//     output_file << "Algorithm: ";
-//     output_file << ((approx_method=="Classic") ? "Lloyds" : ("Range Search " + approx_method));
-//     output_file << '\n';
-
-//     auto clusters = clusterer->get();
-//     for(uint32_t i = 0; i < k; i++){
-//         output_file << "CLUSTER-" << left << setw(3) << to_string(i + 1);
-//         output_file << "{size: " << right << setw(5) << to_string(clusters[i]->size());
-//         output_file << ", centroid: " << clusters[i]->center().asString();
-//         output_file << "}\n";
-//     }
-
-//     output_file << "clustering_time: ";
-//     output_file <<  std::fixed << std::setprecision(3) << clustering_time << " sec\n";
-
-
-//     cout << "Evaluating the Silhouette coefficient... " << flush;
-//     timer.start();
-//     auto p = clusterer->silhouettes(l2_distance);
-//     cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)" << endl; 
-    
-
-//     auto silhouettes = p.first;
-//     auto stotal = p.second;
-
-
-//     output_file << "Silhouette: [";
-//     for (auto score : silhouettes)
-//         output_file << std::fixed << std::setprecision(3) << score << ", ";
-
-//     output_file << std::fixed << std::setprecision(3) << stotal << "]\n\n";
-
-//     if (arg_parser.value<bool>("complete")) {
-//         for(uint32_t i = 0; i < k; i++){
-//             output_file << "CLUSTER-" << left << setw(3) << to_string(i + 1);
-//             output_file << "{centroid, ";
-
-//             uint32_t j = 0;
-//             uint32_t size = clusters[i]->points().size();
-//             for (auto point : clusters[i]->points()) {
-//                 if (j++ + 1 >= size)
-//                     break;
-
-//                 output_file << right << setw(5) << point->label() << ", ";
-//             }
-
-//             output_file << right << setw(5) << (*--clusters[i]->points().end())->label() << "}\n";
-//         }
-//     }
-
-//     delete clusterer;
-// } 
-// catch (exception& e) {
-//     cerr << e.what();
-//     return -1;
-// }
-//     return 0;
-// }

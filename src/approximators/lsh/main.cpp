@@ -81,10 +81,10 @@ try {
 	cout << "Beginning search for \"" << query_path << "\"... " << flush;
 
 	Stopwatch sw = Stopwatch();
-	double ttime_lsh = 0, ttime_true = 0;
-	double tdist_lsh = 0, tdist_true = 0;
 
 	while (true) {
+		double ttime_lsh = 0, ttime_true = 0;
+		double tdist_lsh = 0, tdist_true = 0;
 		for (auto point : DataSet(query_path, QUERIES)) {
 
 			sw.start();

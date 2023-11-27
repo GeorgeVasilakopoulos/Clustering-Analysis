@@ -22,8 +22,9 @@ Graph::Graph(DataSet& dataset_, Distance<uint8_t, uint8_t> dist_)
 Graph::~Graph() { delete [] edges; }
 
 
-GNN::GNN(DataSet& dataset_, Approximator* approx, Distance<uint8_t, uint8_t> dist_, uint32_t k) 
-: Graph(dataset_, dist_) {    
+GNN::GNN(DataSet& dataset_, Approximator* approx, Distance<uint8_t, uint8_t> dist_, 
+         uint32_t k, uint32_t R_, uint32_t T_, uint32_t E_) 
+: Graph(dataset_, dist_), R(R_), T(T_), E(E_) {    
 
     #pragma omp parallel for
     for (auto point : dataset) {
@@ -33,7 +34,7 @@ GNN::GNN(DataSet& dataset_, Approximator* approx, Distance<uint8_t, uint8_t> dis
     }
 }
 
-vector<PAIR>  GNN::query(Vector<uint8_t>& query, uint32_t R, uint32_t T, uint32_t E, uint32_t N) {
+vector<PAIR>  GNN::query(Vector<uint8_t>& query, uint32_t N) {
 
     auto comparator = [](const PAIR t1, const PAIR t2) {
         return t1.second > t2.second;
@@ -94,9 +95,11 @@ vector<PAIR>  GNN::query(Vector<uint8_t>& query, uint32_t R, uint32_t T, uint32_
 
 MRNG::MRNG(DataSet& dataset_,  Approximator* approx, 
            Distance<uint8_t, uint8_t> dist_, Distance<uint8_t, double> dist_centroid, 
-           uint32_t k, uint32_t overhead)
-: Graph(dataset_, dist_) {
+           uint32_t k, uint32_t L_)
+: Graph(dataset_, dist_), L(L_) {
     
+    size_t overhead = std::max(50U, dataset.size() / 100);
+
     #pragma omp parallel for
     for(auto x : dataset) {
         
@@ -151,7 +154,7 @@ MRNG::MRNG(DataSet& dataset_,  Approximator* approx,
 	delete centroid;
 }
 
-vector<PAIR> MRNG::query(Vector<uint8_t>& query, uint32_t L, uint32_t N){
+vector<PAIR> MRNG::query(Vector<uint8_t>& query, uint32_t N){
 
     auto comparator = [](PAIR t1, PAIR t2) {
         return t1.second < t2.second;
