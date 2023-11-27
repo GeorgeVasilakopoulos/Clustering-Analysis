@@ -150,8 +150,9 @@ try {
 				dist_graph += aknn_graph[i].second;
 				dist_true  += knn[i].second;
                 double temp = dist_graph / dist_true;
-                if (MAF > temp)
+                if (MAF < temp) {
                     MAF = temp;
+                }
 			}
 
             dist_graph /= aknn_graph.size();
