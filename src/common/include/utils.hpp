@@ -4,6 +4,8 @@
 #include <chrono>
 #include "Vector.hpp"
 
+#define PAIR std::pair<uint32_t, double>
+
 template<typename T1, typename T2>
 using Distance = double (*)(Vector<T1>&, Vector<T2>&);
 

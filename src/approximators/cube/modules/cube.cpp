@@ -63,14 +63,14 @@ Cube::Cube(DataSet& dataset_, uint32_t window, uint32_t k, uint32_t probes_, uin
 Cube::~Cube() { }
 
 
-vector< pair<uint32_t, double> > 
+vector< PAIR > 
 Cube::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist) const {
 			
-	auto comparator = [](const pair<uint32_t, double> t1, const pair<uint32_t, double> t2) {
+	auto comparator = [](const PAIR t1, const PAIR t2) {
 		return t1.second > t2.second;
 	};
 
-	priority_queue<pair<uint32_t, double>, vector<pair<uint32_t, double>>, decltype(comparator)> pq(comparator);
+	priority_queue<PAIR, vector<PAIR>, decltype(comparator)> pq(comparator);
 	unordered_set<uint32_t> considered;
 
     uint32_t vertex = htable.get_hash(query);
@@ -96,7 +96,7 @@ Cube::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist) const 
         }
     }
 
-	vector< pair<uint32_t, double> > out;
+	vector< PAIR > out;
 	while(!pq.empty() && (int)k-- > 0) {
 		out.push_back(pq.top());
 		pq.pop();
@@ -106,11 +106,11 @@ Cube::kANN(DataPoint& query, uint32_t k, Distance<uint8_t, uint8_t> dist) const 
 }
 
 
-vector< pair<uint32_t, double> > 
+vector< PAIR > 
 Cube::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist) const {
     
     unordered_set<uint32_t> considered;
-	vector< pair<uint32_t, double> > out;
+	vector< PAIR > out;
     
     uint32_t vertex = htable.get_hash(query);
     VertexHelper vertices(vertex, probes, k_);
@@ -140,11 +140,11 @@ Cube::RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dis
 }
 
 // Reverse Assignment
-vector< pair<uint32_t, double> > 
+vector< PAIR > 
 Cube::RangeSearch(Vector<double>& query, double range, Distance<uint8_t, double> dist) const {
 	
     unordered_set<uint32_t> considered;
-	vector< pair<uint32_t, double> > out;
+	vector< PAIR > out;
     
     uint32_t vertex = htable.get_hash(query);
     VertexHelper vertices(vertex, probes, k_);

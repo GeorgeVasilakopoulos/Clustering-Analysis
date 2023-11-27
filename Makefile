@@ -30,7 +30,7 @@ CLUSTER_OBJS  := $(subst .cpp,.o,$(CLUSTER_SRCS))
 
 
 
-GRAPH	   	:= ./src/graph/gnn
+GRAPH	   	:= ./src/graph
 GRAPH_INCS  := $(GRAPH)/include
 GRAPH_SRCS  := $(wildcard $(GRAPH)/*.cpp) $(wildcard $(GRAPH)/modules/*.cpp) $(COMMON_SRCS) $(LSH_SRCS) $(CUBE_SRCS)
 GRAPH_OBJS  := $(subst .cpp,.o,$(GRAPH_SRCS))

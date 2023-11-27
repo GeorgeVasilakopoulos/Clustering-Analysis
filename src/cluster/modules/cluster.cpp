@@ -80,11 +80,10 @@ Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<uint8_t, double> d
 	for (uint32_t j = 1; j < k; j++) {
 		
 		// Stores (i, D(i) * D(i))
-		vector<pair<uint32_t, double>> distances;
+		vector<PAIR> distances;
 		
 		// Probability distribution of points - candidate centers
-		vector<pair<uint32_t, double>> probs;
-
+		vector<PAIR> probs;
 
 		double sum = 0; // -> sum(D(i) * D(i))
 
@@ -102,11 +101,8 @@ Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<uint8_t, double> d
 		// Calculate distribution
 		for (auto p : distances) 
 			probs.push_back(pair(p.first, p.second / sum));
-		
-
 
 		// Select new center according to distribution:
-			
 
 		// Random number, Uniform(0, 1)
 		double prob = Vector<float>(1, UNIFORM, 0, 1)[0];

@@ -2,6 +2,7 @@
 
 #include <omp.h>
 #include <cfloat>
+#include <cassert>
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
@@ -15,8 +16,14 @@ using std::unordered_map;
 using std::unordered_set;
 using std::set;
 
-Graph::Graph(DataSet& dataset_, uint32_t k_, Approximator* approx, Distance<uint8_t, uint8_t> dist_) 
-: dataset(dataset_), edges(new vector<DataPoint*>[dataset.size()]), k(k_), dist(dist_) {    
+Graph::Graph(DataSet& dataset_, Distance<uint8_t, uint8_t> dist_) 
+: dataset(dataset_), edges(new vector<DataPoint*>[dataset.size()]), dist(dist_) { assert(dataset.size() > 0); }
+
+Graph::~Graph() { delete [] edges; }
+
+
+GNN::GNN(DataSet& dataset_, Approximator* approx, Distance<uint8_t, uint8_t> dist_, uint32_t k) 
+: Graph(dataset_, dist_) {    
 
     #pragma omp parallel for
     for (auto point : dataset) {
@@ -26,15 +33,13 @@ Graph::Graph(DataSet& dataset_, uint32_t k_, Approximator* approx, Distance<uint
     }
 }
 
-vector< pair<uint32_t, double> >  Graph::query(Vector<uint8_t>& query, 
-                                               uint32_t R, uint32_t T, uint32_t E, uint32_t N) {
+vector<PAIR>  GNN::query(Vector<uint8_t>& query, uint32_t R, uint32_t T, uint32_t E, uint32_t N) {
 
-
-    auto comparator = [](const pair<uint32_t, double> t1, const pair<uint32_t, double> t2) {
+    auto comparator = [](const PAIR t1, const PAIR t2) {
         return t1.second > t2.second;
     };
 
-    priority_queue<pair<uint32_t, double>, vector<pair<uint32_t, double>>, decltype(comparator)> pq(comparator);
+    priority_queue<PAIR, vector<PAIR>, decltype(comparator)> pq(comparator);
     unordered_set<uint32_t> considered;
 
     for (uint32_t i = 0, size = dataset.size(); i < R; i++) {
@@ -77,7 +82,7 @@ vector< pair<uint32_t, double> >  Graph::query(Vector<uint8_t>& query,
     }
 
 
-    vector< pair<uint32_t, double> > out;
+    vector< PAIR > out;
     for (uint32_t i = 0; !pq.empty() && i < N; i++) {
 		out.push_back(pq.top());
 		pq.pop();
@@ -90,14 +95,12 @@ vector< pair<uint32_t, double> >  Graph::query(Vector<uint8_t>& query,
 MRNG::MRNG(DataSet& dataset_,  Approximator* approx, 
            Distance<uint8_t, uint8_t> dist_, Distance<uint8_t, double> dist_centroid, 
            uint32_t k, uint32_t overhead)
-: dataset(dataset_), edges(new vector<DataPoint*>[dataset.size()]), dist(dist_) {
+: Graph(dataset_, dist_) {
     
-
     #pragma omp parallel for
     for(auto x : dataset) {
-        // printf("%d\n", x->label());
         
-        vector<pair<uint32_t, double>> neighbors = approx->kANN(*x, k, dist);
+        vector<PAIR> neighbors = approx->kANN(*x, k, dist);
         size_t size = neighbors.size();
 
         size_t i = 0;
@@ -121,15 +124,11 @@ MRNG::MRNG(DataSet& dataset_,  Approximator* approx,
                 }
             }
 
-            if(insert) {
-                // printf("%d neib is %d\n", x->label(), y->label());
+            if(insert) 
                 pedges.push_back(y);
-            }
             
             j += insert;
         }
-
-        // printf("\n");
     }
 
     
@@ -152,13 +151,13 @@ MRNG::MRNG(DataSet& dataset_,  Approximator* approx,
 	delete centroid;
 }
 
-vector<pair<uint32_t, double>>  MRNG::query(Vector<uint8_t>& query, uint32_t K, uint32_t L){
+vector<PAIR> MRNG::query(Vector<uint8_t>& query, uint32_t L, uint32_t N){
 
-    auto comparator = [](pair<uint32_t, double> t1, pair<uint32_t, double> t2) {
+    auto comparator = [](PAIR t1, PAIR t2) {
         return t1.second < t2.second;
     };
 
-    set<pair<uint32_t, double>, decltype(comparator)> R(comparator);
+    set<PAIR, decltype(comparator)> R(comparator);
     unordered_set<uint32_t> considered;
     unordered_set<uint32_t> inserted;
 
@@ -176,6 +175,9 @@ vector<pair<uint32_t, double>>  MRNG::query(Vector<uint8_t>& query, uint32_t K, 
             }
         }
 
+        if (point == 0)
+            break;
+
         considered.insert(point);
 
         for(auto neighbor : edges[point - 1]) {
@@ -187,9 +189,9 @@ vector<pair<uint32_t, double>>  MRNG::query(Vector<uint8_t>& query, uint32_t K, 
         }
     }
 
-    vector<pair<uint32_t, double>> ret;
+    vector<PAIR> ret;
     for (auto p : R) {
-        if ((int)K-- <= 0)
+        if ((int)N-- <= 0)
             break;
         
         ret.push_back(p);

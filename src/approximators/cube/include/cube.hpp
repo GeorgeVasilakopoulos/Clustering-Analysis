@@ -20,12 +20,12 @@ class Cube : public Approximator{
 		Cube(DataSet& dataset_, uint32_t window, uint32_t k, uint32_t probes, uint32_t points);
 		~Cube();
 
-		std::vector< std::pair<uint32_t, double> >
+		std::vector<PAIR >
 		kANN(DataPoint& p, uint32_t k, Distance<uint8_t, uint8_t> dist) const override;
 
-		std::vector< std::pair<uint32_t, double> > 
+		std::vector<PAIR> 
 		RangeSearch(DataPoint& query, double range, Distance<uint8_t, uint8_t> dist) const override;
 
-		std::vector< std::pair<uint32_t, double> > 
+		std::vector<PAIR> 
 		RangeSearch(Vector<double>& query, double range, Distance<uint8_t, double> dist) const override;
 };
