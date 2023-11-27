@@ -1,5 +1,7 @@
 #include <iostream>
-#include "GNN.hpp"
+#include <cfloat>
+
+#include "Graph.hpp"
 #include "lsh.hpp"
 #include "cube.hpp"
 #include "ArgParser.hpp"
@@ -140,18 +142,23 @@ try {
 
             double dist_graph = 0;
             double dist_true  = 0;
+            double MAF        = DBL_MIN;
 			for (uint32_t i = 0, size = aknn_graph.size(); i < size; i++) {
 				output_file << "Nearest neighbor-" << i << ": " << aknn_graph[i].first << "\n";
 				output_file << "distanceApproximate: "  << aknn_graph[i].second << "\n";
 				output_file << "distanceTrue: " << knn[i].second   << "\n";
 				dist_graph += aknn_graph[i].second;
 				dist_true  += knn[i].second;
+                double temp = dist_graph / dist_true;
+                if (MAF > temp)
+                    MAF = temp;
 			}
 
             dist_graph /= aknn_graph.size();
             dist_true /= aknn_graph.size();
 			output_file << "tAverageApproximate: "  << std::fixed << std::setprecision(4) << dist_graph << "\n";
-			output_file << "tAverageTrue: " << std::fixed << std::setprecision(4) << dist_true << "\n\n";
+			output_file << "tAverageTrue: " << std::fixed << std::setprecision(4) << dist_true << "\n";
+			output_file << "MAF: " << std::fixed << std::setprecision(4) << MAF << "\n\n";
 
             const uint32_t size = std::min(aknn_graph.size(), std::min(aknn_lsh.size(), aknn_cube.size()));
             for (uint32_t i = 0; i < size; i++) {

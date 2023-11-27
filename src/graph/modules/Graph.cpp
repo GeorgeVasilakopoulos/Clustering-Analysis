@@ -1,4 +1,4 @@
-#include "GNN.hpp"
+#include "Graph.hpp"
 
 #include <omp.h>
 #include <cfloat>
