@@ -9,9 +9,10 @@
 Development of approximal searching and vector clustering algorithms in C++: 
 
 - *k-Nearest Neighbours* and *Range Search*, using:
-    - Locality Sensitive Hashing
-    - Hypercube Random Projection
-
+    - Locality Sensitive Hashing (LSH)
+    - Hypercube Random Projection (Cube)
+	- Graph Nearest Neighbour Search (GNNS)
+	- Monotonic Relative Neighbourhood Graph (MRNG)
 
 - **Lloyds's** clustering algorithm
 - **Reverse Search** clustering, enhanced with approximal searching.
@@ -86,8 +87,8 @@ Related Modules: `common/modules/Vector.tcc`, `common/modules/utils.cpp`
 
 The `Approximator` abstract class is a 'base' class that stores a `DataSet` reference and provides functions for
 
-- K Nearest Neighbors `kNN( )`
-- K Approximate Nearest Neighbors `kANN( )` (pure virtual)
+- K Nearest Neighbours `kNN( )`
+- K Approximate Nearest Neighbours `kANN( )` (pure virtual)
 - Range Search `RangeSearch( )` (pure virtual)
 
 Each of these functions takes as arguments:
@@ -141,8 +142,14 @@ $ ./cluster –i <input file> –c <configuration file> -o <output file> -comple
 
 - `Lloyd` is a subclass of `Clusterer` that implements the classical clustering algorithm augmented with the *MacQueen* update step, through the `apply( )` function.
 
-- `RAssignment` is also a subclass of `Clusterer`. Additionally to the common parameters, it also stores an `Approximator` object (`LSH` or `Cube`), that is used in order to accelerate the clustering process, with the tradeoff of finding *approximate* neighbors.
+- `RAssignment` is also a subclass of `Clusterer`. Additionally to the common parameters, it also stores an `Approximator` object (`LSH` or `Cube`), that is used in order to accelerate the clustering process, with the tradeoff of finding *approximate* neighbours.
 
+
+## Graph
+
+### GNNs
+
+### MRNG
 
 ## Evaluation
 

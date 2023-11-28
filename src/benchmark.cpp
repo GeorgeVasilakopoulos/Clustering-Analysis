@@ -84,8 +84,6 @@ try{
 	uint32_t table_size =  train.dim() / 8;
 
 
-
-
 	FileParser file_parser = FileParser();
 	file_parser.add("NearestNeighbors", "NearestNeighbors", 1);
 	
@@ -96,13 +94,12 @@ try{
 	file_parser.add("cube_M", "cube_M", 6000);
 	file_parser.add("cube_probes", "cube_probes", 10);
 	
-	file_parser.add("graph_k", "graph_k", 150);
+	file_parser.add("graph_k", "graph_k", 3000);
 	file_parser.add("graph_E", "graph_E", 30);
-	file_parser.add("graph_R", "graph_R", 5);
+	file_parser.add("graph_R", "graph_R", 10);
 	file_parser.add("graph_approx", "graph_approx", 1);
 
-	file_parser.add("graph_l", "graph_l", 1000);
-
+	file_parser.add("graph_l", "graph_l", 2000);
 
 
 	file_parser.parse(configuration_path);
@@ -210,13 +207,30 @@ try{
 	af    /= test.size();
 	
 	
-	cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)" << endl << endl; 
-	printf("     | Accuracy | Approximation Factor |    MAF   | Relative Time Performance\n");
-	printf("     |----------+----------------------+----------+--------------------------\n");
-	printf(" LSH |  %.4f  |        %.4f        |  %.4f  |          %.4f\n", acc[_LSH],  af[_LSH],  maf[_LSH],  rtime[_LSH]);
-	printf("Cube |  %.4f  |        %.4f        |  %.4f  |          %.4f\n", acc[_CUBE], af[_CUBE], maf[_CUBE], rtime[_CUBE]);
-	printf("GNSS |  %.4f  |        %.4f        |  %.4f  |          %.4f\n", acc[_GNNS], af[_GNNS], maf[_GNNS], rtime[_GNNS]);
-	printf("MRNG |  %.4f  |        %.4f        |  %.4f  |          %.4f\n", acc[_MRNG], af[_MRNG], maf[_MRNG], rtime[_MRNG]);
+	cout << "Done! (" << fixed << setprecision(3) << timer.stop() << " seconds)" << endl << endl; 
+	
+	output_file << "     | Accuracy | Approximation Factor |    MAF   | Relative Time Performance" << endl;
+	output_file << "     |----------+----------------------+----------+--------------------------" << endl;
+	output_file << fixed << setprecision(4);
+	
+	output_file << " LSH |  " 	 << acc[_LSH] << "  |        " 	 << af[_LSH] 
+				<< "        |  " << maf[_LSH] << "  |          " << rtime[_LSH] << endl;
+	
+	output_file << "Cube |  " 	 << acc[_CUBE] << "  |        "   << af[_CUBE] 
+				<< "        |  " << maf[_CUBE] << "  |          " << rtime[_CUBE] << endl;
+	
+	output_file << "GNNS |  " 	 << acc[_GNNS] << "  |        "   << af[_GNNS] 
+				<< "        |  " << maf[_GNNS] << "  |          " << rtime[_GNNS] << endl;
+	
+	output_file << "MRNG |  " 	 << acc[_MRNG] << "  |        "   << af[_MRNG] 
+				<< "        |  " << maf[_MRNG] << "  |          " << rtime[_MRNG] << endl;
+
+	// printf("     | Accuracy | Approximation Factor |    MAF   | Relative Time Performance\n");
+	// printf("     |----------+----------------------+----------+--------------------------\n");
+	// printf(" LSH |  %.4f  |        %.4f        |  %.4f  |          %.4f\n", acc[_LSH],  af[_LSH],  maf[_LSH],  rtime[_LSH]);
+	// printf("Cube |  %.4f  |        %.4f        |  %.4f  |          %.4f\n", acc[_CUBE], af[_CUBE], maf[_CUBE], rtime[_CUBE]);
+	// printf("GNSS |  %.4f  |        %.4f        |  %.4f  |          %.4f\n", acc[_GNNS], af[_GNNS], maf[_GNNS], rtime[_GNNS]);
+	// printf("MRNG |  %.4f  |        %.4f        |  %.4f  |          %.4f\n", acc[_MRNG], af[_MRNG], maf[_MRNG], rtime[_MRNG]);
 
 
 
