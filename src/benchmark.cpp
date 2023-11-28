@@ -13,8 +13,19 @@
 #include "cube.hpp"
 #include "Graph.hpp"
 
+#define _LSH  0
+#define _CUBE 1
+#define _GNNS 2
+#define _MRNG 3
 
-#define QUERIES 5000
+#define METRICS(algo) 												\
+	rtime[algo] += swcout.stop();									\
+	acc[algo]	+= pair.first == actual_label;						\
+	af[algo]	+= pair.second / actual_distance;					\
+	maf[algo]	 = max(maf[algo], pair.second / actual_distance);	\
+
+
+#define QUERIES 100
 
 using namespace std;
 
@@ -26,7 +37,8 @@ try{
 	parser.add("d", STRING);
 	parser.add("q", STRING);
 	parser.add("o", STRING);
-	parser.add("config",STRING);
+	parser.add("config", STRING);
+	parser.add("size", UINT, "0");
 	
 	parser.parse(argc,argv);
 	string data_path;
@@ -34,35 +46,26 @@ try{
 	string out_path;
 	string configuration_path;
 
-	if(parser.parsed("d")){
+	if(parser.parsed("d"))
 		data_path = parser.value<string>("d");
-	}
-	else{
+	else
 		throw runtime_error("Missing data path argument -d\n");
-	}
-
 	
-	if(parser.parsed("q")){
+	if(parser.parsed("q"))
 		query_path = parser.value<string>("q");
-	}
-	else{
+	else
 		throw runtime_error("Missing data path argument -q\n");
-	}
-
-	if(parser.parsed("o")){
-		out_path = parser.value<string>("o");
-	}
-	else{
-		throw runtime_error("Missing output path argument -o\n");
-	}
-
 	
-	if(parser.parsed("config")){
+	if(parser.parsed("o"))
+		out_path = parser.value<string>("o");
+	else
+		throw runtime_error("Missing output path argument -o\n");
+	
+	if(parser.parsed("config"))
 		configuration_path = parser.value<string>("config");
-	}
-	else{
+	else
 		throw runtime_error("Missing configuration path argument -config\n");
-	}
+	
 
 
 	ofstream output_file(out_path, ios::out);
@@ -71,10 +74,10 @@ try{
 
 
     Stopwatch swcout = Stopwatch();
-
+	uint32_t size = parser.value<uint32_t>("size");
 	cout << "Loading data... " << flush;
 	swcout.start();
-	DataSet train(data_path);
+	DataSet train(data_path, size);
 	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)" << endl; 
 
 	uint32_t window = 2600; // Average distance of points on given test dataset
@@ -86,19 +89,19 @@ try{
 	FileParser file_parser = FileParser();
 	file_parser.add("NearestNeighbors", "NearestNeighbors", 1);
 	
-	file_parser.add("lsh_k", "lsh_k",4);
-	file_parser.add("lsh_L", "lsh_L",5);
+	file_parser.add("lsh_k", "lsh_k", 4);
+	file_parser.add("lsh_L", "lsh_L", 5);
 
-	file_parser.add("cube_k", "cube_k",14);
-	file_parser.add("cube_M", "cube_M",10);
-	file_parser.add("cube_probes", "cube_probes",2);
+	file_parser.add("cube_k", "cube_k", 7);
+	file_parser.add("cube_M", "cube_M", 6000);
+	file_parser.add("cube_probes", "cube_probes", 10);
 	
-	file_parser.add("graph_k", "graph_k",50);
-	file_parser.add("graph_E", "graph_E",30);
-	file_parser.add("graph_R", "graph_R",1);
-	file_parser.add("graph_approx", "graph_approx",1);
+	file_parser.add("graph_k", "graph_k", 150);
+	file_parser.add("graph_E", "graph_E", 30);
+	file_parser.add("graph_R", "graph_R", 5);
+	file_parser.add("graph_approx", "graph_approx", 1);
 
-	file_parser.add("graph_l","graph_l",20);
+	file_parser.add("graph_l", "graph_l", 1000);
 
 
 
@@ -110,13 +113,13 @@ try{
 	//////////////////////////////////
 
 
-	uint32_t k = file_parser.value("lsh_k");
-	uint32_t L = file_parser.value("lsh_L");
+	uint32_t lsh_k = file_parser.value("lsh_k");
+	uint32_t lsh_L = file_parser.value("lsh_L");
 
 
 	cout << "Populating LSH HashTables... " << flush;
 	swcout.start();
-	LSH lsh(train, window, k, L, table_size);
+	LSH lsh(train, window, lsh_k, lsh_L, table_size);
 	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)" << endl; 
 
 
@@ -124,13 +127,13 @@ try{
 	//////////////Cube////////////////
 	//////////////////////////////////
 
-	k = file_parser.value("cube_k");
-	uint32_t points = file_parser.value("cube_M");
-	uint32_t probes = file_parser.value("cube_probes"); 
+	uint32_t cube_k 	 = file_parser.value("cube_k");
+	uint32_t cube_probes = file_parser.value("cube_probes"); 
+	uint32_t cube_M 	 = file_parser.value("cube_M");
 
 	cout << "Populating Cube HashTable... " << flush;
 	swcout.start();
-	Cube cube(train, window, k, probes, points);
+	Cube cube(train, window, cube_k, cube_probes, cube_M);
 	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)" << endl;
 
 
@@ -138,17 +141,17 @@ try{
 	//////////////GNN/////////////////
 	//////////////////////////////////
 
-	k = file_parser.value("graph_k");
-	uint32_t E = file_parser.value("graph_E");
-	uint32_t R = file_parser.value("graph_R");
 	uint32_t approx_id = file_parser.value("graph_approx");
+	uint32_t k = file_parser.value("graph_k");
+	uint32_t R = file_parser.value("graph_R");
 	uint32_t T = 10;
+	uint32_t E = file_parser.value("graph_E");
 	uint32_t l = file_parser.value("graph_l");
 	
 	cout << "Creating GNN graph... " << flush;
     swcout.start();
-	GNN gnn_graph = GNN(train,approx_id == 1 ? (Approximator*)&lsh : (Approximator*)&cube,
-						l2_distance, k, R, T, E);
+	GNNS gnn_graph = GNNS(train, approx_id == 1 ? (Approximator*)&lsh : (Approximator*)&cube,
+						  l2_distance, k, R, T, E);
 	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)"<< endl; 
 
 
@@ -158,7 +161,7 @@ try{
 
 	cout << "Creating MRNG graph... " << flush;
     swcout.start();
-	MRNG mrng_graph = MRNG(train,approx_id == 1 ? (Approximator*)&lsh : (Approximator*)&cube,
+	MRNG mrng_graph = MRNG(train, approx_id == 1 ? (Approximator*)&lsh : (Approximator*)&cube,
 						l2_distance, l2_distance, k, l);
 	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)"<< endl; 
 
@@ -169,98 +172,51 @@ try{
 	DataSet test(query_path, QUERIES);
 	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)" << endl; 
 
-	double lsh_avg_time = 0; double lsh_accuracy = 0; uint32_t lsh_avg_factor = 0; double lsh_max_factor = 1; 
-	double cube_avg_time = 0; double cube_accuracy = 0; uint32_t cube_avg_factor = 0; double cube_max_factor = 1; 
-	double mrng_avg_time = 0; double mrng_accuracy = 0; uint32_t mrng_avg_factor = 0; double mrng_max_factor = 1; 
-	double gnn_avg_time = 0; double gnn_accuracy = 0; uint32_t gnn_avg_factor = 0; double gnn_max_factor = 1; 
+	Vector<double> acc(4), rtime(4), af(4), maf(4, 1.);
 	double bf_avg_time = 0;
 
+	Stopwatch timer;
+	timer.start();
+	cout << "Beginning queries... " << flush;
 	for(auto q : test){
 
 		//Brute Force
 		swcout.start();
-		auto pair = lsh.kNN(*q,1,l2_distance)[0];
-
+		auto pair = lsh.kNN(*q, 1, l2_distance)[0];
 		bf_avg_time += swcout.stop();
+
 		uint32_t actual_label = pair.first;
 		double actual_distance = pair.second;
 		
-
-		//LSH
 		swcout.start();
-		pair = lsh.kANN(*q,1,l2_distance)[0];
-		
-		lsh_avg_time += swcout.stop();
-		uint32_t lsh_label = pair.first;
-		double distance = pair.second;
-		lsh_accuracy += (lsh_label == actual_label);
-		lsh_avg_factor += (distance/actual_distance);
-		lsh_max_factor = max(lsh_max_factor, distance/actual_distance);
+		pair = lsh.kANN(*q, 1, l2_distance)[0];
+		METRICS(_LSH)
 
-
-		//Cube
 		swcout.start();
-		pair = cube.kANN(*q,1,l2_distance)[0];
-		
-		cube_avg_time += swcout.stop();
-		uint32_t cube_label = pair.first;
-		distance = pair.second;
-		cube_accuracy += (cube_label == actual_label);
-		cube_avg_factor += (distance/actual_distance);
-		cube_max_factor = max(cube_max_factor, distance/actual_distance);
+		pair = cube.kANN(*q, 1, l2_distance)[0];
+		METRICS(_CUBE)
 
-		//GNN
 		swcout.start();
-		pair = gnn_graph.query(q->data(),1)[0];
-		
-		gnn_avg_time += swcout.stop();
-		uint32_t gnn_label = pair.first;
-		distance = pair.second;
-		gnn_accuracy += (gnn_label == actual_label);
-		gnn_avg_factor += (distance/actual_distance);
-		gnn_max_factor = max(gnn_max_factor, distance/actual_distance);
+		pair = gnn_graph.query(q->data(), 1)[0];
+		METRICS(_GNNS)
 
-		//MRNG
 		swcout.start();
-		pair = mrng_graph.query(q->data(),1)[0];
-		
-		mrng_avg_time += swcout.stop();
-		uint32_t mrng_label = pair.first;
-		distance = pair.second;
-		mrng_accuracy += (mrng_label == actual_label);
-		mrng_avg_factor += (distance/actual_distance);
-		mrng_max_factor = max(mrng_max_factor, distance/actual_distance);		
+		pair = mrng_graph.query(q->data(), 1)[0];
+		METRICS(_MRNG)
 	}
 
-
-	lsh_avg_factor /= test.size();
-	lsh_avg_time /= test.size();
-	lsh_accuracy /= test.size();
-
-	cube_avg_factor /= test.size();
-	cube_avg_time /= test.size();
-	cube_accuracy /= test.size();
-
-	mrng_avg_factor /= test.size();
-	mrng_avg_time /= test.size();
-	mrng_accuracy /= test.size();
-
-	gnn_avg_factor /= test.size();
-	gnn_avg_time /= test.size();
-	gnn_accuracy /= test.size();
-
-
-
-	std::cout << std::fixed << std::setprecision(5);
-	cout << "##### Accuracy # Approx Factor # Max Approx Factor # Avg Time" << endl;
-	cout << "LSH:  " << lsh_accuracy << " " << lsh_avg_factor << " " << lsh_max_factor << " " << lsh_avg_time << endl;
-	cout << "Cube: " << cube_accuracy << " " << cube_avg_factor << " " << cube_max_factor << " " << cube_avg_time << endl;
-	cout << "GNN:  " << gnn_accuracy << " " << gnn_avg_factor << " " << gnn_max_factor << " " << gnn_avg_time << endl;
-	cout << "MRNG: " << mrng_accuracy << " " << mrng_avg_factor << " " << mrng_max_factor << " " << mrng_avg_time << endl;
-		
-
-
-
+	rtime /= test.size();
+	acc   /= test.size();
+	af    /= test.size();
+	
+	
+	cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)" << endl << endl; 
+	printf("     | Accuracy | Approximation Factor |    MAF   | Relative Time Performance\n");
+	printf("     |----------+----------------------+----------+--------------------------\n");
+	printf(" LSH |  %.4f  |        %.4f        |  %.4f  |          %.4f\n", acc[_LSH],  af[_LSH],  maf[_LSH],  rtime[_LSH]);
+	printf("Cube |  %.4f  |        %.4f        |  %.4f  |          %.4f\n", acc[_CUBE], af[_CUBE], maf[_CUBE], rtime[_CUBE]);
+	printf("GNSS |  %.4f  |        %.4f        |  %.4f  |          %.4f\n", acc[_GNNS], af[_GNNS], maf[_GNNS], rtime[_GNNS]);
+	printf("MRNG |  %.4f  |        %.4f        |  %.4f  |          %.4f\n", acc[_MRNG], af[_MRNG], maf[_MRNG], rtime[_MRNG]);
 
 
 

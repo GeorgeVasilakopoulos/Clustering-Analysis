@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define QUERIES 10
+#define QUERIES 100
 
 
 int main(int argc, const char* argv[]) {
@@ -103,7 +103,7 @@ try {
     timer.start();
     Graph* graph = 
     graph_method == "1" ? 
-        (Graph*)new GNN(train_dataset, approx_method == "LSH" ? (Approximator*)&lsh : (Approximator*)&cube, 
+        (Graph*)new GNNS(train_dataset, approx_method == "LSH" ? (Approximator*)&lsh : (Approximator*)&cube, 
                         l2_distance, k, R, T, E) :
         (Graph*)new MRNG(train_dataset, approx_method == "LSH" ? (Approximator*)&lsh : (Approximator*)&cube, 
                          l2_distance, l2_distance, k, l);

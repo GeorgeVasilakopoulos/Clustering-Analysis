@@ -3,10 +3,12 @@ NearestNeighbors: 	10
 lsh_k: 				4
 lsh_L: 				5
 
-cube_k: 			14
-cube_M: 			10
-cube_probes: 		2
+cube_k: 			7
+cube_M: 			6000
+cube_probes: 		10
 
-gnn_k: 				50
-gnn_E: 				30
-gnn_R: 				1
+graph_approx: 		1
+graph_k: 			300
+graph_E: 			30
+graph_R: 			10
+graph_l: 			2000

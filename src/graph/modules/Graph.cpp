@@ -15,6 +15,7 @@ using std::priority_queue;
 using std::unordered_map;
 using std::unordered_set;
 using std::set;
+using std::min;
 
 Graph::Graph(DataSet& dataset_, Distance<uint8_t, uint8_t> dist_) 
 : dataset(dataset_), edges(new vector<DataPoint*>[dataset.size()]), dist(dist_) { assert(dataset.size() > 0); }
@@ -22,7 +23,7 @@ Graph::Graph(DataSet& dataset_, Distance<uint8_t, uint8_t> dist_)
 Graph::~Graph() { delete [] edges; }
 
 
-GNN::GNN(DataSet& dataset_, Approximator* approx, Distance<uint8_t, uint8_t> dist_, 
+GNNS::GNNS(DataSet& dataset_, Approximator* approx, Distance<uint8_t, uint8_t> dist_, 
          uint32_t k, uint32_t R_, uint32_t T_, uint32_t E_) 
 : Graph(dataset_, dist_), R(R_), T(T_), E(E_) {    
 
@@ -34,7 +35,7 @@ GNN::GNN(DataSet& dataset_, Approximator* approx, Distance<uint8_t, uint8_t> dis
     }
 }
 
-vector<PAIR>  GNN::query(Vector<uint8_t>& query, uint32_t N) {
+vector<PAIR>  GNNS::query(Vector<uint8_t>& query, uint32_t N) {
 
     auto comparator = [](const PAIR t1, const PAIR t2) {
         return t1.second > t2.second;
@@ -51,11 +52,12 @@ vector<PAIR>  GNN::query(Vector<uint8_t>& query, uint32_t N) {
         for (uint32_t j = 0; j < T; j++) {
 
             auto pedges = edges[point->label() - 1];
+            uint32_t size = min((uint32_t)edges[point->label() - 1].size(), E);
 
             DataPoint* closest = nullptr;
             double min_dist = DBL_MAX;
 
-            for (uint32_t i = 0; i < E; i++) {
+            for (uint32_t i = 0; i < size; i++) {
                 
                 auto neighb = pedges[i];
 

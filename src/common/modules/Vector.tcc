@@ -7,10 +7,10 @@
 //////////////////
 
 template <typename T>
-Vector<T>::Vector(uint32_t size_)
+Vector<T>::Vector(uint32_t size_, T value)
 : size(size_), data(new T[size_]) {
 	for(uint32_t i = 0; i < size; i++)
-		data[i] = 0;
+		data[i] = value;
 }
 
 template <typename T>

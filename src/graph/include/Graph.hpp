@@ -22,13 +22,13 @@ class Graph {
 };  
 
 
-class GNN : public Graph{
+class GNNS : public Graph{
     private:
         uint32_t R;
         uint32_t T;
         uint32_t E;
     public:
-        GNN(DataSet& dataset, Approximator* approx, Distance<uint8_t, uint8_t> dist, 
+        GNNS(DataSet& dataset, Approximator* approx, Distance<uint8_t, uint8_t> dist, 
             uint32_t k, uint32_t R, uint32_t T, uint32_t E);
         std::vector<PAIR> query(Vector<uint8_t>& query, uint32_t N) override;
 };  

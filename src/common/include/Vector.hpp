@@ -14,7 +14,7 @@ class Vector{
 		T* data;
 		
 	public:
-		Vector(uint32_t size);
+		Vector(uint32_t size, T value=0);
 		Vector(uint32_t size, Distribution distr, T a, T b);
 		Vector(const Vector<T>& v);
 		
