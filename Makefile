@@ -52,7 +52,7 @@ else ifeq ($(TARGET),cube)
 	CXXFLAGS += -I$(LSH_INCS) -I$(CUBE_INCS)
 else ifeq ($(TARGET),cluster)
 	CXXFLAGS += -I$(LSH_INCS) -I$(CUBE_INCS) -I$(CLUSTER_INCS)
-else ifeq ($(TARGET),graph)
+else ifeq ($(TARGET),graph_search)
 	CXXFLAGS += -I$(LSH_INCS) -I$(CUBE_INCS) -I$(GRAPH_INCS) -fopenmp -pthread
 else ifeq ($(TARGET),benchmark)
 	CXXFLAGS += -I$(LSH_INCS) -I$(CUBE_INCS) -I$(GRAPH_INCS) -fopenmp -pthread
@@ -65,7 +65,7 @@ CXXFLAGS += -I$(COMMON_INCS)
 	$(CC) $(CXXFLAGS) -c $^ -o $@
 
 clean:
-	@rm -f $(COMMON_OBJS) $(LSH_OBJS) $(CUBE_OBJS) $(CLUSTER_OBJS) $(GRAPH_OBJS) $(BENCHMARK_OBJS) ./common ./lsh ./cube ./cluster ./graph ./benchmark
+	@rm -f $(COMMON_OBJS) $(LSH_OBJS) $(CUBE_OBJS) $(CLUSTER_OBJS) $(GRAPH_OBJS) $(BENCHMARK_OBJS) ./common ./lsh ./cube ./cluster ./graph_search ./benchmark
 
 run: $(COMMON_OBJS)
 	$(CC) $(COMMON_OBJS) -o ./common
@@ -79,8 +79,8 @@ cube: $(CUBE_OBJS)
 cluster: $(CLUSTER_OBJS)
 	$(CC) $^ -o ./cluster
 
-graph: $(GRAPH_OBJS)
-	$(CC) -fopenmp $^ -o ./graph
+graph_search: $(GRAPH_OBJS)
+	$(CC) -fopenmp $^ -o ./graph_search
 
 
 benchmark: $(BENCHMARK_OBJS)
@@ -91,5 +91,5 @@ all:
 	make -s lsh
 	make -s cube
 	make -s cluster
-	make -s graph
+	make -s graph_search
 	make -s benchmark

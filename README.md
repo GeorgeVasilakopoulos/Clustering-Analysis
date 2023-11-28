@@ -147,7 +147,25 @@ $ ./cluster –i <input file> –c <configuration file> -o <output file> -comple
 
 ## Graph
 
+```
+$ make graph
+$ ./graph_search –d <input file> –q <query file> –k <int> -E <int> -R <int> -N <int> -l <int, only for Search-on-Graph> -m <1 for GNNS, 2 for MRNG> -ο <output file>
+```
+
+
 ### GNNs
+
+The `GNN` class implements the *Graph Nearest Neighbor Search*. Upon initialization, for each point of the dataset (i.e. node of the graph), its k nearest neighbors are connected with edges. The k nearest neighbors are determined with either the *LSH* or *HyperCube* approximation algorithms
+
+
+
+When a querying for a point `q`:
+- A special graph search is initialized at a randomly chosen point. 
+- At each of the `E` iterations, the neighbors of the selected point are fetched and the next selected point is determined according to distance from `q`. 
+- This entire process is repeated `R` times.
+- In the end, out of all the visited points, the `k` closest ones to `q` will be returned.
+
+
 
 ### MRNG
 
