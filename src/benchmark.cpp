@@ -18,7 +18,19 @@
 #define _GNNS 2
 #define _MRNG 3
 
-#define METRICS(algo) 												\
+static const char* names[] = {"LSH ", "Cube", "GNNS", "MRNG"};
+
+#define CALL_ASSERT(algo, call) 											\
+	vec = call;																\
+	if (vec.size() == 0) {													\
+		fprintf(stderr, "\n%s: No Nearest Neighbour found!\n", names[algo]);	\
+		exit(EXIT_FAILURE);													\
+	}																		\
+	pair = vec[0];															\
+
+#define METRICS(algo, call)											\
+	swcout.start();													\
+	CALL_ASSERT(algo, call)											\
 	rtime[algo] += swcout.stop();									\
 	acc[algo]	+= pair.first == actual_label;						\
 	af[algo]	+= pair.second / actual_distance;					\
@@ -90,16 +102,16 @@ try{
 	file_parser.add("lsh_k", "lsh_k", 4);
 	file_parser.add("lsh_L", "lsh_L", 5);
 
-	file_parser.add("cube_k", "cube_k", 7);
-	file_parser.add("cube_M", "cube_M", 6000);
-	file_parser.add("cube_probes", "cube_probes", 10);
+	file_parser.add("cube_k", "cube_k", 14);
+	file_parser.add("cube_M", "cube_M", 10);
+	file_parser.add("cube_probes", "cube_probes", 2);
 	
-	file_parser.add("graph_k", "graph_k", 3000);
-	file_parser.add("graph_E", "graph_E", 30);
-	file_parser.add("graph_R", "graph_R", 10);
 	file_parser.add("graph_approx", "graph_approx", 1);
+	file_parser.add("graph_k", "graph_k", 50);
+	file_parser.add("graph_E", "graph_E", 30);
+	file_parser.add("graph_R", "graph_R", 1);
+	file_parser.add("graph_l", "graph_l", 2);
 
-	file_parser.add("graph_l", "graph_l", 2000);
 
 
 	file_parser.parse(configuration_path);
@@ -141,7 +153,7 @@ try{
 	uint32_t approx_id = file_parser.value("graph_approx");
 	uint32_t k = file_parser.value("graph_k");
 	uint32_t R = file_parser.value("graph_R");
-	uint32_t T = 10;
+	uint32_t T = 20;
 	uint32_t E = file_parser.value("graph_E");
 	uint32_t l = file_parser.value("graph_l");
 	
@@ -175,6 +187,8 @@ try{
 	Stopwatch timer;
 	timer.start();
 	cout << "Beginning queries... " << flush;
+	output_file << fixed << setprecision(4);
+	vector<pair<uint32_t, double>> vec;
 	for(auto q : test){
 
 		//Brute Force
@@ -185,21 +199,10 @@ try{
 		uint32_t actual_label = pair.first;
 		double actual_distance = pair.second;
 		
-		swcout.start();
-		pair = lsh.kANN(*q, 1, l2_distance)[0];
-		METRICS(_LSH)
-
-		swcout.start();
-		pair = cube.kANN(*q, 1, l2_distance)[0];
-		METRICS(_CUBE)
-
-		swcout.start();
-		pair = gnn_graph.query(q->data(), 1)[0];
-		METRICS(_GNNS)
-
-		swcout.start();
-		pair = mrng_graph.query(q->data(), 1)[0];
-		METRICS(_MRNG)
+		METRICS(_LSH, lsh.kANN(*q, 1, l2_distance))
+		METRICS(_CUBE, cube.kANN(*q, 1, l2_distance))
+		METRICS(_GNNS, gnn_graph.query(q->data(), 1))
+		METRICS(_MRNG, mrng_graph.query(q->data(), 1))
 	}
 
 	rtime /= test.size();
@@ -224,31 +227,6 @@ try{
 	
 	output_file << "MRNG |  " 	 << acc[_MRNG] << "  |        "   << af[_MRNG] 
 				<< "        |  " << maf[_MRNG] << "  |          " << rtime[_MRNG] << endl;
-
-	// printf("     | Accuracy | Approximation Factor |    MAF   | Relative Time Performance\n");
-	// printf("     |----------+----------------------+----------+--------------------------\n");
-	// printf(" LSH |  %.4f  |        %.4f        |  %.4f  |          %.4f\n", acc[_LSH],  af[_LSH],  maf[_LSH],  rtime[_LSH]);
-	// printf("Cube |  %.4f  |        %.4f        |  %.4f  |          %.4f\n", acc[_CUBE], af[_CUBE], maf[_CUBE], rtime[_CUBE]);
-	// printf("GNSS |  %.4f  |        %.4f        |  %.4f  |          %.4f\n", acc[_GNNS], af[_GNNS], maf[_GNNS], rtime[_GNNS]);
-	// printf("MRNG |  %.4f  |        %.4f        |  %.4f  |          %.4f\n", acc[_MRNG], af[_MRNG], maf[_MRNG], rtime[_MRNG]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
 catch (exception& e){

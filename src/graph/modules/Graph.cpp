@@ -71,7 +71,7 @@ vector<PAIR>  GNNS::query(Vector<uint8_t>& query, uint32_t N) {
                 if (considered.find(neighb->label()) != considered.end())
                     continue; 
 
-                pq.push(pair(point->label(), distance));
+                pq.push(pair(neighb->label(), distance));
                 considered.insert(neighb->label());
             }
 
