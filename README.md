@@ -155,11 +155,11 @@ $ ./graph_search –d <input file> –q <query file> –k <int> -E <int> -R <int
 
 ### GNNs
 
-The `GNN` class implements the *Graph Nearest Neighbor Search*. Upon initialization, for each point of the dataset (i.e. node of the graph), its k nearest neighbors are connected with edges. The k nearest neighbors are determined with either the *LSH* or *HyperCube* approximation algorithms
+The `GNN` class implements the *Graph Nearest Neighbor Search*. Upon initialization, for each point of the dataset (i.e. node of the graph), its k nearest neighbors are connected with edges. The k nearest neighbors are determined with either the *LSH* or *HyperCube* approximation algorithms.
 
 
 
-When a querying for a point `q`:
+When querying for a point `q`:
 - A special graph search is initialized at a randomly chosen point. 
 - At each of the `E` iterations, the neighbors of the selected point are fetched and the next selected point is determined according to distance from `q`. 
 - This entire process is repeated `R` times.
@@ -168,6 +168,51 @@ When a querying for a point `q`:
 
 
 ### MRNG
+
+The `MRNG` class implements the *Monotonic Relative Neighborhood Graph*. During initialization, for each point `p`, its k nearest neighbors are found; each of the knn's are linearly added as edges only if their distance to `p` is smaller than the distance to all of the *already placed* graph-neighbors of `p`.
+
+When querying for a point `q`:
+- A *search* is initialized at some (given) starting point
+- At each iteration, the search is expanded to the neighbors of the node which is closest to `q`
+- Naturally, this search algorithm utilizes a priority queue, the size of which is bounded by a given parameter `L`.
+- When the limit `L` is reached, the top `k` nodes of the priority queue are returned.
+
+
+### Benchmarking
+
+```
+$ make benchmark
+$ ./benchmark –d <input file> –q <query file> -ο <output file> -config <parm. configuration file> -size <size to truncate input file>
+```
+
+In order to thoroughly test the performance of the two graph models, we developed a script that runs queries on all of the developed models (LSH, HyperCube, GNN, MRNG) and quantifies their performance based on various metrics, namely:
+
+- Accuracy
+- Approximation Factor
+- Maximum Approximation Factor
+- Average Execution Time
+
+Below are the results produced by the script, invoked as 
+
+`$ ./benchmark -d ./input/train_images -q ./input/test_images -o ./output/out9.txt  -config ./src/bench.conf -size 40000`
+
+
+```
+     | Accuracy | Approximation Factor |    MAF   | Relative Time Performance
+     |----------+----------------------+----------+--------------------------
+ LSH |  0.6400  |        1.0275        |  1.2900  |          0.0111
+Cube |  0.3000  |        1.0980        |  1.6289  |          0.0099
+GNNS |  0.8300  |        1.0269        |  1.4821  |          0.0065
+MRNG |  1.0000  |        1.0000        |  1.0000  |          0.0079
+```
+
+As expected, both of the graph models perform significantly better than the plain approximators.
+
+Interestingly enough, the MRNG manages to achieve 100% accuracy while still being considerably faster than LSH and HyperCube
+
+
+...
+
 
 ## Evaluation
 
