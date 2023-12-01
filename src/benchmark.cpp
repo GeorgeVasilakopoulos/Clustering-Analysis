@@ -20,13 +20,13 @@
 
 static const char* names[] = {"LSH ", "Cube", "GNNS", "MRNG"};
 
-#define CALL_ASSERT(algo, call) 											\
-	vec = call;																\
-	if (vec.size() == 0) {													\
+#define CALL_ASSERT(algo, call) 												\
+	vec = call;																	\
+	if (vec.size() == 0) {														\
 		fprintf(stderr, "\n%s: No Nearest Neighbour found!\n", names[algo]);	\
-		exit(EXIT_FAILURE);													\
-	}																		\
-	pair = vec[0];															\
+		exit(EXIT_FAILURE);														\
+	}																			\
+	pair = vec[0];																\
 
 #define METRICS(algo, call)											\
 	swcout.start();													\
@@ -205,7 +205,6 @@ try{
 		METRICS(_MRNG, mrng_graph.query(q->data(), 1))
 	}
 
-	rtime /= test.size();
 	acc   /= test.size();
 	af    /= test.size();
 	
@@ -217,16 +216,16 @@ try{
 	output_file << fixed << setprecision(4);
 	
 	output_file << " LSH |  " 	 << acc[_LSH] << "  |        " 	 << af[_LSH] 
-				<< "        |  " << maf[_LSH] << "  |          " << rtime[_LSH] << endl;
+				<< "        |  " << maf[_LSH] << "  |          " << rtime[_LSH] / bf_avg_time << endl;
 	
 	output_file << "Cube |  " 	 << acc[_CUBE] << "  |        "   << af[_CUBE] 
-				<< "        |  " << maf[_CUBE] << "  |          " << rtime[_CUBE] << endl;
+				<< "        |  " << maf[_CUBE] << "  |          " << rtime[_CUBE] / bf_avg_time << endl;
 	
 	output_file << "GNNS |  " 	 << acc[_GNNS] << "  |        "   << af[_GNNS] 
-				<< "        |  " << maf[_GNNS] << "  |          " << rtime[_GNNS] << endl;
+				<< "        |  " << maf[_GNNS] << "  |          " << rtime[_GNNS] / bf_avg_time << endl;
 	
 	output_file << "MRNG |  " 	 << acc[_MRNG] << "  |        "   << af[_MRNG] 
-				<< "        |  " << maf[_MRNG] << "  |          " << rtime[_MRNG] << endl;
+				<< "        |  " << maf[_MRNG] << "  |          " << rtime[_MRNG] / bf_avg_time << endl;
 
 }
 catch (exception& e){
