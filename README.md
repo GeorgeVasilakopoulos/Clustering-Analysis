@@ -268,7 +268,7 @@ For Reverse Assignment we use the parameters mentioned in the previous section.
 - Silhouette coefficient: `0.127`
 
 
-
+![plots](./output/output.png)
 
 
 

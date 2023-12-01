@@ -4,6 +4,7 @@
 #include <unordered_set>
 #include <cmath>
 #include <string>
+#include <filesystem>
 
 #include "utils.hpp"
 #include "HashTable.hpp"
@@ -49,6 +50,7 @@ try{
 	parser.add("d", STRING);
 	parser.add("q", STRING);
 	parser.add("o", STRING);
+	parser.add("c", STRING);
 	parser.add("config", STRING);
 	parser.add("size", UINT, "0");
 	
@@ -56,6 +58,7 @@ try{
 	string data_path;
 	string query_path;
 	string out_path;
+	string csv_path;
 	string configuration_path;
 
 	if(parser.parsed("d"))
@@ -73,6 +76,11 @@ try{
 	else
 		throw runtime_error("Missing output path argument -o\n");
 	
+	if(parser.parsed("c"))
+		csv_path = parser.value<string>("c");
+	else
+		throw runtime_error("Missing csv path argument -c\n");
+	
 	if(parser.parsed("config"))
 		configuration_path = parser.value<string>("config");
 	else
@@ -83,7 +91,10 @@ try{
 	ofstream output_file(out_path, ios::out);
 	if (output_file.fail()) 
         throw runtime_error(out_path + " could not be opened!\n");
-
+		
+	ofstream csv_file(csv_path, ios::out | ios::app);
+	if (output_file.fail()) 
+        throw runtime_error(csv_path + " could not be opened!\n");
 
     Stopwatch swcout = Stopwatch();
 	uint32_t size = parser.value<uint32_t>("size");
@@ -207,6 +218,7 @@ try{
 
 	acc   /= test.size();
 	af    /= test.size();
+	rtime /= bf_avg_time;
 	
 	
 	cout << "Done! (" << fixed << setprecision(3) << timer.stop() << " seconds)" << endl << endl; 
@@ -216,16 +228,21 @@ try{
 	output_file << fixed << setprecision(4);
 	
 	output_file << " LSH |  " 	 << acc[_LSH] << "  |        " 	 << af[_LSH] 
-				<< "        |  " << maf[_LSH] << "  |          " << rtime[_LSH] / bf_avg_time << endl;
+				<< "        |  " << maf[_LSH] << "  |          " << rtime[_LSH] << endl;
 	
 	output_file << "Cube |  " 	 << acc[_CUBE] << "  |        "   << af[_CUBE] 
-				<< "        |  " << maf[_CUBE] << "  |          " << rtime[_CUBE] / bf_avg_time << endl;
+				<< "        |  " << maf[_CUBE] << "  |          " << rtime[_CUBE] << endl;
 	
 	output_file << "GNNS |  " 	 << acc[_GNNS] << "  |        "   << af[_GNNS] 
-				<< "        |  " << maf[_GNNS] << "  |          " << rtime[_GNNS] / bf_avg_time << endl;
+				<< "        |  " << maf[_GNNS] << "  |          " << rtime[_GNNS] << endl;
 	
 	output_file << "MRNG |  " 	 << acc[_MRNG] << "  |        "   << af[_MRNG] 
-				<< "        |  " << maf[_MRNG] << "  |          " << rtime[_MRNG] / bf_avg_time << endl;
+				<< "        |  " << maf[_MRNG] << "  |          " << rtime[_MRNG] << endl;
+	
+	csv_file << "Accuracy," <<   acc[0] << "," <<   acc[1] << "," <<   acc[2] << "," <<   acc[3] << endl;
+	csv_file << "AF,"		<<    af[0] << "," <<    af[1] << "," <<    af[2] << "," <<    af[3] << endl;
+	csv_file << "MAF,"		<<   maf[0] << "," <<   maf[1] << "," <<   maf[2] << "," <<   maf[3] << endl;
+	csv_file << "RTime,"	<< rtime[0] << "," << rtime[1] << "," << rtime[2] << "," << rtime[3] << endl;
 
 }
 catch (exception& e){
