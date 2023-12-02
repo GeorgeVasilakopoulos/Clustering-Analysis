@@ -1,5 +1,13 @@
 #!/bin/bash
 
+cd ../..
+
+if [ "$#" -lt 1 ]; then
+    plot_path="./output/plots.png"
+fi
+
+plot_path="$1"
+
 train_images="./input/train_images"
 test_images="./input/test_images"
 output_prefix="./output/out"
@@ -42,6 +50,8 @@ for size in "${sizes[@]}"; do
         "$mrng" "$mrng_file" 
 done
 
-make clean
+if [ "$#" -lt 2 ]; then
+    make -s clean
+fi
 
-python ./output/plot.py
+python ./src/plot.py "$plot_path"

@@ -24,7 +24,7 @@ static const char* names[] = {"LSH ", "Cube", "GNNS", "MRNG"};
 #define CALL_ASSERT(algo, call) 												\
 	vec = call;																	\
 	if (vec.size() == 0) {														\
-		fprintf(stderr, "\n%s: No Nearest Neighbour found!\n", names[algo]);	\
+		fprintf(stderr, "\n%s: No Nearest Neighbour found!\n\n", names[algo]);	\
 		exit(EXIT_FAILURE);														\
 	}																			\
 	pair = vec[0];																\
@@ -130,8 +130,9 @@ try{
 	
 	file_parser.add("graph_approx", "graph_approx", 1);
 	file_parser.add("graph_k", "graph_k", 50);
-	file_parser.add("graph_E", "graph_E", 30);
 	file_parser.add("graph_R", "graph_R", 1);
+	file_parser.add("graph_R", "graph_T", 10);
+	file_parser.add("graph_E", "graph_E", 30);
 	file_parser.add("graph_l", "graph_l", 2);
 
 
@@ -175,7 +176,7 @@ try{
 	uint32_t approx_id = file_parser.value("graph_approx");
 	uint32_t k = file_parser.value("graph_k");
 	uint32_t R = file_parser.value("graph_R");
-	uint32_t T = 20;
+	uint32_t T = file_parser.value("graph_T");
 	uint32_t E = file_parser.value("graph_E");
 	uint32_t l = file_parser.value("graph_l");
 	

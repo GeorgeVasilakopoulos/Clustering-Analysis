@@ -197,8 +197,13 @@ To produce the metrics for various data sizes, execute `./benchmarks.bash`. Scri
 	- Compiles benchmark-related files 
 	- Runs the corresponding executable several times with different train set sizes
 	- Produces the plots using python: `plot.py`
-- Input: None
+	- Optionaly, loads the graph instead of computing it
+- Input: 
+	- Train and Test Datasets
+	- Config File
+	- Output File
 - Output: 
+	- Depending on flags: `.graph` file containing the initialized graphs
 	- A text file for each train set size, containing the reported metrics for each algo
 	- A csv file with the reported metrics
 	- Plots for each metric
@@ -259,20 +264,36 @@ For Reverse Assignment we use the parameters mentioned in the previous section.
 
 ### Graph
 
-After some experimentation, we found that the optimal parameters for graph algorithms are:
+#### Parameter Tuning
+
+To facilitate parameter tuning we created the `tune.py` file. To execute run: 
+```
+$ cd ./src/graph/
+$ python tune.py 
+```
+
+We perform an execution of `benchmarks.bash` on every combination of the following parameters:
+- `R`: `[1, 5, 10, 15]`
+- `T`: `[10, 20, 30]`
+- `E`: `[30, 40, 50]`
+- `l`: `[1, 10, 100, 1000, 2000]`
+
+The resulting plots can be found under `output/plots/`.
+
+#### Analysis
+
+We found that for graph algorithms, the optimal parameters, compromising on time and space complexity, are:
 - GNNS: `-k 150 -R 15 -T 10 -E 40`, and `T = 10`
 - MRNG: `-k 150 -l 2000`, and `T = 10`
 
 For both algorithms, the parameters used for the approximators are those of Assignment 1.
 
-
-To perform the analysis and comparison with `LSH` and `Cube` algorithms from the first assignment, we execute `./benchmarks.bash`. This script compiles and runs the aforementioned benchmark file several times, each for a different train set size. Finally, it runs `plot.py` to produce the corresponding plots. Below, you can see the resulting plot of an execution:
-
-<img src="./output/output.png" alt="Comparison Plots" width="100%">
+<img src="./output/plots.png" alt="Comparison Plots" width="100%">
 
 
 We make the following observations:
-- Graph algorithms consistently demonstrate superior accuracy compared to both `LSH` and `Cube`, irrespective of the train set size. 
+- Graph algorithms heavily depend on their parameters. We propose that these parameters should not be fixed but instead be a function of the training set size. This suggestion is substantiated by the observation that for smaller sizes, using smaller parameter values achieves good performance in terms of accuracy and approximation factor, all while being faster than the alternatives. Conversely, for larger parameter values, although performance increases marginally, querying time experiences an exponential increase.
+- Graph algorithms consistently demonstrate superior accuracy compared to both `LSH` and `Cube`, regardless of the train set size. 
 - Although GNNS exhibits better accuracy than LSH, it results in higher approximation factors and maximum approximation factors. This can be attributed to the parameter R. `GNNS` heavily relies on the initial points, and the use of only 15 random samples may at times be insufficient for achieving a satisfactory approximation.
 - While graph algorithms demonstrate faster performance than both LSH and Cube on larger train set sizes, they exhibit significant shortcomings for smaller data sizes.
 
