@@ -8,24 +8,67 @@
 #include <unordered_set>
 #include <set>
 #include <queue>
+#include <fstream>
 
-using std::pair;
-using std::vector;
-using std::priority_queue;
-using std::unordered_map;
-using std::unordered_set;
-using std::set;
-using std::min;
+using namespace std;
 
 Graph::Graph(DataSet& dataset_, Distance<uint8_t, uint8_t> dist_) 
 : dataset(dataset_), edges(new vector<DataPoint*>[dataset.size()]), dist(dist_) { assert(dataset.size() > 0); }
 
 Graph::~Graph() { delete [] edges; }
 
+// Function to save the graph to a file
+void Graph::save(const string& filename) {
+
+    ofstream file(filename, ios::binary);
+    if (!file.is_open()) {
+        cerr << "Error: Unable to open " << filename << " for writing." << endl;
+        return;
+    }
+
+    for (auto point : dataset) {
+        const auto& pedges = edges[point->label() - 1];
+        for (size_t i = 0; i < pedges.size(); i++)
+            file << pedges[i]->label() << (i + 1 == pedges.size() ? "\n" : ",");
+    }
+
+    file.close();
+}
+
+// Function to load the graph from a file
+void Graph::load(const string& filename) {
+
+    ifstream file(filename, ios::binary);
+    if (!file.is_open()) {
+        cerr << "Error: Unable to open file for reading." << endl;
+        return;
+    }
+
+    string line;
+    uint32_t label;
+    for (size_t i = 0; getline(file, line); i++) {
+        stringstream ss(line);
+        while(ss >> label) {
+            edges[i].push_back(dataset[label - 1]);
+            
+            if(ss.peek() == ',') 
+                ss.ignore();
+        }
+    }
+
+    file.close();
+}
+
+
 
 GNNS::GNNS(DataSet& dataset_, Approximator* approx, Distance<uint8_t, uint8_t> dist_, 
-         uint32_t k, uint32_t R_, uint32_t T_, uint32_t E_) 
+         uint32_t k, uint32_t R_, uint32_t T_, uint32_t E_, string path) 
 : Graph(dataset_, dist_), R(R_), T(T_), E(E_) {    
+
+    if (!path.empty()) {
+        this->load(path);
+        return ;
+    }
 
     #pragma omp parallel for
     for (auto point : dataset) {
@@ -97,45 +140,51 @@ vector<PAIR>  GNNS::query(Vector<uint8_t>& query, uint32_t N) {
 
 MRNG::MRNG(DataSet& dataset_,  Approximator* approx, 
            Distance<uint8_t, uint8_t> dist_, Distance<uint8_t, double> dist_centroid, 
-           uint32_t k, uint32_t L_)
+           uint32_t k, uint32_t L_, string path)
 : Graph(dataset_, dist_), L(L_) {
     
-    size_t overhead = std::max(50U, dataset.size() / 100);
+    if (path.empty()) {
 
-    #pragma omp parallel for
-    for(auto x : dataset) {
-        
-        vector<PAIR> neighbors = approx->kANN(*x, k, dist);
-        size_t size = neighbors.size();
+        size_t overhead = std::max(50U, dataset.size() / 100);
 
-        size_t i = 0;
-        size_t j = 0;
-        auto& pedges = edges[x->label() - 1];
-
-        while(i < size && j < overhead){
-            if (neighbors[i].first == x->label()) {
-                i++;
-                continue;
-            }
+        #pragma omp parallel for
+        for(auto x : dataset) {
             
-            DataPoint* y = dataset[neighbors[i].first - 1];
-            double min_dist = neighbors[i++].second;
+            vector<PAIR> neighbors = approx->kANN(*x, k, dist);
+            size_t size = neighbors.size();
 
-            bool insert = true;
-            for(auto r : pedges) {
-                if(min_dist >= dist(r->data(), y->data())) {
-                    insert = false;
-                    break;
+            size_t i = 0;
+            size_t j = 0;
+            auto& pedges = edges[x->label() - 1];
+
+            while(i < size && j < overhead){
+                if (neighbors[i].first == x->label()) {
+                    i++;
+                    continue;
                 }
-            }
+                
+                DataPoint* y = dataset[neighbors[i].first - 1];
+                double min_dist = neighbors[i++].second;
 
-            if(insert) 
-                pedges.push_back(y);
-            
-            j += insert;
+                bool insert = true;
+                for(auto r : pedges) {
+                    if(min_dist >= dist(r->data(), y->data())) {
+                        insert = false;
+                        break;
+                    }
+                }
+
+                if(insert) 
+                    pedges.push_back(y);
+                
+                j += insert;
+            }
         }
     }
-
+    else
+        this->load(path);
+    
+    //
     
 	auto centroid = new Vector<double>(dataset[0]->data().len());
 

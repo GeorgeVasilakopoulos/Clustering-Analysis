@@ -182,7 +182,7 @@ When querying for a point `q`:
 
 ```
 $ make benchmark
-$ ./benchmark –d <input file> –q <query file> -ο <output file> -config <parm. configuration file> -size <size to truncate input file>
+$ ./benchmark –d <input file> –q <query file> -ο <output file> -c <csv file> -config <parm. configuration file> -size <size to truncate input file, 0 for no truncation>
 ```
 
 In order to thoroughly test the performance of the two graph models, we developed a script that runs queries on all of the developed models (LSH, HyperCube, GNN, MRNG) and quantifies their performance based on various metrics, namely:
@@ -190,29 +190,19 @@ In order to thoroughly test the performance of the two graph models, we develope
 - Accuracy
 - Approximation Factor
 - Maximum Approximation Factor
-- Average Execution Time
+- Average Relative Time (to brute force quering)
 
-Below are the results produced by the script, invoked as 
-
-`$ ./benchmark -d ./input/train_images -q ./input/test_images -o ./output/out9.txt  -config ./src/bench.conf -size 40000`
-
-
-```
-     | Accuracy | Approximation Factor |    MAF   | Relative Time Performance
-     |----------+----------------------+----------+--------------------------
- LSH |  0.6400  |        1.0275        |  1.2900  |          0.0111
-Cube |  0.3000  |        1.0980        |  1.6289  |          0.0099
-GNNS |  0.8300  |        1.0269        |  1.4821  |          0.0065
-MRNG |  1.0000  |        1.0000        |  1.0000  |          0.0079
-```
-
-As expected, both of the graph models perform significantly better than the plain approximators.
-
-Interestingly enough, the MRNG manages to achieve 100% accuracy while still being considerably faster than LSH and HyperCube
-
-
-...
-
+To produce the metrics for various data sizes, execute `./benchmarks.bash`. Script description:
+- Functionality: 
+	- Compiles benchmark-related files 
+	- Runs the corresponding executable several times with different train set sizes
+	- Produces the plots using python: `plot.py`
+- Input: None
+- Output: 
+	- A text file for each train set size, containing the reported metrics for each algo
+	- A csv file with the reported metrics
+	- Plots for each metric
+ 
 
 ## Evaluation
 
@@ -267,8 +257,22 @@ For Reverse Assignment we use the parameters mentioned in the previous section.
 - Silhouette for each cluster: `[0.037, 0.139, 0.075, 0.196, 0.107, 0.213, 0.084, 0.059, 0.091, 0.127]`
 - Silhouette coefficient: `0.127`
 
+### Graph
 
-![plots](./output/output.png)
+After some experimentation, we found that the optimal parameters for graph algorithms are:
+- GNNS: `-k 150 -R 15 -T 10 -E 40`, and `T = 10`
+- MRNG: `-k 150 -l 2000`, and `T = 10`
+
+For both algorithms, the parameters used for the approximators are those of Assignment 1.
 
 
+To perform the analysis and comparison with `LSH` and `Cube` algorithms from the first assignment, we execute `./benchmarks.bash`. This script compiles and runs the aforementioned benchmark file several times, each for a different train set size. Finally, it runs `plot.py` to produce the corresponding plots. Below, you can see the resulting plot of an execution:
+
+<img src="./output/output.png" alt="Comparison Plots" width="100%">
+
+
+We make the following observations:
+- Graph algorithms consistently demonstrate superior accuracy compared to both `LSH` and `Cube`, irrespective of the train set size. 
+- Although GNNS exhibits better accuracy than LSH, it results in higher approximation factors and maximum approximation factors. This can be attributed to the parameter R. `GNNS` heavily relies on the initial points, and the use of only 15 random samples may at times be insufficient for achieving a satisfactory approximation.
+- While graph algorithms demonstrate faster performance than both LSH and Cube on larger train set sizes, they exhibit significant shortcomings for smaller data sizes.
 

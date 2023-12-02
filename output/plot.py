@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-df = pd.read_csv('out.csv')
+df = pd.read_csv('./output/out.csv')
 
 df_acc   = df[df['Metric'] == 'Accuracy'].drop(columns=['Metric'])
 df_af    = df[df['Metric'] == 'AF'].drop(columns=['Metric'])
@@ -38,7 +38,7 @@ def plot_curves(sizes, metrics, dfs, y_ticks):
             "Training samples", metric, i // 2, i % 2
         )
         
-    plt.show()
+    plt.savefig('./output/plots.png')
 
 plot_curves(
     np.array([100, 500, 1000, 2000, 5000, 10000, 20000, 30000, 40000, 60000]),

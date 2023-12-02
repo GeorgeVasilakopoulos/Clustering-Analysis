@@ -25,7 +25,12 @@ try {
     parser.add("l", UINT, "20");
     parser.add("m", STRING);
     parser.add("a", STRING, "LSH");
+    parser.add("save", STRING);
+    parser.add("load", STRING);
     parser.parse(argc, argv);
+
+    string save_path = parser.parsed("save") ? parser.value<string>("save") : "";
+    string load_path = parser.parsed("load") ? parser.value<string>("load") : "";
 
     
 	uint32_t k = parser.value<uint32_t>("k");
@@ -104,15 +109,21 @@ try {
     Graph* graph = 
     graph_method == "1" ? 
         (Graph*)new GNNS(train_dataset, approx_method == "LSH" ? (Approximator*)&lsh : (Approximator*)&cube, 
-                        l2_distance, k, R, T, E) :
+                        l2_distance, k, R, T, E, load_path) :
         (Graph*)new MRNG(train_dataset, approx_method == "LSH" ? (Approximator*)&lsh : (Approximator*)&cube, 
-                         l2_distance, l2_distance, k, l);
-    cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)"<< endl; 
+                         l2_distance, l2_distance, k, l, load_path);
+    cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)" << endl; 
     
+    if (!save_path.empty()) {
+        cout << "Saving graph... " << flush;
+        timer.start();
+        graph->save(save_path);
+        cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)" << endl; 
+    }
     
 	timer_out.start();
-	cout << "Beginning search for \"" << query_path << "\"... " << flush;
 	while (true) {
+	cout << "Beginning search for \"" << query_path << "\"... " << flush;
         double ttime_lsh = 0, ttime_cube = 0, ttime_graph = 0, ttime_true = 0;
         double tdist_lsh = 0, tdist_cube = 0, tdist_graph = 0, tdist_true = 0;
 		for (auto point : DataSet(query_path, QUERIES)) {
@@ -149,16 +160,16 @@ try {
 				output_file << "distanceTrue: " << knn[i].second   << "\n";
 				dist_graph += aknn_graph[i].second;
 				dist_true  += knn[i].second;
-                double temp = dist_graph / dist_true;
+                double temp = aknn_graph[i].second / knn[i].second;
                 if (MAF < temp) {
                     MAF = temp;
                 }
 			}
 
-            dist_graph /= aknn_graph.size();
-            dist_true /= aknn_graph.size();
-			output_file << "tAverageApproximate: "  << std::fixed << std::setprecision(4) << dist_graph << "\n";
-			output_file << "tAverageTrue: " << std::fixed << std::setprecision(4) << dist_true << "\n";
+			output_file << "tAverageApproximate: "  
+                        << std::fixed << std::setprecision(4) << ttime_graph / aknn_graph.size() << "\n";
+			output_file << "tAverageTrue: " 
+                        << std::fixed << std::setprecision(4) << ttime_true / aknn_graph.size() << "\n";
 			output_file << "MAF: " << std::fixed << std::setprecision(4) << MAF << "\n\n";
 
             const uint32_t size = std::min(aknn_graph.size(), std::min(aknn_lsh.size(), aknn_cube.size()));

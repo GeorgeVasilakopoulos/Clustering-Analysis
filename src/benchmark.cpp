@@ -53,8 +53,19 @@ try{
 	parser.add("c", STRING);
 	parser.add("config", STRING);
 	parser.add("size", UINT, "0");
+	parser.add("gnns_load", STRING);
+	parser.add("gnns_save", STRING);
+	parser.add("mrng_load", STRING);
+	parser.add("mrng_save", STRING);
 	
 	parser.parse(argc,argv);
+	
+    string save_path_gnns = parser.parsed("gnns_save") ? parser.value<string>("gnns_save") : "";
+    string load_path_gnns = parser.parsed("gnns_load") ? parser.value<string>("gnns_load") : "";
+
+    string save_path_mrng = parser.parsed("mrng_save") ? parser.value<string>("mrng_save") : "";
+    string load_path_mrng = parser.parsed("mrng_load") ? parser.value<string>("mrng_load") : "";
+
 	string data_path;
 	string query_path;
 	string out_path;
@@ -170,10 +181,16 @@ try{
 	
 	cout << "Creating GNN graph... " << flush;
     swcout.start();
-	GNNS gnn_graph = GNNS(train, approx_id == 1 ? (Approximator*)&lsh : (Approximator*)&cube,
-						  l2_distance, k, R, T, E);
+	GNNS gnns_graph = GNNS(train, approx_id == 1 ? (Approximator*)&lsh : (Approximator*)&cube,
+						  l2_distance, k, R, T, E, load_path_gnns);
 	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)"<< endl; 
 
+	if (!save_path_gnns.empty()) {
+        cout << "Saving GNNS graph... " << flush;
+        swcout.start();
+        gnns_graph.save(save_path_gnns);
+        cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)" << endl; 
+    }
 
 	//////////////////////////////////
 	//////////////MRNG////////////////
@@ -182,9 +199,15 @@ try{
 	cout << "Creating MRNG graph... " << flush;
     swcout.start();
 	MRNG mrng_graph = MRNG(train, approx_id == 1 ? (Approximator*)&lsh : (Approximator*)&cube,
-						l2_distance, l2_distance, k, l);
+						l2_distance, l2_distance, k, l, load_path_mrng);
 	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)"<< endl; 
 
+	if (!save_path_mrng.empty()) {
+        cout << "Saving MRNG graph... " << flush;
+        swcout.start();
+        mrng_graph.save(save_path_mrng);
+        cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)" << endl; 
+    }
 
 
 	cout << "Loading data... " << flush;
@@ -212,7 +235,7 @@ try{
 		
 		METRICS(_LSH, lsh.kANN(*q, 1, l2_distance))
 		METRICS(_CUBE, cube.kANN(*q, 1, l2_distance))
-		METRICS(_GNNS, gnn_graph.query(q->data(), 1))
+		METRICS(_GNNS, gnns_graph.query(q->data(), 1))
 		METRICS(_MRNG, mrng_graph.query(q->data(), 1))
 	}
 
