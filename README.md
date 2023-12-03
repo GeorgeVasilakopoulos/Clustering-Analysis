@@ -26,50 +26,67 @@ The algorithms are benchmarked on the [MNIST handwritten digit](http://yann.lecu
 .
 ├── Makefile
 ├── README.md
-├── src
-│		 ├── approximators
-│		 │		 ├── cube
-│		 │		 │		 ├── main.cpp
-│		 │		 │		 ├── include
-│		 │		 │		 │		 ├── cube_hash.hpp
-│		 │		 │		 │		 └── cube.hpp
-│		 │		 │		 └── modules
-│		 │		 │		     └── cube.cpp
-│		 │		 └── lsh
-│		 │		     ├── main.cpp
-│		 │		     ├── include
-│		 │		     │		 ├── lsh_hash.hpp
-│		 │		     │		 └── lsh.hpp
-│		 │		     └── modules
-│		 │		         └── lsh.cpp
-│		 ├── cluster
-│		 │		 ├── config.conf
-│		 │		 ├── main.cpp
-│		 │		 ├── include
-│		 │		 │		 ├── cluster.hpp
-│		 │		 │		 └── Clustering.hpp
-│		 │		 └── modules
-│		 │		     ├── cluster.cpp
-│		 │		     └── Clustering.cpp
-│		 └── common
-│		     ├── main.cpp
-│		     ├── include
-│		     │		 ├── Approximator.hpp
-│		     │		 ├── ArgParser.hpp
-│		     │		 ├── FileParser.hpp
-│		     │		 ├── HashTable.hpp
-│		     │		 ├── utils.hpp
-│		     │		 └── Vector.hpp
-│		     └── modules
-│		         ├── Approximator.cpp
-│		         ├── ArgParser.tcc
-│		         ├── Distances.tcc
-│		         ├── FileParser.cpp
-│		         ├── HashTable.tcc
-│		         ├── utils.cpp
-│		         └── Vector.tcc
-├── test_images
-└── train_images
+├── graphs
+│   └── ...
+├── input
+│   ├── test_images
+│   └── train_images
+├── output
+│   ├── configs
+│   │   └── ...
+│   └── plots
+│   │   └── ...
+└── src
+    ├── bench.conf
+    ├── benchmark.cpp
+    ├── benchmarks.bash
+    ├── approximators
+    │   ├── cube
+    │   │   ├── include
+    │   │   │   ├── cube.hpp
+    │   │   │   └── cube_hash.hpp
+    │   │   ├── main.cpp
+    │   │   └── modules
+    │   │       └── cube.cpp
+    │   └── lsh
+    │       ├── include
+    │       │   ├── lsh.hpp
+    │       │   └── lsh_hash.hpp
+    │       ├── main.cpp
+    │       └── modules
+    │           └── lsh.cpp
+    ├── cluster
+    │   ├── main.cpp
+    │   ├── cluster.conf
+    │   ├── include
+    │   │   └── cluster.hpp
+    │   └── modules
+    │       └── cluster.cpp
+    ├── common
+    │   ├── main.cpp
+    │   ├── include
+    │   │   ├── Approximator.hpp
+    │   │   ├── ArgParser.hpp
+    │   │   ├── FileParser.hpp
+    │   │   ├── HashTable.hpp
+    │   │   ├── Vector.hpp
+    │   │   └── utils.hpp
+    │   └── modules
+    │       ├── Approximator.cpp
+    │       ├── ArgParser.tcc
+    │       ├── Distances.tcc
+    │       ├── FileParser.tcc
+    │       ├── HashTable.tcc
+    │       ├── Vector.tcc
+    │       └── utils.cpp
+    ├── graph
+    │   ├── main.cpp
+    │   ├── tune.py
+    │   ├── include
+    │   │   └── Graph.hpp
+    │   └── modules
+    │       └── Graph.cpp
+    └── plot.py
 </pre>
 
 ## Data Handling
@@ -282,18 +299,19 @@ The resulting plots can be found under `output/plots/`.
 
 #### Analysis
 
-We found that for graph algorithms, the optimal parameters, compromising on time and space complexity, are:
+We found that for graph algorithms, the optimal parameters for the whole dataset, compromising on accuracy and time complexity, are:
 - GNNS: `-k 150 -R 15 -T 10 -E 40`, and `T = 10`
 - MRNG: `-k 150 -l 2000`, and `T = 10`
 
 For both algorithms, the parameters used for the approximators are those of Assignment 1.
 
-<img src="./output/plots.png" alt="Comparison Plots" width="100%">
+<img src="./output/plots/plot144.png" alt="Comparison Plots" width="100%">
 
 
 We make the following observations:
-- Graph algorithms heavily depend on their parameters. We propose that these parameters should not be fixed but instead be a function of the training set size. This suggestion is substantiated by the observation that for smaller sizes, using smaller parameter values achieves good performance in terms of accuracy and approximation factor, all while being faster than the alternatives. Conversely, for larger parameter values, although performance increases marginally, querying time experiences an exponential increase.
-- Graph algorithms consistently demonstrate superior accuracy compared to both `LSH` and `Cube`, regardless of the train set size. 
-- Although GNNS exhibits better accuracy than LSH, it results in higher approximation factors and maximum approximation factors. This can be attributed to the parameter R. `GNNS` heavily relies on the initial points, and the use of only 15 random samples may at times be insufficient for achieving a satisfactory approximation.
-- While graph algorithms demonstrate faster performance than both LSH and Cube on larger train set sizes, they exhibit significant shortcomings for smaller data sizes.
+- Graph algorithms heavily depend on their parameters. We posit that these parameters should not be fixed but instead be a dependent on the training set size. This suggestion is substantiated by the observation that for smaller sizes, using smaller parameter values achieves good performance in terms of accuracy and approximation factor, all while being faster than the alternatives. Conversely, for larger parameter values, although performance increases marginally, querying time experiences an exponential increase.
+- Regarding the *best* parameters:
+	- Graph algorithms consistently demonstrate superior accuracy compared to both `LSH` and `Cube`, regardless of the train set size. 
+	- Although GNNS exhibits better accuracy than LSH, it results in higher approximation factors and maximum approximation factors. This can be attributed to the parameter R. `GNNS` heavily relies on the initial points, and the use of only 15 random samples may at times be insufficient for achieving a satisfactory approximation enough times to skew the average.
+	- While graph algorithms demonstrate faster performance than both LSH and Cube on larger train set sizes, they exhibit significant shortcomings for smaller data sizes.
 

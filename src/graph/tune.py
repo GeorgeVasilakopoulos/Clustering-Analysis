@@ -10,8 +10,6 @@ param_grid = [
     [1, 10, 100, 1000, 2000],
 ]
 
-grid = list(itertools.product(*param_grid))
-
 
 config_template = """NearestNeighbors:    1
 
@@ -33,14 +31,14 @@ graph_E:             {E}
 graph_l:             {l}
 """
 
-for i, params in enumerate(grid):
+for i, params in enumerate(list(itertools.product(*param_grid))):
     config_args_formatted = config_args.format(**dict(zip(names, params)))
     config_content = config_template + config_args_formatted
 
     with open('../bench.conf', 'w') as config_file:
         config_file.write(config_template + config_args_formatted)
 
-    with open(f'../../output/bench{i}.conf', 'w') as config_file:
+    with open(f'../../output//configs/bench{i}.conf', 'w') as config_file:
         config_file.write(config_args_formatted)
 
     process = subprocess.run(['../benchmarks.bash', str(i), 'clean'])
