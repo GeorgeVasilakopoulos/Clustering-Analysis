@@ -165,7 +165,7 @@ $ ./cluster –i <input file> –c <configuration file> -o <output file> -comple
 ## Graph
 
 ```
-$ make graph
+$ make graph_search
 $ ./graph_search –d <input file> –q <query file> –k <int> -E <int> -R <int> -N <int> -l <int, only for Search-on-Graph> -m <1 for GNNS, 2 for MRNG> -ο <output file>
 ```
 
