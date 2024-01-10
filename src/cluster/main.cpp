@@ -141,7 +141,12 @@ try {
     timer.start();
     auto p = clusterer->silhouettes(l2_distance);
     cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)" << endl; 
-    
+
+    cout << "Calculating the Objective Function (l2) value... " << flush;
+    timer.start();
+    double error = clusterer->ObjectiveFunctionValue(l2_distance); 
+    cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)" << endl; 
+        
 
     auto silhouettes = p.first;
     auto stotal = p.second;
@@ -151,7 +156,10 @@ try {
     for (auto score : silhouettes)
         output_file << std::fixed << std::setprecision(3) << score << ", ";
 
-    output_file << std::fixed << std::setprecision(3) << stotal << "]\n\n";
+    output_file << std::fixed << std::setprecision(3) << stotal << "]\n";
+
+    output_file << "Objective Function value: "<< std::setprecision(3) << error << "\n\n";
+
 
     if (arg_parser.value<bool>("complete")) {
         for(uint32_t i = 0; i < k; i++){

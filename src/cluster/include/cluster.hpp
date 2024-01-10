@@ -16,6 +16,8 @@ class Cluster {
 		Cluster(DataPoint* point) : center_(new Vector<double>(point->data())) { }
 		~Cluster() { delete center_; }
 
+        double ObjectiveFunctionValue(Distance<uint8_t, double> dist);
+
 		uint32_t size() const { return points_.size(); }
 		void add(DataPoint* point);
 		void remove(DataPoint* point);
@@ -42,6 +44,7 @@ class Clusterer {
         double minDistBetweenClusters();
         std::vector<Cluster*>& get();
         std::pair<std::vector<double>, double> silhouettes(Distance<uint8_t, uint8_t> dist);
+        double ObjectiveFunctionValue(Distance<uint8_t,double> dist);
         virtual void apply() = 0;
 };
 

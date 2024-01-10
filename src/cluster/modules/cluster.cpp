@@ -61,6 +61,20 @@ void Cluster::remove(DataPoint* point) {
 	*center_ /= (double)points_.size();
 }
 
+double Cluster::ObjectiveFunctionValue(Distance<uint8_t, double> dist){
+	
+	double error = 0;
+	
+	for(auto point : points_){
+		error += dist(point->data(),*center_);
+	}
+	
+	error /= points_.size();
+
+	return error;
+}
+
+
 ///////////////
 // Clusterer //
 ///////////////
@@ -215,6 +229,20 @@ pair<vector<double>, double> Clusterer::silhouettes(Distance<uint8_t, uint8_t> d
 	}
 
 	return pair(metr, stotal / dataset.size());
+}
+
+
+double Clusterer::ObjectiveFunctionValue(Distance<uint8_t,double> dist){
+	
+	double error = 0;
+
+	for(auto cluster : clusters){
+		error += cluster->size() * cluster->ObjectiveFunctionValue(dist);
+	}
+
+	error /= dataset.size();
+
+	return error;
 }
 
 ////////////
