@@ -38,7 +38,7 @@ for i, params in enumerate(list(itertools.product(*param_grid))):
     with open('../bench.conf', 'w') as config_file:
         config_file.write(config_template + config_args_formatted)
 
-    with open(f'../../output//configs/bench{i}.conf', 'w') as config_file:
+    with open(f'../../output/configs/bench{i}.conf', 'w') as config_file:
         config_file.write(config_args_formatted)
 
     process = subprocess.run(['../benchmarks.bash', str(i), 'clean'])

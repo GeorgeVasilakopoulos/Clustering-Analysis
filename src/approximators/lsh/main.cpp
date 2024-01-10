@@ -3,6 +3,7 @@
 #include <queue>
 #include <unordered_set>
 #include <cmath>
+#include <omp.h>
 
 #include "utils.hpp"
 #include "HashTable.hpp"
@@ -11,7 +12,26 @@
 
 using namespace std;
 
-#define QUERIES 10
+
+static double avg_dist(const DataSet& data) {
+	double sum = 0.0;
+
+	#pragma omp parallel for num_threads(8) reduction(+:sum)
+	for (size_t i = 0; i < data.size(); i++) {
+		printf("i: %ld\n", i);
+		for (size_t j = i + 1; j < data.size(); j++) {
+			sum += l2_distance<uint8_t, uint8_t>(data[i]->data(), data[j]->data());
+		}
+	}
+
+	return 2 * sum / (data.size() - 1) / data.size();
+}
+
+static double get_dist(DataPoint* p1, DataPoint* p2) {
+	return l2_distance<uint8_t, uint8_t>(p1->data(), p2->data());
+}
+
+#define QUERIES 100
 
 int main(int argc, const char* argv[]) {
 try {
@@ -48,6 +68,7 @@ try {
 	cout << "Loading data... " << flush;
 	swcout.start();
 	DataSet train(data_path);
+	DataSet train_latent("/mnt/c/Users/10geo/Documents/GitHub/Project/input/latent_train_images");
 	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)" << endl; 
 
 	if (parser.parsed("q"))
@@ -68,12 +89,21 @@ try {
 	if (output_file.fail()) 
         throw runtime_error(out_path + " could not be opened!\n");
 
-	uint32_t window = 2600; // Average distance of points on given test dataset
-	uint32_t table_size =  train.dim() / 8;
+	// uint32_t window = 2600; // Average distance of points on given test dataset
+	// uint32_t table_size =  train.size() / 8;
+	// uint32_t window = 105; // Average distance of points on given test dataset
+	uint32_t window = 412; // Average distance of points on given test dataset
+	// uint32_t table_size =  train_latent.dim() / 8;
+	uint32_t table_size =  train_latent.size() / 8;
+
+	// printf("table size: %d %d\n", table_size, train_latent.size() / 8);
+	// printf("avg dist: %lf\n", avg_dist(train_latent));
+	// exit(0);
 
 	swcout.start();
 	cout << "Populating HashTables... " << flush;
-	LSH lsh(train, window, k, L, table_size);
+	LSH lsh(train, 10, 1, 1, 1);
+	LSH lsh_latent(train_latent, window, k, L, table_size);
 	cout << "Done! (" << std::fixed << std::setprecision(3) << swcout.stop() << " seconds)" << endl; 
 
 
@@ -82,15 +112,21 @@ try {
 
 	Stopwatch sw = Stopwatch();
 
+	DataSet test(query_path, QUERIES);
+	DataSet test_latent("/mnt/c/Users/10geo/Documents/GitHub/Project/input/latent_test_images", QUERIES);
+
 	while (true) {
 		double ttime_lsh = 0, ttime_true = 0;
 		double tdist_lsh = 0, tdist_true = 0;
-		for (auto point : DataSet(query_path, QUERIES)) {
+		for (size_t i = 0; i < QUERIES; i++) {
+			auto point = test[i];
+			auto point_latent = test_latent[i];
 
 			sw.start();
-			auto aknn = lsh.kANN(*point, N, l2_distance<uint8_t>);
+			// auto aknn = lsh_latent.kANN(*point_latent, N, l2_distance<uint8_t>);
+			auto aknn = lsh_latent.kNN(*point_latent, N, l2_distance<uint8_t>);
 			double lsh_time = sw.stop();
-			auto range = lsh.RangeSearch(*point, R, l2_distance<uint8_t>);
+			auto range = lsh_latent.RangeSearch(*point_latent, R, l2_distance<uint8_t>);
 
 			sw.start();
 			auto knn = lsh.kNN(*point, N, l2_distance<uint8_t>);
@@ -101,13 +137,19 @@ try {
 			
 			output_file << "Query " << point->label() << "\n";
 
-			for (uint32_t i = 0, size = aknn.size(); i < size; i++) {
-				output_file << "Nearest neighbor-" << i << ": " << aknn[i].first << "\n";
-				output_file << "distanceLSH: "  << aknn[i].second << "\n";
-				output_file << "distanceTrue: " << knn[i].second   << "\n";
+			for (uint32_t j = 0, size = aknn.size(); j < size; j++) {
+				double dist = get_dist(point, train[aknn[j].first - 1]);
+				output_file << "-Nearest neighbor of- " << i << "\n";
+				output_file << "Nearest neighbor-" << j << ": " << aknn[j].first << "\n";
+				output_file << "Nearest neighbor-" << j << ": " << knn[j].first << "\n";
+				// output_file << "distanceLSH: "  << aknn[j].second << "\n";
+				output_file << "distanceLSHLatent: "  << aknn[j].second << "\n";
+				output_file << "distanceLSH      : "  << dist << "\n";
+				output_file << "distanceTrue     : " << knn[j].second   << "\n";
 
-				tdist_lsh  += aknn[i].second;
-				tdist_true += knn[i].second;
+				// tdist_lsh  += aknn[j].second;
+				tdist_lsh  += dist;
+				tdist_true += knn[j].second;
 			}
 
 			output_file << "tLSH: "  << lsh_time  << "\n";

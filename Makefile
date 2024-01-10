@@ -40,6 +40,10 @@ BENCHMARK		:= ./src
 BENCHMARK_SRCS  := $(wildcard $(BENCHMARK)/*.cpp) $(COMMON_SRCS) $(LSH_SRCS) $(CUBE_SRCS) $(GRAPH_SRCS)
 BENCHMARK_OBJS  := $(subst .cpp,.o,$(BENCHMARK_SRCS))
 
+ENCODER		:= ./src/autoencoder
+ENCODER_SRCS  := $(wildcard $(ENCODER)/*.cpp) $(COMMON_SRCS) $(LSH_SRCS) $(CUBE_SRCS) $(GRAPH_SRCS)
+ENCODER_OBJS  := $(subst .cpp,.o,$(ENCODER_SRCS))
+
 
 
 TARGET   := $(word 1, $(MAKECMDGOALS))
@@ -47,7 +51,7 @@ CXXFLAGS := -std=gnu++17 -O3 -Wall -Wextra
 
 # Compile options
 ifeq ($(TARGET),lsh)
-	CXXFLAGS += -I$(LSH_INCS)
+	CXXFLAGS += -I$(LSH_INCS) -fopenmp -pthread
 else ifeq ($(TARGET),cube)
 	CXXFLAGS += -I$(LSH_INCS) -I$(CUBE_INCS)
 else ifeq ($(TARGET),cluster)
@@ -55,6 +59,8 @@ else ifeq ($(TARGET),cluster)
 else ifeq ($(TARGET),graph_search)
 	CXXFLAGS += -I$(LSH_INCS) -I$(CUBE_INCS) -I$(GRAPH_INCS) -fopenmp -pthread
 else ifeq ($(TARGET),benchmark)
+	CXXFLAGS += -I$(LSH_INCS) -I$(CUBE_INCS) -I$(GRAPH_INCS) -fopenmp -pthread
+else ifeq ($(TARGET),encoder)
 	CXXFLAGS += -I$(LSH_INCS) -I$(CUBE_INCS) -I$(GRAPH_INCS) -fopenmp -pthread
 endif
 
@@ -65,13 +71,14 @@ CXXFLAGS += -I$(COMMON_INCS)
 	$(CC) $(CXXFLAGS) -c $^ -o $@
 
 clean:
-	@rm -f $(COMMON_OBJS) $(LSH_OBJS) $(CUBE_OBJS) $(CLUSTER_OBJS) $(GRAPH_OBJS) $(BENCHMARK_OBJS) ./common ./lsh ./cube ./cluster ./graph_search ./benchmark
+	@rm -f $(COMMON_OBJS) $(LSH_OBJS) $(CUBE_OBJS) $(CLUSTER_OBJS) $(GRAPH_OBJS) $(BENCHMARK_OBJS) 
+	@rm -f $(ENCODER_OBJS) ./common ./lsh ./cube ./cluster ./graph_search ./benchmark ./encoder
 
 run: $(COMMON_OBJS)
 	$(CC) $(COMMON_OBJS) -o ./common
 
 lsh: $(LSH_OBJS)
-	$(CC) $^ -o ./lsh
+	$(CC) -fopenmp $^ -o ./lsh
 
 cube: $(CUBE_OBJS)
 	$(CC) $^ -o ./cube
@@ -82,9 +89,11 @@ cluster: $(CLUSTER_OBJS)
 graph_search: $(GRAPH_OBJS)
 	$(CC) -fopenmp $^ -o ./graph_search
 
-
 benchmark: $(BENCHMARK_OBJS)
 	$(CC) -fopenmp $^ -o ./benchmark
+
+encoder: $(ENCODER_OBJS)
+	$(CC) -fopenmp $^ -o ./encoder
 
 
 all: 

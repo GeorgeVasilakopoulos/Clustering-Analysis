@@ -70,9 +70,8 @@ GNNS::GNNS(DataSet& dataset_, Approximator* approx, Distance<uint8_t, uint8_t> d
         return ;
     }
 
-    #pragma omp parallel for
+    #pragma omp parallel for num_threads(8)
     for (auto point : dataset) {
-        #pragma omp parallel for
         for (auto p : approx->kANN(*point, k, dist))
             edges[point->label() - 1].push_back(dataset[p.first - 1]);
     }
@@ -150,7 +149,7 @@ MRNG::MRNG(DataSet& dataset_,  Approximator* approx,
         #pragma omp parallel for
         for(auto x : dataset) {
             
-            vector<PAIR> neighbors = approx->kANN(*x, k, dist);
+            vector<PAIR> neighbors = approx->kNN(*x, k, dist);
             size_t size = neighbors.size();
 
             size_t i = 0;
