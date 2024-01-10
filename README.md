@@ -195,7 +195,58 @@ When querying for a point `q`:
 - When the limit `L` is reached, the top `k` nodes of the priority queue are returned.
 
 
-### Benchmarking
+## Autoencoder
+
+The `src/autoencoder/` directory contains several Python scripts for training, tuning and utilizing Autoencoders for dimensionality reduction. 
+
+
+- The `Autoencoder()` function, defined in `src/autoencoder/model.py`, is used for defining a TensorFlow Autoencoder model, given the following parameters:
+    -  *Input Shape*
+    -  *Latent dimension*
+    -  *Convolution Layer Sizes*
+    -  *Batch Normalization*
+    -  *Kernel Size*
+    -  *Activation Function & Parameters*
+
+- For training an Autoencoder model with a certain set of parameters, the script `src/autoencoder/models/train.py` is used as follows:
+
+    ```
+    $ train.py --train_path <> --test_path <> --latent_train_path <> --latent_test_path <> --planes <> --depth <> --norm <> --kernel_size <> --epochs <> --lr <> --batch_size <>
+    ```
+
+    During the training process, the **Adam optimizer** is used, along with **Mean Squared Error** as loss function. Also, **Early Stopping** is enforced, in order to prevent the model from overfitting.
+
+
+- Using the script `src/autoencoder/models/tune.py`, one can determine the optimal set of hyperparameters of an Autoencoder, for dimensionality reduction in the handwritten digit problem.
+
+
+    The optimal set of hyperparameters is obtained through a standard *Grid Search* algorithm:
+
+
+    ```
+    param_grid = [
+
+        {'depth': [2], 'planes': [[16, 8], [16, 32], [32, 16]], 
+         'kernel_size': [3, 5], 'lr': [1e-4], 'batch_size': [64, 128],
+         'norm': [False],
+         'latent_dim': [10, 16, 22]},
+
+        {'depth': [3], 'planes': [[32, 16, 8], [16, 32, 48], [48, 32, 16]], 
+         'kernel_size': [3, 5], 'lr': [1e-4], 'batch_size': [64, 128],
+         'norm': [False],
+         'latent_dim': [10, 16, 22]},
+    ]
+    ```
+
+    It is important to note that each trained model is evaluated according to the **ability to accurately predict nearest neighbors** in the reduced dimension.
+
+- The script `src/autoencoder/models/tune.py` is used for converting datasets down to lower dimensions, using the encoder of the model that was produced after running *Grid Search*:
+
+```
+$ python reduce.py –d <dataset> -q <queryset> -od <output_dataset_file> -oq <output_query_file>
+```
+
+## Benchmarking
 
 ```
 $ make benchmark
