@@ -24,8 +24,8 @@ param_grid = [
 ]
 
 
-train_data = get_dataset('/home/giorgo/Desktop/Project/input/train_images')
-test_data = get_dataset('/home/giorgo/Desktop/Project/input/test_images')
+train_data = get_dataset('/mnt/c/Users/10geo/Documents/GitHub/Project/input/train_images')
+test_data = get_dataset('/mnt/c/Users/10geo/Documents/GitHub/Project/input/test_images')
 
 train_data = train_data.reshape(train_data.shape[0], -1)
 test_data = test_data.reshape(test_data.shape[0], -1)
@@ -41,9 +41,9 @@ _, true_indices = knn.kneighbors(query)
 true_dist = np.stack([np.linalg.norm(q - train_data[i], axis=1) for i, q in zip(true_indices, query)]).reshape(-1)
 
 
-# with open('/home/giorgo/Desktop/Project/src/autoencoder/models/out.csv', 'w') as file:
-#     file.write('Latent Dim,Planes,Depth,Norm,Kernel Size,LR,Batch Size,')
-#     file.write('Accuracy,Approximation Factor, Maximum Approximation Factor,Neibs\n')
+with open('/mnt/c/Users/10geo/Documents/GitHub/Project/src//autoencoder/models/results.csv', 'w') as file:
+    file.write('Latent Dim\tPlanes\tDepth\tNorm\tKernel Size\tLR\tBatch Size\t')
+    file.write('Accuracy\tAF\tMAF\tNeibs\n')
 
 params = list(ParameterGrid(param_grid))[34:]
 print(f'Combinations: {len(params)}')
@@ -53,7 +53,7 @@ for i, args in enumerate(params):
     args = [args['latent_dim'], args['planes'], args['depth'], 
             args['norm'], args['kernel_size'], args['lr'], args['batch_size']]
     
-    latent_train_data, latent_test_data = train_model((28, 28, 1), *args, 10)
+    latent_train_data, latent_test_data = train_model(*args, 10)
     
     latent_train_data = latent_train_data.reshape(latent_train_data.shape[0], -1)
     latent_test_data = latent_test_data.reshape(latent_test_data.shape[0], -1)
@@ -71,8 +71,8 @@ for i, args in enumerate(params):
     maf = np.max(latent_dist / true_dist)
     neibs = np.intersect1d(true_indices.reshape(-1), latent_indices.reshape(-1)).shape[0] / np.prod(true_indices.shape)
 
-    with open('/home/giorgo/Desktop/Project/src/autoencoder/models/out.csv', 'a') as file:
+    with open('/mnt/c/Users/10geo/Documents/GitHub/Project/src//autoencoder/models/out.csv', 'a') as file:
         for x in args:
-            file.write(f'{x},')
+            file.write(f'{x}\t')
 
-        file.write(f'{acc},{af},{maf},{neibs}\n')
+        file.write(f'{acc}\t{af}\t{maf}\t{neibs}\n')

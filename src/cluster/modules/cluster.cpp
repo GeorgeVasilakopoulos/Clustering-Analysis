@@ -65,9 +65,8 @@ double Cluster::ObjectiveFunctionValue(Distance<uint8_t, double> dist){
 	
 	double error = 0;
 	
-	for(auto point : points_){
-		error += dist(point->data(),*center_);
-	}
+	for(auto point : points_)
+		error += dist(point->data(), *center_);
 	
 	error /= points_.size();
 
