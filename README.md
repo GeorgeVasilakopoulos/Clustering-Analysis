@@ -253,6 +253,14 @@ $ cd ./src/autoencoder
 $ python reduce.py –d <dataset> -q <queryset> -od <output_dataset_file> -oq <output_query_file>
 ```
 
+- To test the performance of the algorithms on the latent space mentioned in the assignment, namely Brute Force, GNNS and MRNG, we created `src/autoencoder/main.cpp`. It is a modification of `src/graph/main.cpp` and to execute run:
+
+```
+$ make encoder
+$ ./encoder –d <input file> –q <query file> –k <int> -E <int> -R <int> -N <int> -l <int, only for Search-on-Graph> -m <1 for GNNS, 2 for MRNG> -ο <output file> -dl <input file, latent space> –ql <query file, latent space>
+```
+
+
 ## Benchmarking
 
 ```
@@ -386,6 +394,8 @@ ID | Latent Dim |    Planes    | Batch Norm | Kernel Size | Batch Size | Accurac
 2  | 16         | [32, 16]     | False      | 3           | 64         | 36 %     | 1.01980 | 1.68184 | 56 %       | 1.421 |
 3  | 22         | [16, 32, 48] | False      | 3           | 64         | 44 %     | 1.02155 | 1.82020 | 52 %       | 1.435 |
 
-We choose Model `2` as the best encoder due to the 
+We choose Model `2` as the best encoder due to its better approximation factor and the higher percentage of neighbours predicted.
 
 #### Analysis
+
+After using `reduce.py` to create the latent space datasets (`./input/latent_train` and `./input/latent_test`), 

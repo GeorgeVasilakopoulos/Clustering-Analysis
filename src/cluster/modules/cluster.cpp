@@ -29,15 +29,8 @@ void Cluster::update() {
 
 void Cluster::add(DataPoint* point) {
 
-	//It is possible that size() == 0 and center not 0
-	if(points_.size() == 0){
-		*center_ *= 0;
-	}
-
 	// Quickly find sum of all vectors
-	if (points_.size() > 1)
-		*center_ *= (double)points_.size();
-
+	*center_ *= (double)points_.size();
 
 	points_.insert(point);
 	*center_ += point->data();
