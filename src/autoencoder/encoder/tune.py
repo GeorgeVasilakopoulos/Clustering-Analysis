@@ -3,12 +3,24 @@ import warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 warnings.filterwarnings("ignore")
 
+from argparse import ArgumentParser
+
 import numpy as np
 
 from sklearn.model_selection import ParameterGrid
 from sklearn.neighbors import NearestNeighbors
 
 from train import get_dataset, train_model
+
+def parse_args():
+    parser = ArgumentParser(description='AutoEncoder w/ Tensorflow')
+
+    parser.add_argument('--d', type=str, required=True, help='Path to training data')
+    parser.add_argument('--q', type=str, required=True, help='Path to query data')
+
+    return parser.parse_args()
+
+cmd_args = parse_args()
 
 param_grid = [
 
@@ -24,8 +36,8 @@ param_grid = [
 ]
 
 
-train_data = get_dataset('/mnt/c/Users/10geo/Documents/GitHub/Project/input/train_images')
-test_data = get_dataset('/mnt/c/Users/10geo/Documents/GitHub/Project/input/test_images')
+train_data = get_dataset(cmd_args.d)
+test_data = get_dataset(cmd_args.q)
 
 train_data = train_data.reshape(train_data.shape[0], -1)
 test_data = test_data.reshape(test_data.shape[0], -1)
@@ -41,16 +53,16 @@ _, true_indices = knn.kneighbors(query)
 true_dist = np.stack([np.linalg.norm(q - train_data[i], axis=1) for i, q in zip(true_indices, query)]).reshape(-1)
 
 
-with open('/mnt/c/Users/10geo/Documents/GitHub/Project/src//autoencoder/models/results.csv', 'w') as file:
+with open('./results.csv', 'w') as file:
     file.write('Latent Dim\tPlanes\tDepth\tNorm\tKernel Size\tLR\tBatch Size\t')
-    file.write('Accuracy\tAF\tMAF\tNeibs\n')
+    file.write('Accuracy\tAF\tMAF\tNeighbours\n')
 
 params = list(ParameterGrid(param_grid))[34:]
 print(f'Combinations: {len(params)}')
 
 for i, args in enumerate(params):    
     print(f'\nStarting experiment {i + 1}!')
-    args = [args['latent_dim'], args['planes'], args['depth'], 
+    args = [cmd_args.d, cmd_args.q, args['latent_dim'], args['planes'], args['depth'], 
             args['norm'], args['kernel_size'], args['lr'], args['batch_size']]
     
     latent_train_data, latent_test_data = train_model(*args, 10)
@@ -71,7 +83,7 @@ for i, args in enumerate(params):
     maf = np.max(latent_dist / true_dist)
     neibs = np.intersect1d(true_indices.reshape(-1), latent_indices.reshape(-1)).shape[0] / np.prod(true_indices.shape)
 
-    with open('/mnt/c/Users/10geo/Documents/GitHub/Project/src//autoencoder/models/out.csv', 'a') as file:
+    with open('./results.csv', 'a') as file:
         for x in args:
             file.write(f'{x}\t')
 

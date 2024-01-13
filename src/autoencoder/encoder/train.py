@@ -10,20 +10,12 @@ from tensorflow.keras.callbacks import EarlyStopping
 def parse_args():
     parser = ArgumentParser(description='AutoEncoder w/ Tensorflow')
 
-    parser.add_argument('--train_path', type=str, 
-                        default='/mnt/c/Users/10geo/Documents/GitHub/Project/input/train_images', 
-                        help='Path to training data')
-    parser.add_argument('--test_path', type=str, 
-                        default='/mnt/c/Users/10geo/Documents/GitHub/Project/input/test_images', 
-                        help='Path to test data')
-    parser.add_argument('--latent_train_path', type=str, 
-                        default='/mnt/c/Users/10geo/Documents/GitHub/Project/input/latent_train_images', 
-                        help='Path to training data (latent space)')
-    parser.add_argument('--latent_test_path', type=str, 
-                        default='/mnt/c/Users/10geo/Documents/GitHub/Project/input/latent_test_images', 
-                        help='Path to test data (latent space)')
+    parser.add_argument('--train_path', type=str, required=True, help='Path to training data')
+    parser.add_argument('--test_path', type=str, required=True, help='Path to test data')
+    parser.add_argument('--latent_train_path', type=str, help='Path to training data (latent space)')
+    parser.add_argument('--latent_test_path', type=str, help='Path to test data (latent space)')
 
-    parser.add_argument('--planes', type=list, default=[32, 16], help='Channels at each stage')
+    parser.add_argument('--planes', nargs="*", type=int, default=[32, 16], help='Channels at each stage')
     parser.add_argument('--depth', type=int, default=2, help='Depth of encoder/decoder')
     parser.add_argument('--norm', type=bool, default=False, help='Employ Batch Normalization')
     parser.add_argument('--kernel_size', type=int, default=3, help='Convolution kernel size')
@@ -32,6 +24,7 @@ def parse_args():
     parser.add_argument('--lr', type=float, default=1e-4, help='Optimizer for training')
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size for training')
 
+    parser.add_argument('--latent_dim', type=int, default=16, help='Latent Dimension')
     parser.add_argument('--save', type=str, default='', help='Save model')
 
     return parser.parse_args()
@@ -52,11 +45,14 @@ def write_dataset(path, encoded, magic_num=1234, latent_dim=16, cols=1):
         file.write(cols.to_bytes(4, byteorder='big'))
         encoded.astype(np.uint8).tofile(file)
 
-def train_model(latent_dim, planes, depth, norm, kernel_size, lr, batch_size, epochs, save=''):
+def train_model(train_path, test_path, latent_dim, planes, depth, norm, 
+                kernel_size, lr, batch_size, epochs, save=''):
     from model import AutoEncoder
 
-    train_data = get_dataset(args.train_path) / 255.
-    test_data = get_dataset(args.test_path) / 255.
+    train_data = get_dataset(train_path) / 255.
+    test_data = get_dataset(test_path) / 255.
+
+    assert train_data.shape[1:] == test_data.shape[1:]
 
     input_shape = train_data.shape[1:]
 
@@ -77,27 +73,25 @@ def train_model(latent_dim, planes, depth, norm, kernel_size, lr, batch_size, ep
 
     return encoded_train, encoded_test
 
-args = parse_args()
-
-train_data = get_dataset(args.train_path)
-test_data = get_dataset(args.test_path)
-
-assert train_data.shape[1:] == test_data.shape[1:]
-
-input_shape = train_data.shape[1:]
-latent_dim  = 16
-planes      = args.planes
-depth       = args.depth
-norm        = args.norm
-kernel_size = args.kernel_size
-
-lr = args.lr
-epochs = args.epochs
-batch_size = args.batch_size
 
 if __name__ == "__main__":
-    encoded_train, encoded_test = train_model(latent_dim, planes, depth, norm, kernel_size, 
-                                              lr, batch_size, epochs, save=args.save)
+    args = parse_args()
+
+    train_path  = args.train_path
+    test_path   = args.test_path
+
+    latent_dim  = args.latent_dim
+    planes      = args.planes
+    depth       = args.depth
+    norm        = args.norm
+    kernel_size = args.kernel_size
+
+    lr = args.lr
+    epochs = args.epochs
+    batch_size = args.batch_size
+
+    encoded_train, encoded_test = train_model(train_path, test_path, latent_dim, planes, depth, 
+                                              norm, kernel_size, lr, batch_size, epochs, save=args.save)
 
     write_dataset(args.latent_train_path, encoded_train)
     write_dataset(args.latent_test_path, encoded_test)
