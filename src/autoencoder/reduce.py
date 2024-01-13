@@ -1,19 +1,16 @@
 
-from models.train import get_dataset, write_dataset
+from encoder.train import get_dataset, write_dataset
 import keras
 
 from argparse import ArgumentParser
 
-import tensorflow as tf
-tf.get_logger().setLevel('INFO')
-
 def parse_args():
     parser = ArgumentParser(description='AutoEncoder w/ Tensorflow')
 
-    parser.add_argument('--d', type=str, required=True, help='Path to training data')
-    parser.add_argument('--q', type=str, required=True, help='Path to query data')
-    parser.add_argument('--od', type=str, required=True, help='Path to training data (latent space)')
-    parser.add_argument('--oq', type=str, required=True, help='Path to query data (latent space)')
+    parser.add_argument('-d', type=str, required=True, help='Path to training data')
+    parser.add_argument('-q', type=str, required=True, help='Path to query data')
+    parser.add_argument('-od', type=str, required=True, help='Path to training data (latent space)')
+    parser.add_argument('-oq', type=str, required=True, help='Path to query data (latent space)')
 
     return parser.parse_args()
 

@@ -200,7 +200,7 @@ When querying for a point `q`:
 The `src/autoencoder/` directory contains several Python scripts for training, tuning and utilizing Autoencoders for dimensionality reduction. 
 
 
-- The `Autoencoder()` function, defined in `src/autoencoder/model.py`, is used for defining a TensorFlow Autoencoder model, given the following parameters:
+- The `Autoencoder()` function, defined in `src/autoencoder/encoder/model.py`, is used for defining a `TensorFlow` Autoencoder model, given the following parameters:
     -  *Input Shape*
     -  *Latent dimension*
     -  *Convolution Layer Sizes*
@@ -208,16 +208,22 @@ The `src/autoencoder/` directory contains several Python scripts for training, t
     -  *Kernel Size*
     -  *Activation Function & Parameters*
 
-- For training an Autoencoder model with a certain set of parameters, the script `src/autoencoder/models/train.py` is used as follows:
+- For training an Autoencoder model with a specific set of parameters, the script `src/autoencoder/encoder/train.py` is used as follows:
 
     ```
+    $ cd ./src/autoencoder/encoder
     $ train.py --train_path <> --test_path <> --latent_train_path <> --latent_test_path <> --planes <> --depth <> --norm <> --kernel_size <> --epochs <> --lr <> --batch_size <>
     ```
 
-    During the training process, the **Adam optimizer** is used, along with **Mean Squared Error** as loss function. Also, **Early Stopping** is enforced, in order to prevent the model from overfitting.
+    During the training process, the **Adam optimizer** is used, along with **Mean Squared Error** as loss function. Also, **Early Stopping** is employed, in order to prevent the model from overfitting.
 
 
-- Using the script `src/autoencoder/models/tune.py`, one can determine the optimal set of hyperparameters of an Autoencoder, for dimensionality reduction in the handwritten digit problem.
+- Using the script `src/autoencoder/encoder/tune.py`, one can determine the optimal set of hyperparameters of an Autoencoder, for dimensionality reduction in the handwritten digit problem and is used as follows:
+
+    ```
+    $ cd ./src/autoencoder/encoder
+    $ tune.py --train_path <> --test_path <>
+    ```
 
 
     The optimal set of hyperparameters is obtained through a standard *Grid Search* algorithm:
@@ -238,11 +244,12 @@ The `src/autoencoder/` directory contains several Python scripts for training, t
     ]
     ```
 
-    It is important to note that each trained model is evaluated according to the **ability to accurately predict nearest neighbors** in the reduced dimension.
+    It is important to note that each trained model is evaluated according to the **ability to accurately predict nearest neighbors** in the latent space.
 
-- The script `src/autoencoder/models/tune.py` is used for converting datasets down to lower dimensions, using the encoder of the model that was produced after running *Grid Search*:
+- The script `src/autoencoder/reduce.py` is used for converting datasets down to lower dimensions, using the pre-trained encoder of the model that was produced after running *Grid Search*:
 
 ```
+$ cd ./src/autoencoder
 $ python reduce.py –d <dataset> -q <queryset> -od <output_dataset_file> -oq <output_query_file>
 ```
 
@@ -366,3 +373,19 @@ We make the following observations:
 	- Although GNNS exhibits better accuracy than LSH, it results in higher approximation factors and maximum approximation factors. This can be attributed to the parameter R. `GNNS` heavily relies on the initial points, and the use of only 15 random samples may at times be insufficient for achieving a satisfactory approximation enough times to skew the average.
 	- While graph algorithms demonstrate faster performance than both LSH and Cube on larger train set sizes, they exhibit significant shortcomings for smaller data sizes.
 
+
+### Autoencoder
+
+#### Parameter Tuning
+
+The `tune.py` script produces a `csv` file with useful information about the performance of each model. To evaluate and choose the best one, we developed the script `./src/autoencoder/encoder/score.py`. Models are ranked based on the following formulla: `Score = AF + MAF - 2 * Accuracy (of NN) - Percentage of Correctly Predicted Neighbour Set`. The top `3` models are presented below:
+
+ID | Latent Dim |    Planes    | Batch Norm | Kernel Size | Batch Size | Accuracy |    AF   |   MAF   | Neighbours | Score |
+-- | ---------- | ------------ | ---------- | ----------- | ---------- | -------- | ------- | ------- | ---------- | ----- |
+1  | 16         | [16, 32]     | False      | 3           | 128        | 37 %     | 1.02397 | 1.63538 | 54 %       | 1.375 |
+2  | 16         | [32, 16]     | False      | 3           | 64         | 36 %     | 1.01980 | 1.68184 | 56 %       | 1.421 |
+3  | 22         | [16, 32, 48] | False      | 3           | 64         | 44 %     | 1.02155 | 1.82020 | 52 %       | 1.435 |
+
+We choose Model `2` as the best encoder due to the 
+
+#### Analysis
