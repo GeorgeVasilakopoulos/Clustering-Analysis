@@ -399,3 +399,32 @@ We choose Model `2` as the best encoder due to its better approximation factor a
 #### Analysis
 
 After using `reduce.py` to create the latent space datasets (`./input/latent_train` and `./input/latent_test`), 
+
+
+
+The clustering results are as follows:
+
+
+ID           |                            Silhouettes                                  | Silhouette Avg. | Objective Function Value | Clustering Time
+------------ | ----------------------------------------------------------------------- | --------------- | ------------------------ | ----------------
+Original     |  [0.125, 0.361, 0.108, 0.153, 0.154, 0.328, 0.130, 0.130, 0.071, 0.202] |      0.175      |        1570.007          |    10.629 sec
+Reduced (Projected)|  [0.153, 0.231, 0.157, 0.152, 0.272, 0.172, 0.176, 0.228, 0.316, 0.446] |      0.233      |        1582.292          |  0.321 sec
+Reduced      |  [0.228, 0.443, 0.307, 0.327, 0.271, 0.201, 0.268, 0.181, 0.187, 0.261] |      0.268      |        165.089           | 0.294 sec
+
+
+
+- *Original*: K-Means on the original train dataset.
+- *Reduced (Projected)*: K-Means on the latent space and conversion of clusters to original train dataset.
+- *Reduced (Projected)*: K-Means on the latent space 
+
+
+
+We observe that performing the K-Means clustering algorithm on the *latent space* produces results that are comparable to those in the original dimension size. 
+
+Even though the avg. Silhouette scores show a slight increase in the *Reduced* and *Reduced (Projected)* cases, the total clustering time decreases significantly, due to the reduced dimension size.
+
+Also, the objective function value of the Reduced (Projected) case is very similar to the original case, which implies that the encoder preserves the spatial relationships between the vectors. 
+
+Note that the Objective Function Value of the *Reduced* case is not comparable with the other two, as it is expected to be smaller, due to the reduced dimension size.   
+
+
