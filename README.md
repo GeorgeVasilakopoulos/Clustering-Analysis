@@ -27,66 +27,80 @@ The algorithms are benchmarked on the [MNIST handwritten digit](http://yann.lecu
 ├── Makefile
 ├── README.md
 ├── graphs
-│   └── ...
 ├── input
-│   ├── test_images
-│   └── train_images
+│   ├── latent_test
+│   ├── latent_train
+│   ├── test_images
+│   └── train_images
 ├── output
-│   ├── configs
-│   │   └── ...
-│   └── plots
-│   │   └── ...
+│   ├── bf_latent.txt
+│   ├── gnns_latent.txt
+│   ├── mrng_latent.txt
+│   ├── configs
+│   │   └── ...
+│   └── plots
+│       └── ...
 └── src
     ├── bench.conf
     ├── benchmark.cpp
     ├── benchmarks.bash
+    ├── plot.py
     ├── approximators
-    │   ├── cube
-    │   │   ├── include
-    │   │   │   ├── cube.hpp
-    │   │   │   └── cube_hash.hpp
-    │   │   ├── main.cpp
-    │   │   └── modules
-    │   │       └── cube.cpp
-    │   └── lsh
-    │       ├── include
-    │       │   ├── lsh.hpp
-    │       │   └── lsh_hash.hpp
-    │       ├── main.cpp
-    │       └── modules
-    │           └── lsh.cpp
+    │   ├── cube
+    │   │   ├── main.cpp
+    │   │   ├── include
+    │   │   │   ├── cube.hpp
+    │   │   │   └── cube_hash.hpp
+    │   │   └── modules
+    │   │       └── cube.cpp
+    │   └── lsh
+    │       ├── main.cpp
+    │       ├── include
+    │       │   ├── lsh.hpp
+    │       │   └── lsh_hash.hpp
+    │       └── modules
+    │           └── lsh.cpp
+    ├── autoencoder
+    │   ├── main.cpp
+    │   ├── reduce.py
+    │   └── encoder
+    │       ├── encoder.keras
+    │       ├── model.py
+    │       ├── results.csv
+    │       ├── score.py
+    │       ├── train.py
+    │       └── tune.py
     ├── cluster
-    │   ├── main.cpp
-    │   ├── cluster.conf
-    │   ├── include
-    │   │   └── cluster.hpp
-    │   └── modules
-    │       └── cluster.cpp
+    │   ├── cluster.conf
+    │   ├── main.cpp
+    │   ├── include
+    │   │   └── cluster.hpp
+    │   └── modules
+    │       └── cluster.cpp
     ├── common
-    │   ├── main.cpp
-    │   ├── include
-    │   │   ├── Approximator.hpp
-    │   │   ├── ArgParser.hpp
-    │   │   ├── FileParser.hpp
-    │   │   ├── HashTable.hpp
-    │   │   ├── Vector.hpp
-    │   │   └── utils.hpp
-    │   └── modules
-    │       ├── Approximator.cpp
-    │       ├── ArgParser.tcc
-    │       ├── Distances.tcc
-    │       ├── FileParser.tcc
-    │       ├── HashTable.tcc
-    │       ├── Vector.tcc
-    │       └── utils.cpp
-    ├── graph
-    │   ├── main.cpp
-    │   ├── tune.py
-    │   ├── include
-    │   │   └── Graph.hpp
-    │   └── modules
-    │       └── Graph.cpp
-    └── plot.py
+    │   ├── main.cpp
+    │   ├── include
+    │   │   ├── Approximator.hpp
+    │   │   ├── ArgParser.hpp
+    │   │   ├── FileParser.hpp
+    │   │   ├── HashTable.hpp
+    │   │   ├── Vector.hpp
+    │   │   └── utils.hpp
+    │   └── modules
+    │       ├── Approximator.cpp
+    │       ├── ArgParser.tcc
+    │       ├── Distances.tcc
+    │       ├── FileParser.tcc
+    │       ├── HashTable.tcc
+    │       ├── Vector.tcc
+    │       └── utils.cpp
+    └── graph
+        ├── main.cpp
+        ├── include
+        │   └── Graph.hpp
+        ├── modules
+        │   └── Graph.cpp
+        └── tune.py
 </pre>
 
 ## Data Handling
