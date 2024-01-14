@@ -72,10 +72,10 @@ try {
 	if (output_file.fail()) 
         throw runtime_error(out_path + " could not be opened!\n");
 
-    string graph_method = get_arg(parser, "m", "Enter Graph method - 1 for GNNS, 2 for MRNG: ");
+    string graph_method = get_arg(parser, "m", "Enter Graph method - 1 for GNNS, 2 for MRNG, 3 for BF: ");
 
-    if(graph_method != "1" && graph_method != "2")
-        throw runtime_error("Invalid Graph Method: Valid options are '1' for GNNS and '2' for MRNG");
+    if(graph_method != "1" && graph_method != "2" && graph_method != "3")
+        throw runtime_error("Invalid Graph Method: Valid options are '1' for GNNS, '2' for MRNG and '3' for BF");
     
 
     Stopwatch timer, timer_out;
@@ -98,7 +98,9 @@ try {
     Graph* graph = 
     graph_method == "1" ? 
         (Graph*)new GNNS(train_dataset_latent, &approx_latent, l2_distance, k, R, T, E, load_path) :
-        (Graph*)new MRNG(train_dataset_latent, &approx_latent, l2_distance, l2_distance, k, l, load_path);
+    graph_method == "2" ?
+        (Graph*)new MRNG(train_dataset_latent, &approx_latent, l2_distance, l2_distance, k, l, load_path) :
+    NULL;
     cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)" << endl; 
     
     if (!save_path.empty()) {
@@ -122,8 +124,9 @@ try {
             auto point_latent = test_latent[i];
 
 			timer.start();
-			auto aknn_graph = graph->query(point_latent->data(), N);
-			// auto aknn_graph = approx_latent.kNN(*point_latent, 10, l2_distance);
+			auto aknn_graph = graph ? 
+                                graph->query(point_latent->data(), N) : 
+                                approx_latent.kNN(*point_latent, 10, l2_distance);
 			double graph_time = timer.stop();
 
 			timer.start();
@@ -194,8 +197,9 @@ try {
 	}
 	
 	output_file.close();
-    delete graph;
 
+    if (graph)
+        delete graph;
 } 
 catch (exception& e) {
     cerr << e.what();

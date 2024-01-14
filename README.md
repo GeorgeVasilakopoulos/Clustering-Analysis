@@ -257,7 +257,7 @@ $ python reduce.py –d <dataset> -q <queryset> -od <output_dataset_file> -oq <o
 
 ```
 $ make encoder
-$ ./encoder –d <input file> –q <query file> –k <int> -E <int> -R <int> -N <int> -l <int, only for Search-on-Graph> -m <1 for GNNS, 2 for MRNG> -ο <output file> -dl <input file, latent space> –ql <query file, latent space>
+$ ./encoder –d <input file> –q <query file> –k <int> -E <int> -R <int> -N <int> -l <int, only for Search-on-Graph> -m <1 for GNNS, 2 for MRNG, 3 for BF> -ο <output file> -dl <input file, latent space> –ql <query file, latent space>
 ```
 
 
@@ -396,11 +396,29 @@ ID | Latent Dim |    Planes    | Batch Norm | Kernel Size | Batch Size | Accurac
 
 We choose Model `2` as the best encoder due to its better approximation factor and the higher percentage of neighbours predicted.
 
+Furthermore, by manually tuning the `graph` hyperparameters, we find the the following parameters are optimal:
+- GNNS: `-k 150 -R 10 -T 10 -E 30`, and `T = 10`
+- MRNG: `-k 150 -l 500`, and `T = 10`
+
+
 #### Analysis
 
 After using `reduce.py` to create the latent space datasets (`./input/latent_train` and `./input/latent_test`), 
 
+  Algorithm | Relative Time Performance | Approximation Factor | Maximum Approximation Factor |
+----------- | ------------------------- | -------------------- | ---------------------------- |
+LSH         | 0.225 | 1.0253 | 1.5348 |
+Cube        | 0.117 | 1.0541 | 1.4110 |
+GNNS        | 0.094 | 1.0282 | 2.6753 |
+MRNG        | 0.045 | 1.0000 | 1.0000 |
+BF Latent   | 0.083 | 1.0491 | 1.1925 |
+GNNS Latent | 0.008 | 1.0704 | 1.2202 |
+MRNG Latent | 0.005 | 1.0496 | 1.1927 |
 
+We make the following observations:
+- The brute force algorithm in the latent space is essentially an approximation algorithm and, therefore, does not produce perfect results.
+- Algorithms in the latent space are significantly faster than their counterparts in the original space. This speed improvement is expected due to the reduced dimension size.
+- GNNS and espesially MRNG produce close to perfect results in the latent space (close to the corresponing BF results and the true NNs). Importantly, they achieve this with a tiny fraction of the time. Specifically, both algorithms run in under `1 %` of the time required by the brute force algorithm in the original space, with MRNG being at **half** a percent of the time needed, while still delivering close-to-perfect results.
 
 The clustering results are as follows:
 
