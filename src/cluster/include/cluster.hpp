@@ -15,6 +15,7 @@ class Cluster {
 		Cluster(uint32_t size) : center_(new Vector<double>(size)) { }
 		Cluster(DataPoint* point) : center_(new Vector<double>(point->data())) { }
 		~Cluster() { delete center_; }
+        void projectToDataset(DataSet& new_dataset);
 
         double ObjectiveFunctionValue(Distance<uint8_t, double> dist);
 
@@ -23,13 +24,13 @@ class Cluster {
 		void remove(DataPoint* point);
 		std::set<DataPoint*>& points() { return points_; }
 		Vector<double>& center() { return *center_; }
-        void update();
+        void update(uint32_t new_size);
         void clear() { points_.clear(); }
 };
 
 class Clusterer {
     protected:
-        DataSet& dataset;
+        DataSet* dataset;
         uint32_t k;
 		Distance<uint8_t, double> dist;
 
@@ -39,7 +40,7 @@ class Clusterer {
     public:
         Clusterer(DataSet& dataset, uint32_t k, Distance<uint8_t, double> dist);
         virtual ~Clusterer();
-        
+        void projectToDataset(DataSet& new_dataset);
         void clear();
         std::vector<Cluster*>& get();
         std::pair<std::vector<double>, double> silhouettes(Distance<uint8_t, uint8_t> dist);

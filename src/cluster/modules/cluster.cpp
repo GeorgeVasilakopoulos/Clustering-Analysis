@@ -10,11 +10,14 @@ using namespace std;
 /////////////
 
 // Update cluster center
-void Cluster::update() {
+void Cluster::update(uint32_t new_size = 0) {
 	if (points_.size() == 0)
 		return ;
 
-	auto sum = new Vector<uint32_t>(center_->len());
+	if(new_size == 0)
+		new_size = center_->len();
+
+	auto sum = new Vector<uint32_t>(new_size);
 
 	// Compute average vector
 	for (auto point : points_)
@@ -71,20 +74,31 @@ double Cluster::ObjectiveFunctionValue(Distance<uint8_t, double> dist){
 	return error;
 }
 
+void Cluster::projectToDataset(DataSet& new_dataset){
+	set<DataPoint*> new_points;
+
+	for(auto point : points_){
+		DataPoint* new_point = new_dataset[point->label()-1]; 
+		new_points.insert(new_point);
+	}
+	points_ = new_points;
+
+	update(new_dataset.dim());
+}
 
 ///////////////
 // Clusterer //
 ///////////////
 
 Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<uint8_t, double> dist_) 
-: dataset(dataset_), k(k_), dist(dist_) { 
+: dataset(&dataset_), k(k_), dist(dist_) { 
     
-    bool* chosen = new bool[dataset.size()]();
+    bool* chosen = new bool[dataset->size()]();
 
     // Random point as initial center
-	uint32_t init_center = Vector<uint32_t>(1, UNIFORM, 0, dataset.size() - 1)[0];
+	uint32_t init_center = Vector<uint32_t>(1, UNIFORM, 0, dataset->size() - 1)[0];
 
-	clusters.push_back(new Cluster(dataset[init_center]));
+	clusters.push_back(new Cluster((*dataset)[init_center]));
 	chosen[init_center] = true;
 	
 	// Finding rest k - 1 centers
@@ -98,11 +112,11 @@ Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<uint8_t, double> d
 
 		double sum = 0; // -> sum(D(i) * D(i))
 
-		for (uint32_t i = 0; i < dataset.size(); i++) {
+		for (uint32_t i = 0; i < dataset->size(); i++) {
 			if (chosen[i])
 				continue;
 			
-			auto p = closest(dataset[i]);
+			auto p = closest((*dataset)[i]);
 			double distance = p.first; // = D(i)
 
 			distances.push_back(pair(i, distance*distance));
@@ -128,7 +142,7 @@ Clusterer::Clusterer(DataSet& dataset_, uint32_t k_, Distance<uint8_t, double> d
 				continue;
 			
 			// If prob <= accum, select this point
-			clusters.push_back(new Cluster(dataset[p.first]));
+			clusters.push_back(new Cluster((*dataset)[p.first]));
 			chosen[p.first] = true;
 			break;
 		}
@@ -225,7 +239,7 @@ pair<vector<double>, double> Clusterer::silhouettes(Distance<uint8_t, uint8_t> d
 		metr.push_back(sum / cluster->size());
 	}
 
-	return pair(metr, stotal / dataset.size());
+	return pair(metr, stotal / dataset->size());
 }
 
 
@@ -237,9 +251,22 @@ double Clusterer::ObjectiveFunctionValue(Distance<uint8_t,double> dist){
 		error += cluster->size() * cluster->ObjectiveFunctionValue(dist);
 	}
 
-	error /= dataset.size();
+	error /= dataset->size();
 
 	return error;
+}
+
+
+void Clusterer::projectToDataset(DataSet& new_dataset){
+	
+	if(dataset->size() != new_dataset.size()){
+		throw runtime_error("Exception in projectToDataset: DataSet sizes must be equal!\n");
+	}
+
+	for(auto cluster : clusters){
+		cluster->projectToDataset(new_dataset);
+	}
+	dataset = &new_dataset;
 }
 
 ////////////
@@ -249,13 +276,13 @@ double Clusterer::ObjectiveFunctionValue(Distance<uint8_t,double> dist){
 Lloyd::Lloyd(DataSet& dataset, uint32_t k, Distance<uint8_t, double> dist) : Clusterer(dataset, k, dist) { }
 
 void Lloyd::apply() {
-	Cluster** indexes = new Cluster*[dataset.size()]();
+	Cluster** indexes = new Cluster*[dataset->size()]();
 	
 	while (true) {
 		uint32_t changes = 0;
 
 		// For every point
-		for (auto point : dataset) {
+		for (auto point : *dataset) {
 			uint32_t index = point->label() - 1;
 
 			auto p = closest(point);
@@ -314,7 +341,7 @@ double RAssignment::minDistBetweenClusters() {
 void RAssignment::apply() {
 
 	// Mapping from datapoints to clusters
-	Cluster** indexes = new Cluster*[dataset.size()]();
+	Cluster** indexes = new Cluster*[dataset->size()]();
 
 	double radius = minDistBetweenClusters() / 2;
 	uint8_t iters = 0;
@@ -331,7 +358,7 @@ void RAssignment::apply() {
 				uint32_t index = p.first - 1;
 				double dist  = p.second;
 
-				auto point = dataset[index];
+				auto point = (*dataset)[index];
 				auto prev  = indexes[index];
 				
 				// If new cluster is closer than previous
@@ -365,7 +392,7 @@ void RAssignment::apply() {
 	}
 
 	// Unnasigned points are assigned to closest cluster
-	for (auto point : dataset) {
+	for (auto point : *dataset) {
 		if (indexes[point->label() - 1] == nullptr) 
 			closest(point).second->add(point);
 	}

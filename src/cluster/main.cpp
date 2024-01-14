@@ -24,10 +24,12 @@ try {
     arg_parser.add("c", STRING);
     arg_parser.add("o", STRING);
     arg_parser.add("complete", BOOL, "false");
+    arg_parser.add("project", STRING);
     arg_parser.add("m", STRING);
     arg_parser.parse(argc, argv);
 
     string input_path;
+    string projection_path;
     string configuration_path;
     string out_path;
     string approx_method;
@@ -98,6 +100,17 @@ try {
     DataSet dataset(input_path);
     cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)" << endl; 
 
+    DataSet* projection_dataset = NULL;
+    if(arg_parser.parsed("project")){
+        projection_path = arg_parser.value<string>("project");
+        cout << "Loading projection data... " << flush;
+        timer.start();
+        projection_dataset = new DataSet(projection_path);
+        cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)" << endl; 
+    }
+
+
+
 
     uint32_t window = 2600;
     uint32_t table_size = dataset.size() / 8;
@@ -120,6 +133,14 @@ try {
     clusterer->apply();
     double clustering_time = timer.stop();
     cout << "Done! (" << std::fixed << std::setprecision(3) << clustering_time << " seconds)"<< endl; 
+
+    if(arg_parser.parsed("project")){
+        cout << "Projecting to dataset... " << flush;
+        timer.start();
+        clusterer->projectToDataset(*projection_dataset);
+        cout << "Done! (" << std::fixed << std::setprecision(3) << timer.stop() << " seconds)" << endl; 
+    }
+
 
     output_file << "Algorithm: ";
     output_file << ((approx_method=="Classic") ? "Lloyds" : ("Range Search " + approx_method));
@@ -180,6 +201,7 @@ try {
     }
 
     delete clusterer;
+    delete projection_dataset;
 } 
 catch (exception& e) {
     cerr << e.what();
