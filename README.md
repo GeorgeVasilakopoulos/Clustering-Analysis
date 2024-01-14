@@ -160,7 +160,7 @@ The `Cube` class contains a single hashtable, defined by a unique `CubeHash` and
 
 ```
 $ make cluster
-$ ./cluster –i <input file> –c <configuration file> -o <output file> -complete <optional> -m <method: Classic OR LSH or Hypercube>
+$ ./cluster –i <input file> –c <configuration file> -o <output file> -complete <optional> -m <method: Classic OR LSH or Hypercube> -project <New Dataset to project to>
 ```
 
 - The `Cluster` class stores pointers to `DataPoint` objects that are members of the cluster. It provides several functionalities that are essential for the management of a cluster:
