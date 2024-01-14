@@ -201,7 +201,8 @@ try {
     }
 
     delete clusterer;
-    delete projection_dataset;
+    if(projection_dataset)
+        delete projection_dataset;
 } 
 catch (exception& e) {
     cerr << e.what();
